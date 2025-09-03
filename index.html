@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>55Khat</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    /* Background */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0d0d0d);
+      margin: 0;
+      color: #fff;
+    }
+
+    /* Containers */
+    .login-container, .chat-container {
+      width: 500px;
+      height: 520px;
+      background: rgba(15, 15, 15, 0.95);
+      border: 1px solid rgba(255, 0, 0, 0.3);
+      border-radius: 14px;
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .chat-container { flex-direction: row; }
+
+    /* Login page */
+    #loginPage {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 15px;
+      padding: 20px;
+    }
+    #loginPage h2 {
+      font-size: 22px;
+      color: #ff3c3c;
+      margin-bottom: 10px;
+      text-shadow: 0 0 6px rgba(255,0,0,0.7);
+    }
+    #usernameInput {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ff3c3c;
+      background: #111;
+      color: white;
+      outline: none;
+      width: 80%;
+      font-size: 14px;
+    }
+    #loginPage button {
+      margin-top: 10px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #ff3c3c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 0 10px rgba(255,0,0,0.4);
+    }
+    #loginPage button:hover {
+      background: #cc2e2e;
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(255,0,0,0.7);
+    }
+
+    /* Sidebar */
+    .users-panel {
+      width: 150px;
+      border-right: 1px solid rgba(255,0,0,0.2);
+      padding: 12px;
+      background: rgba(30, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+    }
+    .users-panel h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+      color: #ff3c3c;
+      border-bottom: 1px solid rgba(255,0,0,0.3);
+      padding-bottom: 5px;
+    }
+    #usersList {
+      flex: 1;
+      overflow-y: auto;
+    }
+    #usersList div {
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    #usersList div:hover {
+      background: rgba(255, 0, 0, 0.15);
+      color: #ff6a6a;
+    }
+
+    /* Chat area */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      border-bottom: 1px solid rgba(255,0,0,0.2);
+      background: rgba(10, 0, 0, 0.8);
+    }
+    .chat-message {
+      margin: 6px 0;
+      padding: 10px 14px;
+      border-radius: 14px;
+      max-width: 70%;
+      font-size: 14px;
+      background: #222;
+      color: #ddd;
+      box-shadow: 0 0 6px rgba(255,0,0,0.2);
+    }
+    .chat-message.user {
+      background: #ff3c3c;
+      color: white;
+      margin-left: auto;
+      box-shadow: 0 0 10px rgba(255,0,0,0.5);
+    }
+
+    /* Chat input */
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      background: #111;
+      border-top: 1px solid rgba(255,0,0,0.3);
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid rgba(255,0,0,0.3);
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: white;
+      outline: none;
+      margin-right: 8px;
+      font-size: 14px;
+    }
+    .chat-input input:focus {
+      border-color: #ff3c3c;
+      box-shadow: 0 0 6px rgba(255,0,0,0.4);
+    }
+    .chat-input button {
+      background: #ff3c3c;
+      border: none;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 0 10px rgba(255,0,0,0.4);
+    }
+    .chat-input button:hover {
+      background: #cc2e2e;
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(255,0,0,0.7);
+    }
+
+    /* Custom Scrollbar */
+    .chat-box::-webkit-scrollbar,
+    #usersList::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-box::-webkit-scrollbar-track,
+    #usersList::-webkit-scrollbar-track {
+      background: #111; 
+      border-radius: 10px;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb,
+    #usersList::-webkit-scrollbar-thumb {
+      background: #ff3c3c;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(255,0,0,0.6);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb:hover,
+    #usersList::-webkit-scrollbar-thumb:hover {
+      background: #cc2e2e;
+      box-shadow: 0 0 12px rgba(255,0,0,0.9);
+    }
+
+    /* Firefox */
+    .chat-box,
+    #usersList {
+      scrollbar-width: thin;
+      scrollbar-color: #ff3c3c #111;
+    }
+
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Login screen -->
+  <div id="loginPage" class="login-container">
+    <!-- Logo at the top -->
+    <img src="/images/55khatl.png" alt="Logo"
+     style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
+    <h2>Welcome to 55Khat</h2>
+    <input type="text" id="usernameInput" placeholder="Enter a username...">
+    <button onclick="setUsername()">Join Chat</button>
+  </div>
+
+  <!-- Chat screen -->
+  <div id="chatPage" class="chat-container hidden">
+    <!-- Logo at top of chat panel -->
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
+      
+    </div>
+
+    <!-- Sidebar -->
+    <div class="users-panel">
+      <h3>Online (<span id="userCount">0</span>)</h3>
+      <div id="usersList"></div>
+    </div>
+
+    <!-- Main chat -->
+    <div class="chat-main">
+      <div id="chatBox" class="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let username = "";
+
+    function setUsername() {
+      const input = document.getElementById("usernameInput");
+      username = input.value.trim();
+      if (!username) return alert("Please enter a username");
+
+      document.getElementById("loginPage").classList.add("hidden");
+      document.getElementById("chatPage").classList.remove("hidden");
+      socket.emit("join", username);
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("chatInput");
+      const message = input.value.trim();
+      if (!message) return;
+      socket.emit("chat message", { user: username, text: message });
+      input.value = "";
+    }
+
+    socket.on("chat message", (data) => {
+      const chatBox = document.getElementById("chatBox");
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("chat-message");
+      if (data.user === username) msgDiv.classList.add("user");
+      msgDiv.textContent = `${data.user}: ${data.text}`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    socket.on("user list", (users) => {
+      const usersList = document.getElementById("usersList");
+      const userCount = document.getElementById("userCount");
+      usersList.innerHTML = "";
+      users.forEach(u => {
+        const div = document.createElement("div");
+        div.textContent = u;
+        usersList.appendChild(div);
+      });
+      userCount.textContent = users.length;
+    });
+  </script>
+</body>
+</html>
