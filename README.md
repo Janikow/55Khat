@@ -1,1 +1,1 @@
-print("Read me")
+Read me
