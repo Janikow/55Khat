@@ -204,3 +204,16 @@ body {
 }
 
 .hidden { display: none; }
+
+/* Special styling for Tem */
+.chat-message.tem {
+  background: #4a90e2 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+#usersList .tem {
+  color: #4a90e2;
+  font-weight: bold;
+}
+
