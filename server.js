@@ -25,6 +25,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat message", (msg) => {
+    // log chat to terminal
+    console.log(`[${msg.user}] ${msg.text}`);
     io.emit("chat message", msg);
   });
 
