@@ -23,8 +23,20 @@ socket.on("chat message", (data) => {
   const chatBox = document.getElementById("chatBox");
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("chat-message");
-  if (data.user === username) msgDiv.classList.add("user");
-  msgDiv.textContent = `${data.user}: ${data.text}`;
+
+  let displayName = data.user;
+
+  // Special rule for TemMoose
+  if (data.user === "TemMoose") {
+    displayName = "Tem";
+    msgDiv.classList.add("tem"); // custom CSS class
+  }
+
+  if (data.user === username) {
+    msgDiv.classList.add("user");
+  }
+
+  msgDiv.textContent = `${displayName}: ${data.text}`;
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -35,7 +47,8 @@ socket.on("user list", (users) => {
   usersList.innerHTML = "";
   users.forEach(u => {
     const div = document.createElement("div");
-    div.textContent = u;
+    div.textContent = u === "TemMoose" ? "Tem" : u;
+    if (u === "TemMoose") div.classList.add("tem");
     usersList.appendChild(div);
   });
   userCount.textContent = users.length;
