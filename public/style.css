@@ -206,14 +206,28 @@ body {
 .hidden { display: none; }
 
 /* Special styling for Tem */
+@keyframes temPulse {
+  0% { box-shadow: 0 0 6px rgba(74, 144, 226, 0.5); transform: scale(1); }
+  50% { box-shadow: 0 0 15px rgba(74, 144, 226, 0.8); transform: scale(1.03); }
+  100% { box-shadow: 0 0 6px rgba(74, 144, 226, 0.5); transform: scale(1); }
+}
+
 .chat-message.tem {
-  background: #4a90e2 !important;
-  color: white !important;
+  background: rgba(74, 144, 226, 0.15);
+  border: 1px solid rgba(74, 144, 226, 0.6);
+  color: #4a90e2;
   font-weight: bold;
+  box-shadow: 0 0 6px rgba(74, 144, 226, 0.5);
+  animation: temPulse 1.5s ease-in-out infinite;
 }
 
 #usersList .tem {
   color: #4a90e2;
   font-weight: bold;
+  transition: all 0.3s;
+}
+#usersList .tem:hover {
+  color: #7fb4ff;
+  text-shadow: 0 0 6px rgba(74,144,226,0.7);
 }
 
