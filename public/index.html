@@ -32,6 +32,10 @@
       <div id="chatBox" class="chat-box"></div>
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
+        <!-- Hidden file input for images -->
+        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(event)">
+        <!-- Button to trigger file input -->
+        <button onclick="document.getElementById('imageInput').click()">📎</button>
         <button onclick="sendMessage()">Send</button>
       </div>
     </div>
