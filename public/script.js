@@ -1,6 +1,17 @@
 const socket = io();
 let username = "";
 
+// --- Favicon notification setup ---
+const favicon = document.getElementById("favicon");
+const defaultFavicon = "favicon.ico";          // normal icon
+const alertFavicon = "favicon-alert.ico";      // alert icon
+let hasNewMessage = false;
+
+function setFavicon(src) {
+  favicon.href = src;
+}
+// -----------------------------------
+
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
@@ -39,6 +50,12 @@ socket.on("chat message", (data) => {
   msgDiv.textContent = `${displayName}: ${data.text}`;
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
+
+  // --- New message favicon alert ---
+  if (document.hidden) {
+    setFavicon(alertFavicon);
+    hasNewMessage = true;
+  }
 });
 
 socket.on("user list", (users) => {
@@ -53,3 +70,12 @@ socket.on("user list", (users) => {
   });
   userCount.textContent = users.length;
 });
+
+// --- Reset favicon when returning to tab ---
+window.addEventListener("focus", () => {
+  if (hasNewMessage) {
+    setFavicon(defaultFavicon);
+    hasNewMessage = false;
+  }
+});
+
