@@ -269,6 +269,13 @@ body {
   100% { box-shadow: 0 0 6px rgba(155, 89, 182, 0.5); transform: scale(1); }
 }
 
+.chat-message img {
+  display: block;
+  margin-top: 6px;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(255,0,0,0.3);
+}
 
 
 
