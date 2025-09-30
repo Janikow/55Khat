@@ -101,4 +101,16 @@ window.addEventListener("focus", () => {
   }
 });
 
+// --- Updates page navigation ---
+function openUpdates() {
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("updatesPage").classList.remove("hidden");
+}
+
+function closeUpdates() {
+  document.getElementById("updatesPage").classList.add("hidden");
+  document.getElementById("loginPage").classList.remove("hidden");
+}
+
+
 
