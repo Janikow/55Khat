@@ -8,14 +8,18 @@ const alertFavicon = "favicon-alert.ico";      // alert icon
 let hasNewMessage = false;
 
 function setFavicon(src) {
-  favicon.href = src;
+  if (favicon) favicon.href = src;
 }
 // -----------------------------------
 
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
-  if (!username) return alert("Please enter a username");
+
+  // Username validation
+  if (!username || username.length < 2) {
+    return alert("Username must be at least 2 characters long");
+  }
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
@@ -29,6 +33,11 @@ function sendMessage() {
   socket.emit("chat message", { user: username, text: message });
   input.value = "";
 }
+
+// Enter key to send messages
+document.getElementById("chatInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
 
 socket.on("chat message", (data) => {
   const chatBox = document.getElementById("chatBox");
@@ -47,9 +56,22 @@ socket.on("chat message", (data) => {
     msgDiv.classList.add("user");
   }
 
-  msgDiv.textContent = `${displayName}: ${data.text}`;
+  // Create structured message with username + text
+  const usernameSpan = document.createElement("span");
+  usernameSpan.classList.add("username");
+  usernameSpan.textContent = displayName;
+
+  const messageSpan = document.createElement("span");
+  messageSpan.classList.add("message-text");
+  messageSpan.textContent = data.text;
+
+  msgDiv.appendChild(usernameSpan);
+  msgDiv.appendChild(messageSpan);
+
   chatBox.appendChild(msgDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Smooth scroll
+  chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
 
   // --- New message favicon alert ---
   if (document.hidden) {
@@ -78,4 +100,5 @@ window.addEventListener("focus", () => {
     hasNewMessage = false;
   }
 });
+
 
