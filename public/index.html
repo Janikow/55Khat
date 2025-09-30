@@ -3,42 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Login</title>
+  <title>55Khat</title>
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="login-container" id="loginPage">
-    <div class="login-box">
-      <h1>Welcome to ChatApp</h1>
-      <input type="text" id="usernameInput" placeholder="Enter your username">
-      <button id="joinChatBtn">Join Chat</button>
-    </div>
-
-    <!-- Updates button bottom-left -->
-    <button id="updatesBtn" class="updates-btn">Updates</button>
+  <!-- Login screen -->
+  <div id="loginPage" class="login-container">
+    <img src="/images/55khatl.png" alt="Logo" 
+         style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
+    <h2>Welcome to 55Khat</h2>
+    <input type="text" id="usernameInput" placeholder="Enter a username...">
+    <button onclick="setUsername()">Join Chat</button>
   </div>
 
-  <!-- Updates Page -->
-  <div class="updates-page hidden" id="updatesPage">
-    <div class="updates-box">
-      <h2>Updates</h2>
-      <p>Currently blank — updates will appear here soon.</p>
-      <button id="backToMenuBtn">Back to Menu</button>
+  <!-- Chat screen -->
+  <div id="chatPage" class="chat-container hidden">
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
+
+    <!-- Sidebar -->
+    <div class="users-panel">
+      <h3>Online (<span id="userCount">0</span>)</h3>
+      <div id="usersList"></div>
+    </div>
+
+    <!-- Main chat -->
+    <div class="chat-main">
+      <div id="chatBox" class="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
     </div>
   </div>
 
-  <!-- Chat Page -->
-  <div class="chat-container hidden" id="chatPage">
-    <div class="chat-box" id="chatBox"></div>
-    <div class="chat-input">
-      <input id="chatInput" type="text" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-
+  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
