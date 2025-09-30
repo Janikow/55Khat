@@ -10,7 +10,8 @@ body {
 }
 
 /* Containers */
-.login-container, .chat-container {
+.login-container,
+.chat-container {
   width: 100%;
   height: 100%;
   background: rgba(15, 15, 15, 0.95);
@@ -25,7 +26,7 @@ body {
 
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .chat-container { flex-direction: row; }
@@ -38,12 +39,14 @@ body {
   gap: 15px;
   padding: 20px;
 }
+
 #loginPage h2 {
   font-size: 22px;
   color: #ff3c3c;
   margin-bottom: 10px;
   text-shadow: 0 0 6px rgba(255,0,0,0.7);
 }
+
 #usernameInput {
   padding: 12px;
   border-radius: 8px;
@@ -54,6 +57,7 @@ body {
   width: 80%;
   font-size: 14px;
 }
+
 #loginPage button {
   margin-top: 10px;
   padding: 12px 20px;
@@ -66,6 +70,7 @@ body {
   transition: 0.2s;
   box-shadow: 0 0 10px rgba(255,0,0,0.4);
 }
+
 #loginPage button:hover {
   background: #cc2e2e;
   transform: translateY(-2px);
@@ -81,6 +86,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 .users-panel h3 {
   margin: 0 0 10px 0;
   font-size: 15px;
@@ -88,16 +94,19 @@ body {
   border-bottom: 1px solid rgba(255,0,0,0.3);
   padding-bottom: 5px;
 }
+
 #usersList {
   flex: 1;
   overflow-y: auto;
 }
+
 #usersList div {
   padding: 6px 8px;
   font-size: 14px;
   border-radius: 6px;
   transition: background 0.2s, color 0.2s;
 }
+
 #usersList div:hover {
   background: rgba(255, 0, 0, 0.15);
   color: #ff6a6a;
@@ -109,21 +118,20 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 .chat-box {
   flex: 1;
   padding: 12px;
   overflow-y: auto;
   border-bottom: 1px solid rgba(255,0,0,0.2);
   background: rgba(10, 0, 0, 0.8);
-
-  /* NEW - stack messages vertically */
-  display: flex;
+  display: flex; /* stack messages vertically */
   flex-direction: column;
 }
 
 /* Chat messages */
 .chat-message {
-  display: block; /* changed from inline-block */
+  display: block;
   align-self: flex-start;
   margin: 10px 0;
   padding: 6px 10px;
@@ -158,6 +166,7 @@ body {
   color: white;
   box-shadow: 0 0 10px rgba(255,0,0,0.5);
 }
+
 .chat-message.user .username {
   color: #fff;
   text-shadow: none;
@@ -171,6 +180,7 @@ body {
   box-shadow: 0 0 6px rgba(155, 89, 182, 0.5);
   animation: temPulse 1.5s ease-in-out infinite;
 }
+
 .chat-message.tem .username {
   color: #c27bdf;
   text-shadow: 0 0 6px rgba(155,89,182,0.7);
@@ -183,6 +193,7 @@ body {
   background: #111;
   border-top: 1px solid rgba(255,0,0,0.3);
 }
+
 .chat-input input {
   flex: 1;
   padding: 12px;
@@ -194,10 +205,12 @@ body {
   margin-right: 8px;
   font-size: 14px;
 }
+
 .chat-input input:focus {
   border-color: #ff3c3c;
   box-shadow: 0 0 6px rgba(255,0,0,0.4);
 }
+
 .chat-input button {
   background: #ff3c3c;
   border: none;
@@ -209,6 +222,7 @@ body {
   transition: 0.2s;
   box-shadow: 0 0 10px rgba(255,0,0,0.4);
 }
+
 .chat-input button:hover {
   background: #cc2e2e;
   transform: translateY(-2px);
@@ -220,11 +234,13 @@ body {
 #usersList::-webkit-scrollbar {
   width: 8px;
 }
+
 .chat-box::-webkit-scrollbar-track,
 #usersList::-webkit-scrollbar-track {
-  background: #111; 
+  background: #111;
   border-radius: 10px;
 }
+
 .chat-box::-webkit-scrollbar-thumb,
 #usersList::-webkit-scrollbar-thumb {
   background: #ff3c3c;
@@ -232,6 +248,7 @@ body {
   box-shadow: 0 0 6px rgba(255,0,0,0.6);
   transition: background 0.2s, box-shadow 0.2s;
 }
+
 .chat-box::-webkit-scrollbar-thumb:hover,
 #usersList::-webkit-scrollbar-thumb:hover {
   background: #cc2e2e;
@@ -239,8 +256,7 @@ body {
 }
 
 /* Firefox */
-.chat-box,
-#usersList {
+.chat-box, #usersList {
   scrollbar-width: thin;
   scrollbar-color: #ff3c3c #111;
 }
@@ -248,10 +264,11 @@ body {
 .hidden { display: none; }
 
 @keyframes temPulse {
-  0% { box-shadow: 0 0 6px rgba(155, 89, 182, 0.5); transform: scale(1); }
-  50% { box-shadow: 0 0 15px rgba(155, 89, 182, 0.8); transform: scale(1.03); }
+  0%   { box-shadow: 0 0 6px rgba(155, 89, 182, 0.5); transform: scale(1); }
+  50%  { box-shadow: 0 0 15px rgba(155, 89, 182, 0.8); transform: scale(1.03); }
   100% { box-shadow: 0 0 6px rgba(155, 89, 182, 0.5); transform: scale(1); }
 }
+
 
 
 
