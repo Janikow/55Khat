@@ -15,6 +15,18 @@
     <h2>Welcome to 55Khat</h2>
     <input type="text" id="usernameInput" placeholder="Enter a username...">
     <button onclick="setUsername()">Join Chat</button>
+    <button onclick="openUpdates()">Updates</button>
+  </div>
+
+  <!-- Updates Page -->
+  <div id="updatesPage" class="login-container hidden">
+    <h2>Latest Updates</h2>
+    <div class="updates-content">
+      <p>No updates yet. Stay tuned!</p>
+    </div>
+    <div class="updates-buttons">
+      <button onclick="closeUpdates()">Back</button>
+    </div>
   </div>
 
   <!-- Chat screen -->
@@ -41,3 +53,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
