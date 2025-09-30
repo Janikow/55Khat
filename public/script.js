@@ -1,76 +1,84 @@
 const socket = io();
-
-const loginPage = document.getElementById("loginPage");
-const updatesPage = document.getElementById("updatesPage");
-const chatPage = document.getElementById("chatPage");
-
-const usernameInput = document.getElementById("usernameInput");
-const joinChatBtn = document.getElementById("joinChatBtn");
-const updatesBtn = document.getElementById("updatesBtn");
-const backToMenuBtn = document.getElementById("backToMenuBtn");
-
-const chatBox = document.getElementById("chatBox");
-const chatInput = document.getElementById("chatInput");
-
 let username = "";
 
-/* === PAGE NAVIGATION === */
-joinChatBtn.addEventListener("click", () => {
-  username = usernameInput.value.trim();
-  if (!username || username.length < 2) {
-    return alert("Username must be at least 2 characters long");
-  }
+// --- Favicon notification setup ---
+const favicon = document.getElementById("favicon");
+const defaultFavicon = "favicon.ico";       // normal icon
+const alertFavicon = "favicon-alert.ico";   // alert icon
+let hasNewMessage = false;
 
-  loginPage.classList.add("hidden");
-  chatPage.classList.remove("hidden");
-});
+function setFavicon(src) {
+  favicon.href = src;
+}
+// -----------------------------------
 
-updatesBtn.addEventListener("click", () => {
-  loginPage.classList.add("hidden");
-  updatesPage.classList.remove("hidden");
-});
+function setUsername() {
+  const input = document.getElementById("usernameInput");
+  username = input.value.trim();
+  if (!username) return alert("Please enter a username");
 
-backToMenuBtn.addEventListener("click", () => {
-  updatesPage.classList.add("hidden");
-  loginPage.classList.remove("hidden");
-});
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("chatPage").classList.remove("hidden");
 
-/* === CHAT === */
-function sendMessage() {
-  const msg = chatInput.value.trim();
-  if (msg !== "") {
-    socket.emit("chat message", { username, message: msg });
-    chatInput.value = "";
-  }
+  socket.emit("join", username);
 }
 
-chatInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
+function sendMessage() {
+  const input = document.getElementById("chatInput");
+  const message = input.value.trim();
+  if (!message) return;
+
+  socket.emit("chat message", { user: username, text: message });
+  input.value = "";
+}
 
 socket.on("chat message", (data) => {
+  const chatBox = document.getElementById("chatBox");
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("chat-message");
 
-  const nameSpan = document.createElement("span");
-  nameSpan.classList.add("username");
-  nameSpan.textContent = data.username + ":";
+  let displayName = data.user;
+  // Special rule for TemMoose
+  if (data.user === "TemMoose") {
+    displayName = "Tem";
+    msgDiv.classList.add("tem");
+  }
 
-  const textSpan = document.createElement("span");
-  textSpan.classList.add("message-text");
-  textSpan.textContent = " " + data.message;
+  if (data.user === username) {
+    msgDiv.classList.add("user");
+  }
 
-  msgDiv.appendChild(nameSpan);
-  msgDiv.appendChild(textSpan);
-
+  msgDiv.textContent = `${displayName}: ${data.text}`;
   chatBox.appendChild(msgDiv);
-  chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // --- New message favicon alert ---
+  if (document.hidden) {
+    setFavicon(alertFavicon);
+    hasNewMessage = true;
+  }
 });
 
-/* === Favicon Fix === */
-const favicon = document.getElementById("favicon");
-function setFavicon(href) {
-  if (favicon) favicon.href = href;
-}
+socket.on("user list", (users) => {
+  const usersList = document.getElementById("usersList");
+  const userCount = document.getElementById("userCount");
 
+  usersList.innerHTML = "";
+  users.forEach(u => {
+    const div = document.createElement("div");
+    div.textContent = u === "TemMoose" ? "Tem" : u;
+    if (u === "TemMoose") div.classList.add("tem");
+    usersList.appendChild(div);
+  });
+
+  userCount.textContent = users.length;
+});
+
+// --- Reset favicon when returning to tab ---
+window.addEventListener("focus", () => {
+  if (hasNewMessage) {
+    setFavicon(defaultFavicon);
+    hasNewMessage = false;
+  }
+});
 
