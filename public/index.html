@@ -9,13 +9,15 @@
 </head>
 <body>
   <!-- Login screen -->
-  <div id="loginPage" class="login-container">
+  <div id="loginPage" class="login-container" style="position: relative;">
     <img src="/images/55khatl.png" alt="Logo"
      style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
     <h2>Welcome to 55Khat</h2>
     <input type="text" id="usernameInput" placeholder="Enter a username...">
     <button onclick="setUsername()">Join Chat</button>
-    <button onclick="openUpdates()">Updates</button>
+
+    <!-- Floating Updates Button -->
+    <button id="updatesBtn" onclick="openUpdates()">Updates</button>
   </div>
 
   <!-- Updates Page -->
