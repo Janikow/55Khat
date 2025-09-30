@@ -307,6 +307,29 @@ body {
   box-shadow: 0 0 15px rgba(255,0,0,0.7);
 }
 
+/* Updates button on login page */
+#updatesBtn {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #ff3c3c;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 0 10px rgba(255,0,0,0.4);
+}
+
+#updatesBtn:hover {
+  background: #cc2e2e;
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(255,0,0,0.7);
+}
+
+
 
 
 
