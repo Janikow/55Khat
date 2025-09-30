@@ -32,27 +32,61 @@ function sendMessage() {
   input.value = "";
 }
 
+// --- Send image function ---
+function sendImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit("chat message", { user: username, image: reader.result });
+  };
+  reader.readAsDataURL(file);
+
+  // reset so same file can be re-uploaded
+  event.target.value = "";
+}
+
+// --- Receive messages ---
 socket.on("chat message", (data) => {
   const chatBox = document.getElementById("chatBox");
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("chat-message");
 
   let displayName = data.user;
-  // Special rule for TemMoose
   if (data.user === "TemMoose") {
     displayName = "Tem";
     msgDiv.classList.add("tem");
   }
-
   if (data.user === username) {
     msgDiv.classList.add("user");
   }
 
-  msgDiv.textContent = `${displayName}: ${data.text}`;
+  // username label
+  const nameSpan = document.createElement("span");
+  nameSpan.classList.add("username");
+  nameSpan.textContent = displayName;
+  msgDiv.appendChild(nameSpan);
+
+  if (data.text) {
+    const textSpan = document.createElement("span");
+    textSpan.classList.add("message-text");
+    textSpan.textContent = data.text;
+    msgDiv.appendChild(textSpan);
+  }
+
+  if (data.image) {
+    const img = document.createElement("img");
+    img.src = data.image;
+    img.style.maxWidth = "200px";
+    img.style.borderRadius = "8px";
+    img.style.marginTop = "6px";
+    msgDiv.appendChild(img);
+  }
+
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  // --- New message favicon alert ---
   if (document.hidden) {
     setFavicon(alertFavicon);
     hasNewMessage = true;
