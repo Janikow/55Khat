@@ -277,6 +277,53 @@ body {
   box-shadow: 0 0 6px rgba(255,0,0,0.3);
 }
 
+/* Special styling for Glitchy */
+.chat-message.glitchy {
+  position: relative;
+  background: url('glitchy-bg.png') center/cover no-repeat;
+  border: 1px solid rgba(255, 223, 0, 0.7);
+  color: #ffeb3b;
+  text-shadow: 0 0 2px #fff, 0 0 4px #ffeb3b, 0 0 6px #ffd700;
+  box-shadow: 0 0 8px #ffeb3b, 0 0 12px #ffd700 inset;
+  animation: glitchPulse 1.2s infinite, flicker 0.3s infinite alternate;
+  overflow: hidden;
+}
+
+/* Username for Glitchy */
+.chat-message.glitchy .username {
+  color: #fff700;
+  text-shadow: 0 0 2px #fff, 0 0 4px #ffeb3b, 0 0 6px #ffd700;
+  font-weight: bold;
+  animation: textGlitch 1s infinite;
+}
+
+/* Pulse + slight movement */
+@keyframes glitchPulse {
+  0%   { transform: translate(0,0) skew(0deg,0deg); }
+  20%  { transform: translate(-1px,1px) skew(-1deg,1deg); }
+  40%  { transform: translate(1px,-1px) skew(1deg,-1deg); }
+  60%  { transform: translate(-1px,1px) skew(-1deg,1deg); }
+  80%  { transform: translate(1px,-1px) skew(1deg,-1deg); }
+  100% { transform: translate(0,0) skew(0deg,0deg); }
+}
+
+/* Quick flicker effect */
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 22%, 24%, 55% { opacity: 0.4; }
+}
+
+/* RGB text glitch effect */
+@keyframes textGlitch {
+  0% { text-shadow: 2px 0 #ffeb3b, -2px 0 #ffd700, 0 0 #fff; }
+  20% { text-shadow: -2px 0 #ffeb3b, 2px 0 #ffd700, 0 0 #fff; }
+  40% { text-shadow: 1px 0 #ffd700, -1px 0 #ffeb3b, 0 0 #fff; }
+  60% { text-shadow: -1px 0 #ffd700, 1px 0 #ffeb3b, 0 0 #fff; }
+  80% { text-shadow: 2px 0 #ffeb3b, -2px 0 #ffd700, 0 0 #fff; }
+  100% { text-shadow: 2px 0 #ffeb3b, -2px 0 #ffd700, 0 0 #fff; }
+}
+
+
 
 
 
