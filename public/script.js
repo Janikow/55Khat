@@ -59,7 +59,7 @@ socket.on("chat message", (data) => {
     msgDiv.classList.add("tem");
   }
 
-  if (data.user === "TristanGlizzy") {  // <-- replace with the username for glitch effect
+  if (data.user === "TristanGlizzy") {  // Glitchy user
     displayName = "Fishtan";
     msgDiv.classList.add("glitchy");
   }
@@ -99,15 +99,25 @@ socket.on("chat message", (data) => {
   }
 });
 
+// --- User list with displayName logic ---
 socket.on("user list", (users) => {
   const usersList = document.getElementById("usersList");
   const userCount = document.getElementById("userCount");
 
   usersList.innerHTML = "";
   users.forEach(u => {
+    let displayName = u;
+
+    if (u === "TemMoose") displayName = "Tem";
+    if (u === "TristanGlizzy") displayName = "Fishtan";
+
     const div = document.createElement("div");
-    div.textContent = u === "TemMoose" ? "Tem" : u;
+    div.textContent = displayName;
+
+    // Apply styling classes for special users
     if (u === "TemMoose") div.classList.add("tem");
+    if (u === "TristanGlizzy") div.classList.add("glitchy");
+
     usersList.appendChild(div);
   });
 
