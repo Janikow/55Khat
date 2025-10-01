@@ -123,7 +123,7 @@ socket.on("user list", (users) => {
     // Apply styling classes for special users
     if (u === "TemMoose") div.classList.add("tem");
     if (u === "TristanGlizzy") div.classList.add("glitchy");
-    if (u === "Nicholas67") div.classList.add("wobbler");
+    if (u === "BowdownP3asents>") div.classList.add("wobbler");
 
     usersList.appendChild(div);
   });
