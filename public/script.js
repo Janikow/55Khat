@@ -63,6 +63,11 @@ socket.on("chat message", (data) => {
     displayName = "Fishtan";
     msgDiv.classList.add("glitchy");
   }
+
+  if (data.user === "BowdownP3asent>") {
+  displayName = "Wobbler";
+  msgDiv.classList.add("wobbler");
+}
   
   if (data.user === username) {
     msgDiv.classList.add("user");
@@ -110,6 +115,7 @@ socket.on("user list", (users) => {
 
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
+    if (u === "BowdownP3asents>") displayName = "Wobbler";
 
     const div = document.createElement("div");
     div.textContent = displayName;
@@ -117,6 +123,7 @@ socket.on("user list", (users) => {
     // Apply styling classes for special users
     if (u === "TemMoose") div.classList.add("tem");
     if (u === "TristanGlizzy") div.classList.add("glitchy");
+    if (u === "Nicholas67") div.classList.add("wobbler");
 
     usersList.appendChild(div);
   });
