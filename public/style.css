@@ -182,7 +182,6 @@ body {
 .chat-message.user {
   background: linear-gradient(135deg, #ff3c3c, #cc2e2e);
   color: white;
-  align-self: flex-end;
   box-shadow: 0 4px 12px rgba(255,0,0,0.4);
 }
 
@@ -333,29 +332,78 @@ body {
 /* --- Glitchy --- */
 .chat-message.glitchy {
   position: relative;
-  background: url('glitchy-bg.png') center/cover no-repeat;
-  border: 1px solid rgba(255, 223, 0, 0.8);
+  background: rgba(20, 20, 0, 0.9); /* dark base */
+  border: 1px solid rgba(255, 223, 0, 0.9);
   color: #fff700;
   text-shadow: 0 0 2px #fff, 0 0 4px #ffeb3b;
   box-shadow:
     0 0 4px #ffeb3b inset,
     0 0 6px #ffd700,
-    0 0 8px rgba(255, 255, 0, 0.3);
-  animation: glitchFlicker 0.4s infinite alternate;
-  overflow: hidden;
+    0 0 10px rgba(255, 255, 0, 0.6);
+  animation: glitchFlicker 1s infinite alternate;
+  overflow: visible; /* ensures content isn’t clipped */
+  min-width: 120px; /* stops tiny shrink on short messages */
 }
 
+/* Username */
 .chat-message.glitchy .username {
-  color: #fff700;
-  text-shadow: 0 0 2px #fff, 0 0 4px #ffeb3b;
+  color: #fffa72;
+  text-shadow: 0 0 3px #fff, 0 0 5px #ffd700;
   font-weight: bold;
 }
 
-@keyframes glitchFlicker {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.7; }
-  100% { opacity: 1; }
+/* Glitch scanlines using pseudo-element */
+.chat-message.glitchy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 0, 0.12) 0px,
+    rgba(255, 255, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  animation: glitchScan 0.6s infinite linear;
+  pointer-events: none;
+  border-radius: inherit;
 }
+
+/* Secondary offset “ghost” glitch */
+.chat-message.glitchy::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: -1px 0 #ff0, 1px 0 #f00;
+  overflow: hidden;
+  clip-path: inset(0 0 50% 0);
+  animation: glitchShift 0.5s infinite steps(2);
+  pointer-events: none;
+}
+
+/* Flicker */
+@keyframes glitchFlicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.85; }
+  50% { opacity: 0.65; }
+  55% { opacity: 0.9; }
+}
+
+/* Scanline shimmer */
+@keyframes glitchScan {
+  from { transform: translateY(0); }
+  to { transform: translateY(4px); }
+}
+
+/* Ghost text shifting */
+@keyframes glitchShift {
+  0% { clip-path: inset(0 0 50% 0); transform: translate(-2px, -2px); }
+  50% { clip-path: inset(50% 0 0 0); transform: translate(2px, 2px); }
+  100% { clip-path: inset(0 0 50% 0); transform: translate(-2px, -2px); }
+}
+
 
 /* --- Wobbler --- */
 .chat-message.wobbler {
