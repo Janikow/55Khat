@@ -15,7 +15,11 @@ function setFavicon(src) {
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
-  if (!username) return alert("Please enter a username");
+
+  // username validation: 2–18 characters
+  if (username.length < 2 || username.length > 18) {
+    return alert("Username must be between 2 and 18 characters.");
+  }
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
@@ -26,7 +30,12 @@ function setUsername() {
 function sendMessage() {
   const input = document.getElementById("chatInput");
   const message = input.value.trim();
+
+  // message validation: not empty & max 600 chars
   if (!message) return;
+  if (message.length > 600) {
+    return alert("Message cannot be longer than 600 characters.");
+  }
 
   socket.emit("chat message", { user: username, text: message });
   input.value = "";
@@ -36,6 +45,13 @@ function sendMessage() {
 function sendImage(event) {
   const file = event.target.files[0];
   if (!file) return;
+
+  // Block GIFs larger than 5 MB
+  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024) {
+    alert("GIFs larger than 5 MB cannot be sent.");
+    event.target.value = ""; // reset file input
+    return;
+  }
 
   const reader = new FileReader();
   reader.onload = () => {
@@ -138,5 +154,6 @@ window.addEventListener("focus", () => {
     hasNewMessage = false;
   }
 });
+
 
 
