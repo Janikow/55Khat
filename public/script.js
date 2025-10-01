@@ -64,10 +64,10 @@ socket.on("chat message", (data) => {
     msgDiv.classList.add("glitchy");
   }
 
-  if (data.user === "BowdownP3asent>") {
-  displayName = "Wobbler";
-  msgDiv.classList.add("wobbler");
-}
+  if (data.user === "BowdownP3asents") { // Wobbler user
+    displayName = "Wobbler";
+    msgDiv.classList.add("wobbler");
+  }
   
   if (data.user === username) {
     msgDiv.classList.add("user");
@@ -115,7 +115,7 @@ socket.on("user list", (users) => {
 
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
-    if (u === "BowdownP3asents>") displayName = "Wobbler";
+    if (u === "BowdownP3asents") displayName = "Wobbler";
 
     const div = document.createElement("div");
     div.textContent = displayName;
@@ -123,7 +123,7 @@ socket.on("user list", (users) => {
     // Apply styling classes for special users
     if (u === "TemMoose") div.classList.add("tem");
     if (u === "TristanGlizzy") div.classList.add("glitchy");
-    if (u === "BowdownP3asents>") div.classList.add("wobbler");
+    if (u === "BowdownP3asents") div.classList.add("wobbler");
 
     usersList.appendChild(div);
   });
@@ -138,4 +138,5 @@ window.addEventListener("focus", () => {
     hasNewMessage = false;
   }
 });
+
 
