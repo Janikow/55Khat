@@ -315,6 +315,32 @@ body {
            0 0 8px rgba(255, 255, 0, 0.3); }
 }
 
+/* Special styling for Wobbler */
+.chat-message.wobbler {
+  position: relative;
+  background: #8B0000; /* crimson */
+  border: 1px solid #ff4d4d;
+  color: #fff0f0;
+  text-shadow: 0 0 2px #fff, 0 0 4px #ff9999;
+  box-shadow: 0 0 6px #ff4d4d inset, 0 0 10px #ff0000;
+  animation: wobble 1.5s ease-in-out infinite;
+}
+
+/* Username for Wobbler */
+.chat-message.wobbler .username {
+  color: #ffcccc;
+  font-weight: bold;
+  text-shadow: 0 0 2px #fff, 0 0 4px #ff9999;
+}
+
+/* Wobble animation */
+@keyframes wobble {
+  0%   { transform: rotate(-3deg) translateX(-2px) translateY(0); }
+  25%  { transform: rotate(3deg) translateX(2px) translateY(-1px); }
+  50%  { transform: rotate(-3deg) translateX(-2px) translateY(1px); }
+  75%  { transform: rotate(3deg) translateX(2px) translateY(-1px); }
+  100% { transform: rotate(-3deg) translateX(-2px) translateY(0); }
+}
 
 
 
