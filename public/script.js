@@ -58,6 +58,12 @@ socket.on("chat message", (data) => {
     displayName = "Tem";
     msgDiv.classList.add("tem");
   }
+
+  if (data.user === "TristanGlizzy") {  // <-- replace with the username for glitch effect
+    displayName = "Fishtan";
+    msgDiv.classList.add("glitchy");
+  }
+  
   if (data.user === username) {
     msgDiv.classList.add("user");
   }
