@@ -41,6 +41,15 @@ function sendMessage() {
   input.value = "";
 }
 
+// --- Chat input Enter-to-send ---
+document.getElementById("chatInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault(); // stop newline
+    sendMessage();
+  }
+});
+
+
 // --- Send image function ---
 function sendImage(event) {
   const file = event.target.files[0];
