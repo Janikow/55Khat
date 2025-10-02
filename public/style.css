@@ -279,59 +279,80 @@ body {
 
 /* ================== Special User Effects ================== */
 
-/* --- Tem (Lightning Strikes) --- */
+/* --- Tem (3D Purple Name Tag) --- */
 .chat-message.tem {
   position: relative;
-  background: rgba(155, 89, 182, 0.08);
-  border: 1px solid rgba(155, 89, 182, 0.6);
-  color: #d9b3ff;
-  box-shadow: 0 0 15px rgba(200, 120, 255, 0.7);
-  overflow: hidden;
-}
-
-.chat-message.tem .username {
+  align-self: flex-start;
+  margin: 10px 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  max-width: 70%;
+  font-size: 14px;
+  background: linear-gradient(145deg, rgba(155, 89, 182, 0.25), rgba(100, 50, 130, 0.35));
+  border: 1px solid rgba(200, 120, 255, 0.7);
   color: #e6ccff;
-  text-shadow: 
-    0 0 6px rgba(200, 120, 255, 0.9),
-    0 0 12px rgba(255, 180, 255, 0.8);
+  box-shadow: 
+    inset 2px 2px 6px rgba(0, 0, 0, 0.4),
+    inset -2px -2px 6px rgba(200, 120, 255, 0.15),
+    0 4px 14px rgba(180, 80, 255, 0.35);
+  word-wrap: break-word;
+  overflow: hidden;
+  animation: temGlow 5s infinite alternate ease-in-out;
 }
 
-/* Strikes: multiple pseudo-element layers */
-.chat-message.tem::before,
-.chat-message.tem::after {
+/* Username */
+.chat-message.tem .username {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #d9b3ff;
+  text-shadow:
+    0 0 4px rgba(200, 120, 255, 0.9),
+    0 0 8px rgba(255, 200, 255, 0.7);
+  letter-spacing: 0.5px;
+}
+
+/* Subtle shimmer gradient moving across */
+.chat-message.tem::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 0; left: -50%;
   width: 200%;
-  height: 200%;
-  background-repeat: no-repeat;
-  background-size: cover;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 70%
+  );
+  animation: shimmerMove 6s infinite;
   pointer-events: none;
-  opacity: 0;
 }
 
-/* Left strike */
-.chat-message.tem::before {
-  background-image: 
-    repeating-linear-gradient(
-      75deg,
-      #fff 0px, #b366ff 2px, transparent 3px,
-      transparent 10px
-    );
-  animation: strikeLeft 8s infinite;
+/* Glow pulse animation */
+@keyframes temGlow {
+  0% {
+    box-shadow:
+      inset 2px 2px 6px rgba(0, 0, 0, 0.4),
+      inset -2px -2px 6px rgba(200, 120, 255, 0.15),
+      0 4px 12px rgba(180, 80, 255, 0.25);
+  }
+  100% {
+    box-shadow:
+      inset 2px 2px 6px rgba(0, 0, 0, 0.4),
+      inset -2px -2px 6px rgba(200, 120, 255, 0.25),
+      0 4px 20px rgba(200, 120, 255, 0.55);
+  }
 }
 
-/* Right strike */
-.chat-message.tem::after {
-  background-image: 
-    repeating-linear-gradient(
-      -65deg,
-      #fff 0px, #e6ccff 2px, transparent 3px,
-      transparent 12px
-    );
-  animation: strikeRight 10s infinite;
+/* Shimmer movement */
+@keyframes shimmerMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
 }
+
 
 /* Keyframes for jagged, fast strikes */
 @keyframes strikeLeft {
