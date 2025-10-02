@@ -132,7 +132,45 @@ window.addEventListener("focus", () => {
   if (hasNewMessage) { setFavicon(defaultFavicon); hasNewMessage = false; }
 });
 
+// --- Handle banned users ---
+socket.on("banned", (data) => {
+  // Hide chat page
+  const chatPage = document.getElementById("chatPage");
+  chatPage.innerHTML = ""; // Clear content
 
+  // Create ban message container
+  const banDiv = document.createElement("div");
+  banDiv.style.display = "flex";
+  banDiv.style.flexDirection = "column";
+  banDiv.style.justifyContent = "center";
+  banDiv.style.alignItems = "center";
+  banDiv.style.height = "100vh";
+  banDiv.style.background = "linear-gradient(135deg, #2c2c2c, #1a1a1a)";
+  banDiv.style.color = "#ff3c3c";
+  banDiv.style.fontFamily = "Arial, sans-serif";
+  banDiv.style.textAlign = "center";
+  banDiv.style.padding = "20px";
 
+  const title = document.createElement("h1");
+  title.textContent = "You have been banned!";
+  title.style.fontSize = "3rem";
+  title.style.marginBottom = "20px";
+  title.style.textShadow = "0 0 10px red";
 
+  const reason = document.createElement("p");
+  reason.textContent = data.by
+    ? `Banned by: ${data.by}`
+    : "Banned by server";
+  reason.style.fontSize = "1.5rem";
+  reason.style.marginBottom = "30px";
 
+  const info = document.createElement("p");
+  info.textContent = "You cannot access the chat anymore.";
+  info.style.fontSize = "1rem";
+
+  banDiv.appendChild(title);
+  banDiv.appendChild(reason);
+  banDiv.appendChild(info);
+
+  chatPage.appendChild(banDiv);
+});
