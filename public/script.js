@@ -79,6 +79,8 @@ socket.on("chat message", (data) => {
   msgDiv.classList.add("chat-message");
 
   let displayName = data.user;
+
+  // Special user mappings
   if (data.user === "TemMoose") {
     displayName = "Tem";
     msgDiv.classList.add("tem");
@@ -93,7 +95,12 @@ socket.on("chat message", (data) => {
     displayName = "Wobbler";
     msgDiv.classList.add("wobbler");
   }
-  
+
+  if (data.user === "JonathanZachery") { // Hydreil user
+    displayName = "Hydreil";
+    msgDiv.classList.add("hydreil");
+  }
+
   if (data.user === username) {
     msgDiv.classList.add("user");
   }
@@ -141,6 +148,7 @@ socket.on("user list", (users) => {
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
     if (u === "BowdownP3asents") displayName = "Wobbler";
+    if (u === "JonathanZachery") displayName = "Hydreil";
 
     const div = document.createElement("div");
     div.textContent = displayName;
@@ -149,6 +157,7 @@ socket.on("user list", (users) => {
     if (u === "TemMoose") div.classList.add("tem");
     if (u === "TristanGlizzy") div.classList.add("glitchy");
     if (u === "BowdownP3asents") div.classList.add("wobbler");
+    if (u === "JonathanZachery") div.classList.add("hydreil");
 
     usersList.appendChild(div);
   });
@@ -163,6 +172,7 @@ window.addEventListener("focus", () => {
     hasNewMessage = false;
   }
 });
+
 
 
 
