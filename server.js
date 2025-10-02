@@ -30,8 +30,17 @@ function saveBans() {
   fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
 }
 
+// Helper to get real client IP (works behind proxies)
+function getClientIP(socket) {
+  let ip = socket.handshake.address;
+  if (socket.handshake.headers['x-forwarded-for']) {
+    ip = socket.handshake.headers['x-forwarded-for'].split(',')[0].trim();
+  }
+  return ip;
+}
+
 io.on("connection", (socket) => {
-  const ip = socket.handshake.address;
+  const ip = getClientIP(socket);
 
   // Immediately disconnect banned users
   if (bannedIPs[ip]) {
@@ -63,7 +72,7 @@ io.on("connection", (socket) => {
 
       if (!targetName) return;
 
-      // Find the target socket
+      // Find the target socket by username
       const targetSocketEntry = Object.entries(users).find(
         ([_, u]) => u.name === targetName
       );
@@ -108,6 +117,7 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
