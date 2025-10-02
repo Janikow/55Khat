@@ -3,23 +3,19 @@ let username = "";
 
 // --- Favicon notification setup ---
 const favicon = document.getElementById("favicon");
-const defaultFavicon = "favicon.ico";       // normal icon
-const alertFavicon = "favicon-alert.ico";   // alert icon
+const defaultFavicon = "favicon.ico";
+const alertFavicon = "favicon-alert.ico";
 let hasNewMessage = false;
 
 function setFavicon(src) {
   favicon.href = src;
 }
-// -----------------------------------
 
+// --- Set username ---
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
-
-  // username validation: 2–18 characters
-  if (username.length < 2 || username.length > 18) {
-    return alert("Username must be between 2 and 18 characters.");
-  }
+  if (username.length < 2 || username.length > 18) return alert("Username must be 2–18 characters.");
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
@@ -27,15 +23,11 @@ function setUsername() {
   socket.emit("join", username);
 }
 
+// --- Send message ---
 function sendMessage() {
   const input = document.getElementById("chatInput");
   const message = input.value.trim();
-
-  // message validation: not empty & max 600 chars
-  if (!message) return;
-  if (message.length > 600) {
-    return alert("Message cannot be longer than 600 characters.");
-  }
+  if (!message || message.length > 600) return;
 
   socket.emit("chat message", { user: username, text: message });
   input.value = "";
@@ -44,35 +36,24 @@ function sendMessage() {
 // --- Chat input Enter-to-send ---
 document.getElementById("chatInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault(); // stop newline
+    e.preventDefault();
     sendMessage();
   }
 });
 
-
-// --- Send image function ---
+// --- Send image ---
 function sendImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  // Block GIFs larger than 5 MB
-  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024) {
-    alert("GIFs larger than 5 MB cannot be sent.");
-    event.target.value = ""; // reset file input
-    return;
-  }
+  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024) return alert("GIF > 5MB not allowed.");
 
   const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit("chat message", { user: username, image: reader.result });
-  };
+  reader.onload = () => socket.emit("chat message", { user: username, image: reader.result });
   reader.readAsDataURL(file);
-
-  // reset so same file can be re-uploaded
   event.target.value = "";
 }
 
-// --- Receive messages ---
+// --- Receive chat messages ---
 socket.on("chat message", (data) => {
   const chatBox = document.getElementById("chatBox");
   const msgDiv = document.createElement("div");
@@ -80,32 +61,12 @@ socket.on("chat message", (data) => {
 
   let displayName = data.user;
 
-  // Special user mappings
-  if (data.user === "TemMoose") {
-    displayName = "Tem";
-    msgDiv.classList.add("tem");
-  }
+  if (data.user === "TemMoose") displayName = "Tem", msgDiv.classList.add("tem");
+  if (data.user === "TristanGlizzy") displayName = "Fishtan", msgDiv.classList.add("glitchy");
+  if (data.user === "BowdownP3asents") displayName = "Wobbler", msgDiv.classList.add("wobbler");
+  if (data.user === "JonathanZachery") displayName = "Hydreil", msgDiv.classList.add("hydreil");
+  if (data.user === username) msgDiv.classList.add("user");
 
-  if (data.user === "TristanGlizzy") {  // Glitchy user
-    displayName = "Fishtan";
-    msgDiv.classList.add("glitchy");
-  }
-
-  if (data.user === "BowdownP3asents") { // Wobbler user
-    displayName = "Wobbler";
-    msgDiv.classList.add("wobbler");
-  }
-
-  if (data.user === "JonathanZachery") { // Hydreil user
-    displayName = "Hydreil";
-    msgDiv.classList.add("hydreil");
-  }
-
-  if (data.user === username) {
-    msgDiv.classList.add("user");
-  }
-
-  // username label
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
   nameSpan.textContent = displayName;
@@ -130,13 +91,10 @@ socket.on("chat message", (data) => {
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  if (document.hidden) {
-    setFavicon(alertFavicon);
-    hasNewMessage = true;
-  }
+  if (document.hidden) { setFavicon(alertFavicon); hasNewMessage = true; }
 });
 
-// --- User list with displayName logic ---
+// --- User list ---
 socket.on("user list", (users) => {
   const usersList = document.getElementById("usersList");
   const userCount = document.getElementById("userCount");
@@ -144,7 +102,6 @@ socket.on("user list", (users) => {
   usersList.innerHTML = "";
   users.forEach(u => {
     let displayName = u;
-
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
     if (u === "BowdownP3asents") displayName = "Wobbler";
@@ -153,7 +110,6 @@ socket.on("user list", (users) => {
     const div = document.createElement("div");
     div.textContent = displayName;
 
-    // Apply styling classes for special users
     if (u === "TemMoose") div.classList.add("tem");
     if (u === "TristanGlizzy") div.classList.add("glitchy");
     if (u === "BowdownP3asents") div.classList.add("wobbler");
@@ -165,13 +121,17 @@ socket.on("user list", (users) => {
   userCount.textContent = users.length;
 });
 
-// --- Reset favicon when returning to tab ---
-window.addEventListener("focus", () => {
-  if (hasNewMessage) {
-    setFavicon(defaultFavicon);
-    hasNewMessage = false;
-  }
+// --- Banned handler ---
+socket.on('banned', (info) => {
+  alert(`You have been banned by ${info.by || "server"}`);
+  window.location.href = '/banned.html';
 });
+
+// --- Reset favicon ---
+window.addEventListener("focus", () => {
+  if (hasNewMessage) { setFavicon(defaultFavicon); hasNewMessage = false; }
+});
+
 
 
 
