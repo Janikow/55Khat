@@ -1,6 +1,8 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
@@ -8,14 +10,30 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-// Map of socket.id -> username
+// Map of socket.id -> { name, ip }
 let users = {};
-// Map of banned IPs -> true
+const bansFile = path.join(__dirname, "bans.json");
+
+// Load banned IPs from file
 let bannedIPs = {};
+if (fs.existsSync(bansFile)) {
+  try {
+    bannedIPs = JSON.parse(fs.readFileSync(bansFile, "utf-8"));
+    console.log("Loaded banned IPs:", bannedIPs);
+  } catch (e) {
+    console.error("Failed to load bans.json:", e);
+  }
+}
+
+// Save banned IPs to file
+function saveBans() {
+  fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
+}
 
 io.on("connection", (socket) => {
   const ip = socket.handshake.address;
 
+  // Immediately disconnect banned users
   if (bannedIPs[ip]) {
     socket.emit("banned", { by: "server" });
     return socket.disconnect(true);
@@ -27,7 +45,7 @@ io.on("connection", (socket) => {
     users[socket.id] = { name, ip };
     console.log(`${name} joined from ${ip}`);
 
-    // send full user list to everyone
+    // Send full user list to everyone
     io.emit("user list", Object.values(users).map(u => u.name));
   });
 
@@ -49,13 +67,13 @@ io.on("connection", (socket) => {
       const targetSocketEntry = Object.entries(users).find(
         ([_, u]) => u.name === targetName
       );
-
       if (!targetSocketEntry) return;
 
       const [targetSocketId, targetUser] = targetSocketEntry;
 
       if (command === "/ban") {
         bannedIPs[targetUser.ip] = true;
+        saveBans();
         io.to(targetSocketId).emit("banned", { by: sender.name });
         io.sockets.sockets.get(targetSocketId)?.disconnect(true);
         console.log(`${targetUser.name} was banned by ${sender.name}`);
@@ -64,6 +82,7 @@ io.on("connection", (socket) => {
       if (command === "/unban") {
         if (bannedIPs[targetUser.ip]) {
           delete bannedIPs[targetUser.ip];
+          saveBans();
           console.log(`${targetUser.name} was unbanned by ${sender.name}`);
         }
       }
@@ -89,6 +108,7 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
