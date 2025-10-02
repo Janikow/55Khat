@@ -123,7 +123,7 @@ socket.on("user list", (users) => {
 
 // --- Banned handler ---
 socket.on('banned', (info) => {
-  alert(`You have been banned by ${info.by || "server"}`);
+  alert(`You have been banned by "server". You will be unbanned at the end of the day.`);
   window.location.href = '/banned.html';
 });
 
