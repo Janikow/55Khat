@@ -11,7 +11,9 @@ app.use(express.static("public"));
 let users = {}; // socket.id -> username
 
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  // 🔹 Grab and log the connecting user's IP
+  const ip = socket.handshake.address;
+  console.log(`User connected with IP: ${ip}, Socket ID: ${socket.id}`);
 
   socket.on("join", (name) => {
     users[socket.id] = name;
@@ -41,3 +43,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
