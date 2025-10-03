@@ -20,7 +20,7 @@ function setUsername() {
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
 
-  socket.emit("join", username);
+  socket.emit("join", username);f
 }
 
 // --- Send message ---
@@ -65,8 +65,12 @@ socket.on("chat message", (data) => {
   if (data.user === "TristanGlizzy") displayName = "Fishtan", msgDiv.classList.add("glitchy");
   if (data.user === "BowdownP3asents") displayName = "Wobbler", msgDiv.classList.add("wobbler");
   if (data.user === "JonathanZachery") displayName = "Hydreil", msgDiv.classList.add("hydreil");
-  if (data.user === "JairoIsraelTeliz") displayName = "ISRAEL", msgDiv.classlist.add("israel");
+  if (data.user === "JairoIsraelTeliz") {
+    displayName = "ISRAEL";
+    msgDiv.classList.add("israel");
+  }
   if (data.user === username) msgDiv.classList.add("user");
+
 
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
