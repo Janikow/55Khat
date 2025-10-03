@@ -65,6 +65,7 @@ socket.on("chat message", (data) => {
   if (data.user === "TristanGlizzy") displayName = "Fishtan", msgDiv.classList.add("glitchy");
   if (data.user === "BowdownP3asents") displayName = "Wobbler", msgDiv.classList.add("wobbler");
   if (data.user === "JonathanZachery") displayName = "Hydreil", msgDiv.classList.add("hydreil");
+  if (data.user === "JairoIsraelTeliz") displayName = "ISRAEL", msgDiv.classlist.add("israel");
   if (data.user === username) msgDiv.classList.add("user");
 
   const nameSpan = document.createElement("span");
@@ -106,6 +107,7 @@ socket.on("user list", (users) => {
     if (u === "TristanGlizzy") displayName = "Fishtan";
     if (u === "BowdownP3asents") displayName = "Wobbler";
     if (u === "JonathanZachery") displayName = "Hydreil";
+    if (u === "JairoIsraelTeliz") displayName = "ISRAEL";
 
     const div = document.createElement("div");
     div.textContent = displayName;
@@ -114,6 +116,7 @@ socket.on("user list", (users) => {
     if (u === "TristanGlizzy") div.classList.add("glitchy");
     if (u === "BowdownP3asents") div.classList.add("wobbler");
     if (u === "JonathanZachery") div.classList.add("hydreil");
+    if (u === "JairoIsraelTeliz") div.classList.add("israel");
 
     usersList.appendChild(div);
   });
