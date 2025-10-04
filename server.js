@@ -12,7 +12,6 @@ app.use(express.static("public"));
 
 // Map of socket.id -> { name, ip }
 let users = {};
-
 const bansFile = path.join(__dirname, "bans.json");
 
 // Load banned IPs from file
@@ -34,8 +33,8 @@ function saveBans() {
 // Helper to get real client IP (works behind proxies)
 function getClientIP(socket) {
   let ip = socket.handshake.address;
-  if (socket.handshake.headers["x-forwarded-for"]) {
-    ip = socket.handshake.headers["x-forwarded-for"].split(",")[0].trim();
+  if (socket.handshake.headers['x-forwarded-for']) {
+    ip = socket.handshake.headers['x-forwarded-for'].split(',')[0].trim();
   }
   return ip;
 }
@@ -54,9 +53,9 @@ io.on("connection", (socket) => {
   socket.on("join", (name) => {
     users[socket.id] = { name, ip };
     console.log(`${name} joined from ${ip}`);
-    
+
     // Send full user list to everyone
-    io.emit("user list", Object.values(users).map((u) => u.name));
+    io.emit("user list", Object.values(users).map(u => u.name));
   });
 
   socket.on("chat message", (msg) => {
@@ -70,6 +69,7 @@ io.on("connection", (socket) => {
       const args = text.split(" ");
       const command = args[0].toLowerCase();
       const targetName = args[1];
+
       if (!targetName) return;
 
       // Find the target socket by username
@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
         }
       }
 
-      return; // Don't broadcast command text
+      return; // don't broadcast command text
     }
 
     // Normal chat message
@@ -108,7 +108,7 @@ io.on("connection", (socket) => {
     if (users[socket.id]) {
       console.log(`${users[socket.id].name} disconnected`);
       delete users[socket.id];
-      io.emit("user list", Object.values(users).map((u) => u.name));
+      io.emit("user list", Object.values(users).map(u => u.name));
     }
   });
 });
@@ -117,6 +117,7 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
