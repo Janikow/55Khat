@@ -1,59 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>55Khat</title>
-  <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="style.css">
+  <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- ===== LOGIN SCREEN ===== -->
+
+  <!-- Login Screen -->
   <div id="loginPage" class="login-container">
-    <img src="/images/55khatl.png" alt="Logo" 
-         style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
+    <img 
+      src="/images/55khatl.png" 
+      alt="55Khat Logo" 
+      loading="lazy" 
+      style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);" 
+    />
     <h2>Welcome to 55Khat</h2>
 
-    <!-- Username -->
-    <input id="usernameInput" type="text" placeholder="Enter your username">
-
-    <!-- New Pin Input -->
-    <input id="pinInput" type="text" placeholder="Enter 4-digit Pin" maxlength="4" pattern="\d{4}">
-
-    <!-- New Buttons -->
-    <button id="joinPublicBtn">Join Public</button>
-    <button id="joinPinBtn">Join Pin</button>
-
-    <!-- Optional label -->
-    <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 10px;">
-      Public Room Code: <b>3501</b>
-    </p>
+    <form onsubmit="setUsername(); return false;" aria-label="Login Form">
+      <label for="usernameInput" class="sr-only">Username</label>
+      <input 
+        type="text" 
+        id="usernameInput" 
+        placeholder="Enter a username..." 
+        aria-label="Enter your username" 
+        required 
+      />
+      <button type="submit" title="Join Chat" aria-label="Join Chat">Join Chat</button>
+    </form>
   </div>
 
-  <!-- ===== CHAT SCREEN ===== -->
+  <!-- Chat Screen -->
   <div id="chatPage" class="chat-container hidden">
+
+    <!-- Overlay Container (optional use for modals, notifications, etc.) -->
     <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
 
     <!-- Sidebar -->
-    <div class="users-panel">
+    <aside class="users-panel" aria-label="User List Sidebar">
       <h3>Online (<span id="userCount">0</span>)</h3>
       <div id="usersList"></div>
-    </div>
+    </aside>
 
-    <!-- Main chat -->
-    <div class="chat-main">
-      <div id="chatBox" class="chat-box"></div>
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type a message...">
+    <!-- Main Chat Area -->
+    <main class="chat-main" aria-label="Main Chat Area">
+      <section id="chatBox" class="chat-box" aria-live="polite" aria-label="Chat Messages"></section>
+      
+      <!-- Chat Input -->
+      <div class="chat-input" role="form" aria-label="Chat Input Form">
+        <label for="chatInput" class="sr-only">Type a message</label>
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Type a message..." 
+          aria-label="Message input"
+        />
 
         <!-- Hidden file input for images -->
-        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(event)">
+        <input 
+          type="file" 
+          id="imageInput" 
+          accept="image/*" 
+          style="display: none" 
+          onchange="sendImage(event)" 
+          aria-hidden="true"
+        />
 
-        <!-- Button to trigger file input -->
-        <button onclick="document.getElementById('imageInput').click()">📎</button>
-        <button id="sendButton">Send</button>
+        <!-- Buttons -->
+        <button 
+          onclick="document.getElementById('imageInput').click()" 
+          title="Attach Image" 
+          aria-label="Attach an image"
+        >
+          📎
+        </button>
+        <button 
+          onclick="sendMessage()" 
+          title="Send Message" 
+          aria-label="Send message"
+        >
+          Send
+        </button>
       </div>
-    </div>
+    </main>
   </div>
 
   <!-- Scripts -->
@@ -61,4 +92,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
