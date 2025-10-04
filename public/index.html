@@ -8,16 +8,29 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Login screen -->
+  <!-- ===== LOGIN SCREEN ===== -->
   <div id="loginPage" class="login-container">
     <img src="/images/55khatl.png" alt="Logo" 
          style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
     <h2>Welcome to 55Khat</h2>
-    <input type="text" id="usernameInput" placeholder="Enter a username...">
-    <button onclick="setUsername()">Join Chat</button>
+
+    <!-- Username -->
+    <input id="usernameInput" type="text" placeholder="Enter your username">
+
+    <!-- New Pin Input -->
+    <input id="pinInput" type="text" placeholder="Enter 4-digit Pin" maxlength="4" pattern="\d{4}">
+
+    <!-- New Buttons -->
+    <button id="joinPublicBtn">Join Public</button>
+    <button id="joinPinBtn">Join Pin</button>
+
+    <!-- Optional label -->
+    <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem; margin-top: 10px;">
+      Public Room Code: <b>3501</b>
+    </p>
   </div>
 
-  <!-- Chat screen -->
+  <!-- ===== CHAT SCREEN ===== -->
   <div id="chatPage" class="chat-container hidden">
     <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
 
@@ -32,11 +45,13 @@
       <div id="chatBox" class="chat-box"></div>
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
+
         <!-- Hidden file input for images -->
         <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(event)">
+
         <!-- Button to trigger file input -->
         <button onclick="document.getElementById('imageInput').click()">📎</button>
-        <button onclick="sendMessage()">Send</button>
+        <button id="sendButton">Send</button>
       </div>
     </div>
   </div>
@@ -46,3 +61,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
