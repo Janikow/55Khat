@@ -54,6 +54,7 @@ io.on("connection", (socket) => {
     users[socket.id] = { name, ip };
     console.log(`${name} joined from ${ip}`);
 
+    // Send full user list to everyone
     io.emit("user list", Object.values(users).map(u => u.name));
   });
 
@@ -71,6 +72,7 @@ io.on("connection", (socket) => {
 
       if (!targetName) return;
 
+      // Find the target socket by username
       const targetSocketEntry = Object.entries(users).find(
         ([_, u]) => u.name === targetName
       );
@@ -94,9 +96,10 @@ io.on("connection", (socket) => {
         }
       }
 
-      return;
+      return; // don't broadcast command text
     }
 
+    // Normal chat message
     console.log(`[${msg.user}] ${msg.text}`);
     io.emit("chat message", msg);
   });
@@ -114,6 +117,11 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+
+
+
 
 
 
