@@ -10,8 +10,9 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-// Map of socket.id -> { name, ip, roomPin }
+// Map of socket.id -> { name, ip }
 let users = {};
+
 const bansFile = path.join(__dirname, "bans.json");
 
 // Load banned IPs from file
@@ -50,44 +51,30 @@ io.on("connection", (socket) => {
 
   console.log(`User connected: ${socket.id} | IP: ${ip}`);
 
-  // --- User joins a room (public or custom pin) ---
-  socket.on("joinRoom", ({ username, roomPin }) => {
-    socket.join(roomPin);
-    socket.username = username;
-    socket.roomPin = roomPin;
-    users[socket.id] = { name: username, ip, roomPin };
-
-    console.log(`${username} joined room ${roomPin}`);
-
-    socket.emit("joinedRoom", { username, roomPin });
-    io.to(roomPin).emit("systemMessage", `${username} has joined the chat.`);
-
-    // Update user list for this room
-    const roomUsers = Object.values(users)
-      .filter(u => u.roomPin === roomPin)
-      .map(u => u.name);
-    io.to(roomPin).emit("user list", roomUsers);
+  socket.on("join", (name) => {
+    users[socket.id] = { name, ip };
+    console.log(`${name} joined from ${ip}`);
+    
+    // Send full user list to everyone
+    io.emit("user list", Object.values(users).map((u) => u.name));
   });
 
-  // --- Handle chat messages ---
   socket.on("chat message", (msg) => {
     const sender = users[socket.id];
     if (!sender) return;
 
     const text = msg.text || "";
-    const roomPin = sender.roomPin;
 
-    // --- Admin commands ---
+    // Handle admin commands
     if (sender.name === "TemMoose" && text.startsWith("/")) {
       const args = text.split(" ");
       const command = args[0].toLowerCase();
       const targetName = args[1];
-
       if (!targetName) return;
 
       // Find the target socket by username
       const targetSocketEntry = Object.entries(users).find(
-        ([, u]) => u.name === targetName
+        ([_, u]) => u.name === targetName
       );
       if (!targetSocketEntry) return;
 
@@ -109,34 +96,28 @@ io.on("connection", (socket) => {
         }
       }
 
-      return; // don't broadcast the command text
+      return; // Don't broadcast command text
     }
 
-    // --- Normal message: only to users in the same room ---
-    io.to(roomPin).emit("chat message", msg);
+    // Normal chat message
+    console.log(`[${msg.user}] ${msg.text}`);
+    io.emit("chat message", msg);
   });
 
-  // --- Handle disconnect ---
   socket.on("disconnect", () => {
-    const user = users[socket.id];
-    if (!user) return;
-
-    console.log(`${user.name} disconnected from room ${user.roomPin}`);
-    delete users[socket.id];
-
-    // Update user list for the specific room
-    const roomUsers = Object.values(users)
-      .filter(u => u.roomPin === user.roomPin)
-      .map(u => u.name);
-    io.to(user.roomPin).emit("user list", roomUsers);
-    io.to(user.roomPin).emit("systemMessage", `${user.name} has left the chat.`);
+    if (users[socket.id]) {
+      console.log(`${users[socket.id].name} disconnected`);
+      delete users[socket.id];
+      io.emit("user list", Object.values(users).map((u) => u.name));
+    }
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
