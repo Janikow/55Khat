@@ -8,89 +8,35 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Login Screen -->
   <div id="loginPage" class="login-container">
-    <img 
-      src="/images/55khatl.png" 
-      alt="55Khat Logo" 
-      loading="lazy" 
-      style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);" 
-    />
     <h2>Welcome to 55Khat</h2>
-
-    <form onsubmit="setUsername(); return false;" aria-label="Login Form">
-      <label for="usernameInput" class="sr-only">Username</label>
-      <input 
-        type="text" 
-        id="usernameInput" 
-        placeholder="Enter a username..." 
-        aria-label="Enter your username" 
-        required 
-      />
-      <button type="submit" title="Join Chat" aria-label="Join Chat">Join Chat</button>
-    </form>
+    <input id="usernameInput" type="text" placeholder="Enter a username..." maxlength="18" />
+    <button onclick="setUsername()">Join Chat</button>
   </div>
 
-  <!-- Chat Screen -->
   <div id="chatPage" class="chat-container hidden">
-
-    <!-- Overlay Container (optional use for modals, notifications, etc.) -->
-    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
-
-    <!-- Sidebar -->
-    <aside class="users-panel" aria-label="User List Sidebar">
-      <h3>Online (<span id="userCount">0</span>)</h3>
+    <div class="sidebar">
+      <h3>Online Users</h3>
+      <div id="userCount">0 Online</div>
       <div id="usersList"></div>
-    </aside>
+    </div>
 
-    <!-- Main Chat Area -->
-    <main class="chat-main" aria-label="Main Chat Area">
-      <section id="chatBox" class="chat-box" aria-live="polite" aria-label="Chat Messages"></section>
-      
-      <!-- Chat Input -->
-      <div class="chat-input" role="form" aria-label="Chat Input Form">
-        <label for="chatInput" class="sr-only">Type a message</label>
-        <input 
-          type="text" 
-          id="chatInput" 
-          placeholder="Type a message..." 
-          aria-label="Message input"
-        />
+    <div class="chat-box" id="chatBox"></div>
 
-        <!-- Hidden file input for images -->
-        <input 
-          type="file" 
-          id="imageInput" 
-          accept="image/*" 
-          style="display: none" 
-          onchange="sendImage(event)" 
-          aria-hidden="true"
-        />
-
-        <!-- Buttons -->
-        <button 
-          onclick="document.getElementById('imageInput').click()" 
-          title="Attach Image" 
-          aria-label="Attach an image"
-        >
-          📎
-        </button>
-        <button 
-          onclick="sendMessage()" 
-          title="Send Message" 
-          aria-label="Send message"
-        >
-          Send
-        </button>
-      </div>
-    </main>
+    <div class="input-area">
+      <input id="chatInput" type="text" placeholder="Type a message..." maxlength="600" />
+      <label class="image-upload">
+        📷
+        <input id="imageInput" type="file" accept="image/*" onchange="sendImage(event)" />
+      </label>
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
-  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
