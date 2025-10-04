@@ -30,7 +30,7 @@ function saveBans() {
   fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
 }
 
-// Helper to get real client IP
+// Helper to get real client IP (works behind proxies)
 function getClientIP(socket) {
   let ip = socket.handshake.address;
   if (socket.handshake.headers["x-forwarded-for"]) {
@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
 
   console.log(`User connected: ${socket.id} | IP: ${ip}`);
 
-  // --- User joins a room ---
+  // --- User joins a room (public or custom pin) ---
   socket.on("joinRoom", ({ username, roomPin }) => {
     socket.join(roomPin);
     socket.username = username;
@@ -60,9 +60,9 @@ io.on("connection", (socket) => {
     console.log(`${username} joined room ${roomPin}`);
 
     socket.emit("joinedRoom", { username, roomPin });
-    io.to(roomPin).emit("systemMessage", `${username} has joined room ${roomPin}.`);
+    io.to(roomPin).emit("systemMessage", `${username} has joined the chat.`);
 
-    // Update user list for this room only
+    // Update user list for this room
     const roomUsers = Object.values(users)
       .filter(u => u.roomPin === roomPin)
       .map(u => u.name);
@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
     const text = msg.text || "";
     const roomPin = sender.roomPin;
 
-    // Admin-only commands
+    // --- Admin commands ---
     if (sender.name === "TemMoose" && text.startsWith("/")) {
       const args = text.split(" ");
       const command = args[0].toLowerCase();
@@ -85,6 +85,7 @@ io.on("connection", (socket) => {
 
       if (!targetName) return;
 
+      // Find the target socket by username
       const targetSocketEntry = Object.entries(users).find(
         ([, u]) => u.name === targetName
       );
@@ -108,27 +109,25 @@ io.on("connection", (socket) => {
         }
       }
 
-      return;
+      return; // don't broadcast the command text
     }
 
-    // Normal message — only to users in same room
+    // --- Normal message: only to users in the same room ---
     io.to(roomPin).emit("chat message", msg);
   });
 
-  // --- Handle disconnection ---
+  // --- Handle disconnect ---
   socket.on("disconnect", () => {
     const user = users[socket.id];
     if (!user) return;
 
     console.log(`${user.name} disconnected from room ${user.roomPin}`);
-
     delete users[socket.id];
 
-    // Update user list in that room
+    // Update user list for the specific room
     const roomUsers = Object.values(users)
       .filter(u => u.roomPin === user.roomPin)
       .map(u => u.name);
-
     io.to(user.roomPin).emit("user list", roomUsers);
     io.to(user.roomPin).emit("systemMessage", `${user.name} has left the chat.`);
   });
