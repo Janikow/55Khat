@@ -36,53 +36,147 @@ body {
 /* ================== Login Page ================== */
 
 #loginPage {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 24px;
+  padding: 32px 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  /* Add a subtle dark translucent background with blur for depth */
+  background: rgba(30, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  box-shadow: 
+    0 0 30px rgba(255, 60, 60, 0.35),
+    inset 0 0 50px rgba(255, 20, 20, 0.4);
+  user-select: none;
 }
 
+/* Animated glowing heading */
 #loginPage h2 {
-  font-size: 26px;
-  color: #ff3c3c;
-  margin-bottom: 10px;
-  text-shadow: 0 0 10px rgba(255,0,0,0.8);
+  font-size: 28px;
+  font-weight: 700;
+  color: #ff4c4c;
+  margin-bottom: 0;
+  letter-spacing: 1.1px;
+  text-shadow:
+    0 0 8px rgba(255, 60, 60, 0.7),
+    0 0 20px rgba(255, 60, 60, 0.6);
+  /* Gentle pulse glow animation */
+  animation: glowPulse 3s ease-in-out infinite alternate;
 }
 
+/* Pulse animation for heading glow */
+@keyframes glowPulse {
+  0% {
+    text-shadow:
+      0 0 6px rgba(255, 60, 60, 0.6),
+      0 0 15px rgba(255, 60, 60, 0.5);
+  }
+  100% {
+    text-shadow:
+      0 0 16px rgba(255, 80, 80, 0.9),
+      0 0 30px rgba(255, 80, 80, 0.7);
+  }
+}
+
+/* Username input styles */
 #usernameInput {
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #ff3c3c;
-  background: rgba(17, 17, 17, 0.9);
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 2px solid #ff4b4b;
+  background: rgba(25, 0, 0, 0.9);
   color: white;
   outline: none;
-  width: 80%;
-  font-size: 15px;
-  transition: 0.2s;
+  width: 90%;
+  max-width: 360px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 0 8px rgba(255, 80, 80, 0.7);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.25s ease;
+  /* Smooth font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: text;
 }
 
+#usernameInput::placeholder {
+  color: rgba(255, 80, 80, 0.7);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Focus effect with intensified glow */
 #usernameInput:focus {
-  border-color: #ff5c5c;
-  box-shadow: 0 0 10px rgba(255,0,0,0.6);
+  border-color: #ff6b6b;
+  box-shadow:
+    0 0 14px rgba(255, 100, 100, 0.9),
+    inset 0 0 20px rgba(255, 110, 110, 0.75);
+  background: rgba(35, 0, 0, 0.95);
 }
 
+/* Button styling */
 #loginPage button {
-  margin-top: 10px;
-  padding: 14px 24px;
+  margin-top: 12px;
+  padding: 16px 28px;
   border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ff3c3c, #cc2e2e);
+  border-radius: 14px;
+  
+  /* Strong horizontal gradient */
+  background: linear-gradient(90deg, #ff4c4c 0%, #cc2e2e 100%);
   color: white;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.8px;
   cursor: pointer;
-  transition: 0.25s;
-  box-shadow: 0 0 15px rgba(255,0,0,0.4);
+  user-select: none;
+
+  box-shadow:
+    0 0 18px rgba(255, 60, 60, 0.5),
+    0 3px 5px rgba(204, 46, 46, 0.7);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    filter 0.25s ease;
+  filter: drop-shadow(0 0 3px rgba(255, 60, 60, 0.7));
 }
 
+/* Button hover/active states for feedback */
 #loginPage button:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 20px rgba(255,0,0,0.8);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 0 28px rgba(255, 80, 80, 0.9),
+    0 6px 12px rgba(204, 46, 46, 0.9);
+  filter: drop-shadow(0 0 6px rgba(255, 80, 80, 1));
+  background: linear-gradient(90deg, #ff6666 0%, #dd3c3c 100%);
+}
+
+#loginPage button:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    0 0 16px rgba(255, 60, 60, 0.7);
+  filter: drop-shadow(0 0 3px rgba(255, 60, 60, 0.7));
+}
+
+/* Responsive adjustments */
+@media(max-width: 420px) {
+  #loginPage {
+    width: 90vw;
+    padding: 24px 16px;
+  }
+  #usernameInput {
+    width: 100%;
+    font-size: 15px;
+  }
+  #loginPage button {
+    width: 100%;
+    padding: 14px 0;
+    font-size: 16px;
+  }
 }
 
 /* ================== Sidebar ================== */
