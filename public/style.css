@@ -284,112 +284,114 @@ body {
   position: relative;
   align-self: flex-start;
   margin: 10px 0;
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 14px 18px; /* Slightly larger padding for better spacing */
+  border-radius: 16px; /* Softer rounded corners */
   max-width: 70%;
-  font-size: 14px;
-  background: linear-gradient(145deg, rgba(155, 89, 182, 0.25), rgba(100, 50, 130, 0.35));
-  border: 1px solid rgba(200, 120, 255, 0.7);
+  min-width: 180px; /* Prevent shrinking below this width */
+  font-size: 15px; /* Slightly bigger for better readability */
+  background: linear-gradient(145deg, rgba(155, 89, 182, 0.3), rgba(100, 50, 130, 0.45));
+  border: 1.5px solid rgba(180, 98, 255, 0.8);
   color: #e6ccff;
-  box-shadow: 
-    inset 2px 2px 6px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 6px rgba(200, 120, 255, 0.15),
-    0 4px 14px rgba(180, 80, 255, 0.35);
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.45),
+    inset -3px -3px 8px rgba(200, 120, 255, 0.25),
+    0 6px 18px rgba(180, 80, 255, 0.5);
   word-wrap: break-word;
   overflow: hidden;
   animation: temGlow 5s infinite alternate ease-in-out;
+  flex-shrink: 0; /* Prevent shrinking in flex containers */
+  /* Add transition for smooth glow changes */
+  transition: box-shadow 0.3s ease;
 }
 
 /* Username */
 .chat-message.tem .username {
   display: block;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 4px;
+  font-size: 13px; /* Slightly larger */
+  font-weight: 700;
+  margin-bottom: 6px;
   color: #d9b3ff;
   text-shadow:
-    0 0 4px rgba(200, 120, 255, 0.9),
-    0 0 8px rgba(255, 200, 255, 0.7);
-  letter-spacing: 0.5px;
+    0 0 5px rgba(200, 120, 255, 0.95),
+    0 0 10px rgba(255, 200, 255, 0.8);
+  letter-spacing: 0.6px;
 }
 
 /* Subtle shimmer gradient moving across */
 .chat-message.tem::before {
   content: "";
   position: absolute;
-  top: 0; left: -50%;
-  width: 200%;
+  top: 0; left: -55%;
+  width: 210%;
   height: 100%;
   background: linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.08) 40%,
-    rgba(255, 255, 255, 0.12) 50%,
-    transparent 70%
+    rgba(255, 255, 255, 0.1) 38%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 72%
   );
   animation: shimmerMove 6s infinite;
   pointer-events: none;
+  border-radius: 16px; /* Match parent rounding */
+  /* Add blend mode for subtlety */
+  mix-blend-mode: screen;
 }
 
 /* Glow pulse animation */
 @keyframes temGlow {
   0% {
     box-shadow:
-      inset 2px 2px 6px rgba(0, 0, 0, 0.4),
-      inset -2px -2px 6px rgba(200, 120, 255, 0.15),
-      0 4px 12px rgba(180, 80, 255, 0.25);
+      inset 3px 3px 8px rgba(0, 0, 0, 0.45),
+      inset -3px -3px 8px rgba(200, 120, 255, 0.25),
+      0 6px 14px rgba(180, 80, 255, 0.35);
   }
   100% {
     box-shadow:
-      inset 2px 2px 6px rgba(0, 0, 0, 0.4),
-      inset -2px -2px 6px rgba(200, 120, 255, 0.25),
-      0 4px 20px rgba(200, 120, 255, 0.55);
+      inset 3px 3px 8px rgba(0, 0, 0, 0.45),
+      inset -3px -3px 12px rgba(200, 120, 255, 0.4),
+      0 6px 25px rgba(200, 120, 255, 0.75);
   }
 }
 
 /* Shimmer movement */
 @keyframes shimmerMove {
   0% { transform: translateX(0); }
-  100% { transform: translateX(50%); }
-}
-
-
-/* Keyframes for jagged, fast strikes */
-@keyframes strikeLeft {
-  0%, 90%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) rotate(0deg); }
-  40% { opacity: 1; transform: translate(-60%, -40%) scale(1.2) rotate(-10deg); filter: brightness(2); }
-  42% { opacity: 0; }
-}
-
-@keyframes strikeRight {
-  0%, 80%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) rotate(0deg); }
-  20% { opacity: 1; transform: translate(-40%, -60%) scale(1.3) rotate(15deg); filter: brightness(2); }
-  22% { opacity: 0; }
-  70% { opacity: 1; transform: translate(-55%, -45%) scale(1.1) rotate(-8deg); filter: brightness(1.8); }
-  72% { opacity: 0; }
+  100% { transform: translateX(55%); }
 }
 
 /* --- Glitchy --- */
 .chat-message.glitchy {
   position: relative;
-  background: rgba(20, 20, 0, 0.9); /* dark base */
-  border: 1px solid rgba(255, 223, 0, 0.9);
+  background: rgba(20, 20, 0, 0.95); /* Slightly more opaque for contrast */
+  border: 1.5px solid rgba(255, 223, 0, 0.95);
   color: #fff700;
-  text-shadow: 0 0 2px #fff, 0 0 4px #ffeb3b;
+  text-shadow:
+    0 0 3px #fff,
+    0 0 6px #ffeb3b,
+    0 0 15px #ffd700;
   box-shadow:
-    0 0 4px #ffeb3b inset,
-    0 0 6px #ffd700,
-    0 0 10px rgba(255, 255, 0, 0.6);
+    0 0 6px #ffeb3b inset,
+    0 0 10px #ffd700,
+    0 0 16px rgba(255, 255, 0, 0.75);
   animation: glitchFlicker 1s infinite alternate;
-  overflow: visible; /* ensures content isn’t clipped */
-  min-width: 120px; /* stops tiny shrink on short messages */
+  overflow: visible;
+  min-width: 140px; /* More minimum width to prevent shrinking */
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  flex-shrink: 0;
 }
 
 /* Username */
 .chat-message.glitchy .username {
   color: #fffa72;
-  text-shadow: 0 0 3px #fff, 0 0 5px #ffd700;
-  font-weight: bold;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 9px #ffd700,
+    0 0 12px #ffff66;
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 /* Glitch scanlines using pseudo-element */
@@ -399,149 +401,207 @@ body {
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255, 255, 0, 0.12) 0px,
-    rgba(255, 255, 0, 0.12) 2px,
+    rgba(255, 255, 0, 0.15) 0px,
+    rgba(255, 255, 0, 0.15) 2px,
     transparent 2px,
     transparent 4px
   );
-  animation: glitchScan 0.6s infinite linear;
+  animation: glitchScan 0.7s infinite linear;
   pointer-events: none;
-  border-radius: inherit;
+  border-radius: 10px;
 }
 
 /* Secondary offset “ghost” glitch */
 .chat-message.glitchy::after {
   content: attr(data-text);
   position: absolute;
-  left: 2px;
-  top: 2px;
-  color: rgba(255, 255, 255, 0.5);
-  text-shadow: -1px 0 #ff0, 1px 0 #f00;
+  left: 2.5px;
+  top: 2.5px;
+  color: rgba(255, 255, 255, 0.55);
+  text-shadow:
+    -1px 0 #ff0,
+    1px 0 #f00,
+    0 0 10px #ffcc00;
   overflow: hidden;
   clip-path: inset(0 0 50% 0);
   animation: glitchShift 0.5s infinite steps(2);
   pointer-events: none;
+  border-radius: 10px;
 }
 
 /* Flicker */
 @keyframes glitchFlicker {
   0%, 100% { opacity: 1; }
-  45% { opacity: 0.85; }
-  50% { opacity: 0.65; }
-  55% { opacity: 0.9; }
+  45% { opacity: 0.9; }
+  50% { opacity: 0.7; }
+  55% { opacity: 0.95; }
 }
 
 /* Scanline shimmer */
 @keyframes glitchScan {
   from { transform: translateY(0); }
-  to { transform: translateY(4px); }
+  to { transform: translateY(5px); }
 }
 
 /* Ghost text shifting */
 @keyframes glitchShift {
-  0% { clip-path: inset(0 0 50% 0); transform: translate(-2px, -2px); }
-  50% { clip-path: inset(50% 0 0 0); transform: translate(2px, 2px); }
-  100% { clip-path: inset(0 0 50% 0); transform: translate(-2px, -2px); }
+  0% { clip-path: inset(0 0 50% 0); transform: translate(-2.5px, -2.5px); }
+  50% { clip-path: inset(50% 0 0 0); transform: translate(2.5px, 2.5px); }
+  100% { clip-path: inset(0 0 50% 0); transform: translate(-2.5px, -2.5px); }
 }
-
 
 /* --- Wobbler --- */
 .chat-message.wobbler {
   position: relative;
-  background: #8B0000; /* crimson */
-  border: 1px solid #ff4d4d;
+  background: #990000; /* deeper crimson */
+  border: 1.5px solid #ff6666; /* lighter border */
   color: #fff0f0;
-  text-shadow: 0 0 2px #fff, 0 0 4px #ff9999;
-  box-shadow: 0 0 6px #ff4d4d inset, 0 0 10px #ff0000;
+  text-shadow:
+    0 0 3px #fff,
+    0 0 6px #ff9999;
+  box-shadow:
+    0 0 8px #ff6666 inset,
+    0 0 14px #ff3333;
   animation: wobble 1.5s ease-in-out infinite;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  flex-shrink: 0;
+  min-width: 160px;
 }
 
+/* Username */
 .chat-message.wobbler .username {
   color: #ffcccc;
-  font-weight: bold;
-  text-shadow: 0 0 2px #fff, 0 0 4px #ff9999;
+  font-weight: 700;
+  text-shadow:
+    0 0 3px #fff,
+    0 0 6px #ff9999;
+  letter-spacing: 0.5px;
 }
 
+/* Wobble keyframes */
 @keyframes wobble {
-  0%   { transform: rotate(-3deg) translateX(-2px) translateY(0); }
-  25%  { transform: rotate(3deg) translateX(2px) translateY(-1px); }
-  50%  { transform: rotate(-3deg) translateX(-2px) translateY(1px); }
-  75%  { transform: rotate(3deg) translateX(2px) translateY(-1px); }
-  100% { transform: rotate(-3deg) translateX(-2px) translateY(0); }
+  0%   { transform: rotate(-3deg) translateX(-3px) translateY(0); }
+  25%  { transform: rotate(3deg) translateX(3px) translateY(-1.5px); }
+  50%  { transform: rotate(-3deg) translateX(-3px) translateY(1.5px); }
+  75%  { transform: rotate(3deg) translateX(3px) translateY(-1.5px); }
+  100% { transform: rotate(-3deg) translateX(-3px) translateY(0); }
 }
 
 /* --- Hydreil Name Tag --- */
-
 .chat-message.hydreil {
-  background: rgba(133, 204, 255, 0.15);
-  border: 1px solid rgba(133, 204, 255, 0.6);
-  box-shadow: 0 0 8px rgba(133, 204, 255, 0.4);
+  background: rgba(133, 204, 255, 0.2);
+  border: 1.5px solid rgba(133, 204, 255, 0.75);
+  box-shadow: 0 0 12px rgba(133, 204, 255, 0.5);
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  color: #80d0ff;
+  flex-shrink: 0;
+  min-width: 150px;
 }
 
 /* --- Israel Name Tag --- */
 .chat-message.israel {
-  background: rgba(31, 73, 125, 0.15); /* light navy tint */
-  border: 1px solid rgba(31, 73, 125, 0.7);
-  color: #dbe8ff; /* light contrasting text */
-  box-shadow: 0 0 8px rgba(31, 73, 125, 0.5),
-              inset 0 0 6px rgba(31, 73, 125, 0.3);
+  background: rgba(31, 73, 125, 0.2);
+  border: 1.5px solid rgba(31, 73, 125, 0.85);
+  color: #dbe8ff;
+  box-shadow:
+    0 0 10px rgba(31, 73, 125, 0.6),
+    inset 0 0 8px rgba(31, 73, 125, 0.4);
   animation: israelGlow 4s infinite alternate ease-in-out;
+  padding: 14px 18px;
+  border-radius: 15px;
+  font-size: 15px;
+  flex-shrink: 0;
+  min-width: 160px;
 }
 
 /* Username color */
 .chat-message.israel .username {
-  color: #4a90e2; /* brighter blue highlight */
-  font-weight: bold;
-  text-shadow: 
-    0 0 4px rgba(74, 144, 226, 0.9),
-    0 0 8px rgba(31, 73, 125, 0.7);
+  color: #4a90e2;
+  font-weight: 700;
+  text-shadow:
+    0 0 6px rgba(74, 144, 226, 1),
+    0 0 12px rgba(31, 73, 125, 0.85);
+  letter-spacing: 0.6px;
 }
 
 /* Glow animation */
 @keyframes israelGlow {
   0% {
     box-shadow: 
-      0 0 6px rgba(31, 73, 125, 0.3),
-      inset 0 0 4px rgba(31, 73, 125, 0.2);
+      0 0 8px rgba(31, 73, 125, 0.35),
+      inset 0 0 6px rgba(31, 73, 125, 0.3);
   }
   100% {
     box-shadow: 
-      0 0 14px rgba(31, 73, 125, 0.7),
-      inset 0 0 8px rgba(31, 73, 125, 0.4);
+      0 0 18px rgba(31, 73, 125, 0.85),
+      inset 0 0 12px rgba(31, 73, 125, 0.55);
   }
 }
 
 /* --- Zeke (Green Wavy Tag) --- */
 .chat-message.zeke {
   position: relative;
-  background: rgba(0, 100, 0, 0.25); /* dark green tint */
-  border: 1px solid rgba(0, 255, 100, 0.7);
+  background: rgba(0, 120, 0, 0.3); /* slightly brighter green tint */
+  border: 1.5px solid rgba(0, 255, 120, 0.8);
   color: #b2ffb2;
   box-shadow:
-    0 0 8px rgba(0, 255, 100, 0.4),
-    inset 0 0 6px rgba(0, 255, 100, 0.3);
+    0 0 12px rgba(0, 255, 120, 0.6),
+    inset 0 0 8px rgba(0, 255, 120, 0.4);
   animation: zekeWave 3s ease-in-out infinite;
   overflow: hidden;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 15px;
+  flex-shrink: 0;
+  min-width: 160px;
 }
 
 /* Username style */
 .chat-message.zeke .username {
   color: #00ff7f; /* bright neon green */
-  font-weight: bold;
+  font-weight: 700;
   text-shadow:
-    0 0 6px rgba(0, 255, 100, 0.9),
-    0 0 12px rgba(0, 255, 150, 0.6);
+    0 0 8px rgba(0, 255, 120, 1),
+    0 0 16px rgba(0, 255, 150, 0.7);
+  letter-spacing: 0.6px;
 }
 
 /* Wavy animation effect */
 @keyframes zekeWave {
-  0%   { transform: translateY(0) rotate(-1deg); }
-  25%  { transform: translateY(-2px) rotate(1deg); }
-  50%  { transform: translateY(0) rotate(-1deg); }
-  75%  { transform: translateY(2px) rotate(1deg); }
-  100% { transform: translateY(0) rotate(-1deg); }
+  0%   { transform: translateY(0) rotate(-1.5deg); }
+  25%  { transform: translateY(-3px) rotate(1.5deg); }
+  50%  { transform: translateY(0) rotate(-1.5deg); }
+  75%  { transform: translateY(3px) rotate(1.5deg); }
+  100% { transform: translateY(0) rotate(-1.5deg); }
 }
 
+
+/* Responsive fix to maintain readability on smaller devices */
+/* Ensures the chat messages don't shrink below minimum widths */
+@media (max-width: 480px) {
+  .chat-message.tem,
+  .chat-message.glitchy,
+  .chat-message.wobbler,
+  .chat-message.hydreil,
+  .chat-message.israel,
+  .chat-message.zeke {
+    max-width: 90%;
+    min-width: 140px;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .chat-message.tem .username,
+  .chat-message.glitchy .username,
+  .chat-message.wobbler .username,
+  .chat-message.israel .username,
+  .chat-message.zeke .username {
+    font-size: 11px;
+  }
+}
 
 
 
