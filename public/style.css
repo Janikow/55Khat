@@ -279,85 +279,132 @@ body {
 
 /* ================== Special User Effects ================== */
 
-/* --- Tem (3D Purple Name Tag) --- */
+/* --- Tem (Gojo’s Hollow Purple Inspired Name Tag) --- */
 .chat-message.tem {
   position: relative;
   align-self: flex-start;
-  margin: 10px 0;
-  padding: 14px 18px; /* Slightly larger padding for better spacing */
-  border-radius: 16px; /* Softer rounded corners */
+  margin: 12px 0;
+  padding: 16px 24px;
+  border-radius: 20px;
   max-width: 70%;
-  min-width: 180px; /* Prevent shrinking below this width */
-  font-size: 15px; /* Slightly bigger for better readability */
-  background: linear-gradient(145deg, rgba(155, 89, 182, 0.3), rgba(100, 50, 130, 0.45));
-  border: 1.5px solid rgba(180, 98, 255, 0.8);
-  color: #e6ccff;
-  box-shadow:
-    inset 3px 3px 8px rgba(0, 0, 0, 0.45),
-    inset -3px -3px 8px rgba(200, 120, 255, 0.25),
-    0 6px 18px rgba(180, 80, 255, 0.5);
-  word-wrap: break-word;
+  min-width: 180px;       /* Prevent shrinking */
+  flex-shrink: 0;          /* Prevent shrinking in flex layouts */
+  font-size: 15px;
+  color: #d8c9ff;          /* Soft pale lilac text */
+  font-weight: 600;
+  letter-spacing: 0.6px;
   overflow: hidden;
-  animation: temGlow 5s infinite alternate ease-in-out;
-  flex-shrink: 0; /* Prevent shrinking in flex containers */
-  /* Add transition for smooth glow changes */
-  transition: box-shadow 0.3s ease;
+  background:
+    radial-gradient(circle at center, rgba(140, 56, 255, 0.45) 0%, transparent 70%),
+    linear-gradient(135deg, #4a1fae 0%, #2a0d5d 100%);
+  border: 2px solid rgba(166, 95, 255, 0.75);
+  box-shadow:
+    0 0 12px 2px rgba(166, 95, 255, 0.8),
+    inset 0 0 14px 4px rgba(128, 66, 255, 0.6);
+  transition: box-shadow 0.4s ease;
+  cursor: default;
 }
 
-/* Username */
+/* Username inside the tag */
 .chat-message.tem .username {
   display: block;
-  font-size: 13px; /* Slightly larger */
+  font-size: 13px;
   font-weight: 700;
   margin-bottom: 6px;
-  color: #d9b3ff;
+  color: #c5b4ff;
   text-shadow:
-    0 0 5px rgba(200, 120, 255, 0.95),
-    0 0 10px rgba(255, 200, 255, 0.8);
-  letter-spacing: 0.6px;
+    0 0 8px rgba(194, 146, 255, 0.85),
+    0 0 20px rgba(147, 90, 255, 0.9);
+  letter-spacing: 0.75px;
 }
 
-/* Subtle shimmer gradient moving across */
+/* Ambient swirling glow ring overlay */
 .chat-message.tem::before {
   content: "";
   position: absolute;
-  top: 0; left: -55%;
-  width: 210%;
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 38%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 72%
-  );
-  animation: shimmerMove 6s infinite;
+  top: -40%;
+  left: -35%;
+  width: 170%;
+  height: 180%;
   pointer-events: none;
-  border-radius: 16px; /* Match parent rounding */
-  /* Add blend mode for subtlety */
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(180, 130, 255, 0.3) 25%, transparent 70%);
+  filter: blur(18px);
+  animation: hollowPulse 5s ease-in-out infinite alternate;
   mix-blend-mode: screen;
+  z-index: 1;
 }
 
-/* Glow pulse animation */
-@keyframes temGlow {
+/* Subtle inner flickering glow - small layered pulses */
+.chat-message.tem::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  box-shadow:
+    0 0 12px 3px rgba(200, 140, 255, 0.6),
+    inset 0 0 25px 6px rgba(140, 80, 255, 0.7);
+  opacity: 0.7;
+  animation: flickerPulse 4.5s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+/* Text container to keep text above the effects */
+.chat-message.tem > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* Ripple/wave effect overlays using multiple translucent radial gradients */
+@keyframes hollowPulse {
   0% {
-    box-shadow:
-      inset 3px 3px 8px rgba(0, 0, 0, 0.45),
-      inset -3px -3px 8px rgba(200, 120, 255, 0.25),
-      0 6px 14px rgba(180, 80, 255, 0.35);
+    transform: scale(0.92) translate(-2%, 1%);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.1) translate(3%, -2%);
+    opacity: 0.85;
   }
   100% {
-    box-shadow:
-      inset 3px 3px 8px rgba(0, 0, 0, 0.45),
-      inset -3px -3px 12px rgba(200, 120, 255, 0.4),
-      0 6px 25px rgba(200, 120, 255, 0.75);
+    transform: scale(0.95) translate(-1%, 1%);
+    opacity: 0.6;
   }
 }
 
-/* Shimmer movement */
-@keyframes shimmerMove {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(55%); }
+@keyframes flickerPulse {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 12px 3px rgba(200, 140, 255, 0.6),
+      inset 0 0 25px 6px rgba(140, 80, 255, 0.7);
+  }
+  40% {
+    opacity: 0.85;
+    box-shadow:
+      0 0 22px 5px rgba(200, 160, 255, 0.8),
+      inset 0 0 32px 9px rgba(170, 100, 255, 0.85);
+  }
+  60% {
+    opacity: 0.75;
+    box-shadow:
+      0 0 18px 4px rgba(190, 130, 255, 0.75),
+      inset 0 0 28px 7px rgba(150, 90, 255, 0.8);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .chat-message.tem {
+    max-width: 90%;
+    min-width: 140px;
+    padding: 12px 18px;
+    font-size: 13px;
+  }
+  .chat-message.tem .username {
+    font-size: 11px;
+  }
 }
 
 /* --- Glitchy --- */
