@@ -627,15 +627,15 @@ body {
 }
 
 /* --- Tem Sold Me Fent (Orange Wavy Tag) --- */
-.chat-message.tem sold me fent {
+.chat-message.tem-sold-me-fent {
   position: relative;
-  background: rgba(0, 120, 0, 0.3); /* slightly brighter green tint */
-  border: 1.5px solid rgba(0, 255, 120, 0.8);
-  color: #b2ffb2;
+  background: rgba(255, 140, 0, 0.25); /* light orange tint */
+  border: 1.5px solid rgba(255, 165, 0, 0.8); /* glowing orange border */
+  color: #ffd8a0; /* soft orange text */
   box-shadow:
-    0 0 12px rgba(0, 255, 120, 0.6),
-    inset 0 0 8px rgba(0, 255, 120, 0.4);
-  animation: zekeWave 3s ease-in-out infinite;
+    0 0 12px rgba(255, 165, 0, 0.6),
+    inset 0 0 8px rgba(255, 165, 0, 0.4);
+  animation: temSoldMeFentWave 3s ease-in-out infinite;
   overflow: hidden;
   padding: 14px 18px;
   border-radius: 16px;
@@ -645,23 +645,24 @@ body {
 }
 
 /* Username style */
-.chat-message.tem sold me fent .username {
-  color: #00ff7f; /* bright neon green */
+.chat-message.tem-sold-me-fent .username {
+  color: #ffa500; /* bright orange */
   font-weight: 700;
   text-shadow:
-    0 0 8px rgba(0, 255, 120, 1),
-    0 0 16px rgba(0, 255, 150, 0.7);
+    0 0 8px rgba(255, 165, 0, 1),
+    0 0 16px rgba(255, 140, 0, 0.7);
   letter-spacing: 0.6px;
 }
 
 /* Wavy animation effect */
-@keyframes tem sold me fentWave {
+@keyframes temSoldMeFentWave {
   0%   { transform: translateY(0) rotate(-1.5deg); }
   25%  { transform: translateY(-3px) rotate(1.5deg); }
   50%  { transform: translateY(0) rotate(-1.5deg); }
   75%  { transform: translateY(3px) rotate(1.5deg); }
   100% { transform: translateY(0) rotate(-1.5deg); }
 }
+
 
 
 /* Responsive fix to maintain readability on smaller devices */
