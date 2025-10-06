@@ -626,6 +626,43 @@ body {
   100% { transform: translateY(0) rotate(-1.5deg); }
 }
 
+/* --- Tem Sold Me Fent (Orange Wavy Tag) --- */
+.chat-message.tem sold me fent {
+  position: relative;
+  background: rgba(0, 120, 0, 0.3); /* slightly brighter green tint */
+  border: 1.5px solid rgba(0, 255, 120, 0.8);
+  color: #b2ffb2;
+  box-shadow:
+    0 0 12px rgba(0, 255, 120, 0.6),
+    inset 0 0 8px rgba(0, 255, 120, 0.4);
+  animation: zekeWave 3s ease-in-out infinite;
+  overflow: hidden;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 15px;
+  flex-shrink: 0;
+  min-width: 160px;
+}
+
+/* Username style */
+.chat-message.tem sold me fent .username {
+  color: #00ff7f; /* bright neon green */
+  font-weight: 700;
+  text-shadow:
+    0 0 8px rgba(0, 255, 120, 1),
+    0 0 16px rgba(0, 255, 150, 0.7);
+  letter-spacing: 0.6px;
+}
+
+/* Wavy animation effect */
+@keyframes tem sold me fentWave {
+  0%   { transform: translateY(0) rotate(-1.5deg); }
+  25%  { transform: translateY(-3px) rotate(1.5deg); }
+  50%  { transform: translateY(0) rotate(-1.5deg); }
+  75%  { transform: translateY(3px) rotate(1.5deg); }
+  100% { transform: translateY(0) rotate(-1.5deg); }
+}
+
 
 /* Responsive fix to maintain readability on smaller devices */
 /* Ensures the chat messages don't shrink below minimum widths */
@@ -635,12 +672,14 @@ body {
   .chat-message.wobbler,
   .chat-message.hydreil,
   .chat-message.israel,
-  .chat-message.zeke {
+  .chat-message.zeke,
+  .chat=message.tem sold me fent {
     max-width: 90%;
     min-width: 140px;
     font-size: 13px;
     padding: 10px 14px;
   }
+  
   .chat-message.tem .username,
   .chat-message.glitchy .username,
   .chat-message.wobbler .username,
