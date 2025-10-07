@@ -674,7 +674,7 @@ body {
   .chat-message.hydreil,
   .chat-message.israel,
   .chat-message.zeke,
-  .chat=message.tem sold me fent {
+  .chat=message.tem-sold-me-fent {
     max-width: 90%;
     min-width: 140px;
     font-size: 13px;
@@ -685,7 +685,8 @@ body {
   .chat-message.glitchy .username,
   .chat-message.wobbler .username,
   .chat-message.israel .username,
-  .chat-message.zeke .username {
+  .chat-message.zeke .username,
+  .chat-message.tem-sold-me-fent .username {
     font-size: 11px;
   }
 }
