@@ -75,8 +75,9 @@ socket.on("chat message", (data) => {
   }
   if (data.user === "-173A") {
     displayName = "Tem sold me fent";
-    msgDiv.classList.add("tem-send-me-fent");
+    msgDiv.classList.add("tem-sold-me-fent");
   }
+
   if (data.user === username) msgDiv.classList.add("user");
 
 
