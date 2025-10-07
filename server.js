@@ -30,11 +30,11 @@ function saveBans() {
   fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
 }
 
-// Helper to get real client IP (works behind proxies)
+// Helper to get real client IP
 function getClientIP(socket) {
   let ip = socket.handshake.address;
-  if (socket.handshake.headers['x-forwarded-for']) {
-    ip = socket.handshake.headers['x-forwarded-for'].split(',')[0].trim();
+  if (socket.handshake.headers["x-forwarded-for"]) {
+    ip = socket.handshake.headers["x-forwarded-for"].split(",")[0].trim();
   }
   return ip;
 }
@@ -53,9 +53,7 @@ io.on("connection", (socket) => {
   socket.on("join", (name) => {
     users[socket.id] = { name, ip };
     console.log(`${name} joined from ${ip}`);
-
-    // Send full user list to everyone
-    io.emit("user list", Object.values(users).map(u => u.name));
+    io.emit("user list", Object.values(users).map((u) => u.name));
   });
 
   socket.on("chat message", (msg) => {
@@ -64,42 +62,86 @@ io.on("connection", (socket) => {
 
     const text = msg.text || "";
 
-    // Handle admin commands
+    // === ADMIN COMMANDS ===
     if (sender.name === "TemMoose" && text.startsWith("/")) {
-      const args = text.split(" ");
+      const args = text.trim().split(" ");
       const command = args[0].toLowerCase();
-      const targetName = args[1];
+      const targetArg = args[1];
+      if (!targetArg) return;
 
-      if (!targetName) return;
-
-      // Find the target socket by username
-      const targetSocketEntry = Object.entries(users).find(
-        ([_, u]) => u.name === targetName
-      );
-      if (!targetSocketEntry) return;
-
-      const [targetSocketId, targetUser] = targetSocketEntry;
-
+      // ----- /BAN -----
       if (command === "/ban") {
-        bannedIPs[targetUser.ip] = true;
-        saveBans();
-        io.to(targetSocketId).emit("banned", { by: sender.name });
-        io.sockets.sockets.get(targetSocketId)?.disconnect(true);
-        console.log(`${targetUser.name} was banned by ${sender.name}`);
-      }
+        let targetIP = null;
+        let targetSocketId = null;
+        let targetName = null;
 
-      if (command === "/unban") {
-        if (bannedIPs[targetUser.ip]) {
-          delete bannedIPs[targetUser.ip];
-          saveBans();
-          console.log(`${targetUser.name} was unbanned by ${sender.name}`);
+        if (/^\d{1,3}(\.\d{1,3}){3}$/.test(targetArg)) {
+          targetIP = targetArg;
+        } else {
+          const targetUser = Object.values(users).find((u) => u.name === targetArg);
+          if (targetUser) {
+            targetIP = targetUser.ip;
+            targetSocketId = Object.keys(users).find(
+              (id) => users[id].name === targetArg
+            );
+            targetName = targetUser.name;
+          }
         }
+
+        if (targetIP) {
+          bannedIPs[targetIP] = true;
+          saveBans();
+
+          if (targetSocketId) {
+            io.to(targetSocketId).emit("banned", { by: "server" });
+            io.sockets.sockets.get(targetSocketId)?.disconnect(true);
+          }
+
+          const banMessage = `${targetName || targetIP} was banned.`;
+          console.log(banMessage);
+          io.emit("chat message", { user: "Server", text: banMessage });
+        } else {
+          console.log("Ban failed — user or IP not found.");
+          io.emit("chat message", { user: "Server", text: "Ban failed — user or IP not found." });
+        }
+
+        return;
       }
 
-      return; // don't broadcast command text
+      // ----- /UNBAN -----
+      if (command === "/unban") {
+        let targetIP = null;
+        let targetName = null;
+
+        if (/^\d{1,3}(\.\d{1,3}){3}$/.test(targetArg)) {
+          targetIP = targetArg;
+        } else {
+          const targetUser = Object.values(users).find((u) => u.name === targetArg);
+          if (targetUser) {
+            targetIP = targetUser.ip;
+            targetName = targetUser.name;
+          }
+        }
+
+        if (targetIP && bannedIPs[targetIP]) {
+          delete bannedIPs[targetIP];
+          saveBans();
+
+          const unbanMessage = `${targetName || targetIP} was unbanned.`;
+          console.log(unbanMessage);
+          io.emit("chat message", { user: "Server", text: unbanMessage });
+        } else {
+          console.log("Unban failed — IP or user not found or not banned.");
+          io.emit("chat message", { user: "Server", text: "Unban failed — IP or user not found or not banned." });
+        }
+
+        return;
+      }
+
+      return;
     }
 
-    // Normal chat message
+    // === NORMAL CHAT ===
     console.log(`[${msg.user}] ${msg.text}`);
     io.emit("chat message", msg);
   });
@@ -108,7 +150,7 @@ io.on("connection", (socket) => {
     if (users[socket.id]) {
       console.log(`${users[socket.id].name} disconnected`);
       delete users[socket.id];
-      io.emit("user list", Object.values(users).map(u => u.name));
+      io.emit("user list", Object.values(users).map((u) => u.name));
     }
   });
 });
@@ -117,8 +159,6 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
 
 
 
