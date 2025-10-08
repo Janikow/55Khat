@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Denied — 55Khat</title>
+  <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0d0d0d);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .banned-container {
+      background: rgba(30, 30, 30, 0.85);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      box-shadow: 0 0 15px rgba(255, 60, 60, 0.3);
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    .banned-container h1 {
+      color: #ff3c3c;
+      text-shadow: 0 0 10px #ff3c3c;
+      margin-bottom: 10px;
+      font-size: 1.8em;
+    }
+
+    .banned-container p {
+      color: #ccc;
+      font-size: 1em;
+      margin-bottom: 20px;
+      line-height: 1.4em;
+    }
+
+    button {
+      background: #ff3c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 8px rgba(255, 60, 60, 0.7);
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #ff5252;
+      box-shadow: 0 0 12px rgba(255, 80, 80, 0.9);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="banned-container">
+    <img src="/images/55khatl.png" alt="Logo" 
+         style="width: 100px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
+    <h1>Access Denied</h1>
+    <p>You have been banned from 55Khat.<br>
+        I'll probably unban you at Lunch or tonight at latest.</p>
+    <button onclick="window.location.href='index.html'">⬅ Return to Home</button>
+  </div>
+</body>
+</html>
