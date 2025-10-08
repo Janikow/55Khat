@@ -20,7 +20,7 @@ function setUsername() {
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
 
-  socket.emit("join", username);f
+  socket.emit("join", username);
 }
 
 // --- Send message ---
@@ -84,7 +84,10 @@ socket.on("chat message", (data) => {
 
   if (data.user === username) msgDiv.classList.add("user");
 
-
+  // whisper styling (only server sets data.whisper)
+  if (data.whisper) {
+    msgDiv.classList.add("whisper");
+  }
 
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
@@ -94,7 +97,14 @@ socket.on("chat message", (data) => {
   if (data.text) {
     const textSpan = document.createElement("span");
     textSpan.classList.add("message-text");
-    textSpan.textContent = data.text;
+    // indicate whisper visually in the chat text itself
+    if (data.whisper) {
+      // if the message was sent to a named target, show "→ target" for clarity on the sender side
+      const direction = (data.to && data.user === username) ? ` → ${data.to}` : (data.to ? ` (to ${data.to})` : "");
+      textSpan.textContent = `(whisper)${direction} ${data.text}`;
+    } else {
+      textSpan.textContent = data.text;
+    }
     msgDiv.appendChild(textSpan);
   }
 
@@ -130,7 +140,6 @@ socket.on("user list", (users) => {
     if (u === "-173A") displayName = "Tem sold me fent";
     if (u === "G4t$by1130!") displayName = "sai";
 
-
     const div = document.createElement("div");
     div.textContent = displayName;
 
@@ -142,7 +151,6 @@ socket.on("user list", (users) => {
     if (u === "EzekielGreen333") div.classList.add("zeke");
     if (u === "-173A") div.classList.add("tem-sold-me-fent");
     if (u === "G4t$by1130!") div.classList.add("sai");
-
 
     usersList.appendChild(div);
   });
