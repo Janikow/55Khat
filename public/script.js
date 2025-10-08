@@ -15,13 +15,19 @@ function setFavicon(src) {
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
-  if (username.length < 2 || username.length > 18) return alert("Username must be 2–18 characters.");
+  if (username.length < 2 || username.length > 18)
+    return alert("Username must be 2–18 characters.");
 
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("chatPage").classList.remove("hidden");
-
-  socket.emit("join", username);f
+  socket.emit("join", username);
 }
+
+// --- Username taken handler ---
+socket.on("username taken", () => {
+  alert("That username is already in use. Please choose a different one.");
+  document.getElementById("usernameInput").value = "";
+  document.getElementById("loginPage").classList.remove("hidden");
+  document.getElementById("chatPage").classList.add("hidden");
+});
 
 // --- Send message ---
 function sendMessage() {
@@ -45,10 +51,12 @@ document.getElementById("chatInput").addEventListener("keydown", (e) => {
 function sendImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024) return alert("GIF > 5MB not allowed.");
+  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024)
+    return alert("GIF > 5MB not allowed.");
 
   const reader = new FileReader();
-  reader.onload = () => socket.emit("chat message", { user: username, image: reader.result });
+  reader.onload = () =>
+    socket.emit("chat message", { user: username, image: reader.result });
   reader.readAsDataURL(file);
   event.target.value = "";
 }
@@ -62,9 +70,12 @@ socket.on("chat message", (data) => {
   let displayName = data.user;
 
   if (data.user === "TemMoose") displayName = "Tem", msgDiv.classList.add("tem");
-  if (data.user === "TristanGlizzy") displayName = "Fishtan", msgDiv.classList.add("glitchy");
-  if (data.user === "BowdownP3asents") displayName = "Wobbler", msgDiv.classList.add("wobbler");
-  if (data.user === "JonathanZachery") displayName = "Hydreil", msgDiv.classList.add("hydreil");
+  if (data.user === "TristanGlizzy")
+    displayName = "Fishtan", msgDiv.classList.add("glitchy");
+  if (data.user === "BowdownP3asents")
+    displayName = "Wobbler", msgDiv.classList.add("wobbler");
+  if (data.user === "JonathanZachery")
+    displayName = "Hydreil", msgDiv.classList.add("hydreil");
   if (data.user === "JairoIsraelTeliz") {
     displayName = "ISRAEL";
     msgDiv.classList.add("israel");
@@ -79,8 +90,6 @@ socket.on("chat message", (data) => {
   }
 
   if (data.user === username) msgDiv.classList.add("user");
-
-
 
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
@@ -106,7 +115,10 @@ socket.on("chat message", (data) => {
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  if (document.hidden) { setFavicon(alertFavicon); hasNewMessage = true; }
+  if (document.hidden) {
+    setFavicon(alertFavicon);
+    hasNewMessage = true;
+  }
 });
 
 // --- User list ---
@@ -115,7 +127,7 @@ socket.on("user list", (users) => {
   const userCount = document.getElementById("userCount");
 
   usersList.innerHTML = "";
-  users.forEach(u => {
+  users.forEach((u) => {
     let displayName = u;
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
@@ -124,7 +136,6 @@ socket.on("user list", (users) => {
     if (u === "JairoIsraelTeliz") displayName = "ISRAEL";
     if (u === "EzekielGreen333") displayName = "Zeke";
     if (u === "-173A") displayName = "Tem sold me fent";
-
 
     const div = document.createElement("div");
     div.textContent = displayName;
@@ -137,7 +148,6 @@ socket.on("user list", (users) => {
     if (u === "EzekielGreen333") div.classList.add("zeke");
     if (u === "-173A") div.classList.add("tem-sold-me-fent");
 
-
     usersList.appendChild(div);
   });
 
@@ -145,23 +155,24 @@ socket.on("user list", (users) => {
 });
 
 // --- Banned handler ---
-socket.on('banned', (info) => {
+socket.on("banned", (info) => {
   alert(`You have been banned by "server". You will be unbanned at the end of the day.`);
-  window.location.href = '/banned.html';
+  window.location.href = "/banned.html";
 });
 
 // --- Reset favicon ---
 window.addEventListener("focus", () => {
-  if (hasNewMessage) { setFavicon(defaultFavicon); hasNewMessage = false; }
+  if (hasNewMessage) {
+    setFavicon(defaultFavicon);
+    hasNewMessage = false;
+  }
 });
 
 // --- Handle banned users ---
 socket.on("banned", (data) => {
-  // Hide chat page
   const chatPage = document.getElementById("chatPage");
-  chatPage.innerHTML = ""; // Clear content
+  chatPage.innerHTML = "";
 
-  // Create ban message container
   const banDiv = document.createElement("div");
   banDiv.style.display = "flex";
   banDiv.style.flexDirection = "column";
@@ -181,9 +192,7 @@ socket.on("banned", (data) => {
   title.style.textShadow = "0 0 10px red";
 
   const reason = document.createElement("p");
-  reason.textContent = data.by
-    ? `Banned by: ${data.by}`
-    : "Banned by server";
+  reason.textContent = data.by ? `Banned by: ${data.by}` : "Banned by server";
   reason.style.fontSize = "1.5rem";
   reason.style.marginBottom = "30px";
 
@@ -197,6 +206,3 @@ socket.on("banned", (data) => {
 
   chatPage.appendChild(banDiv);
 });
-
-
-
