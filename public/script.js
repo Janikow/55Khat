@@ -77,6 +77,10 @@ socket.on("chat message", (data) => {
     displayName = "Tem sold me fent";
     msgDiv.classList.add("tem-sold-me-fent");
   }
+  if (data.user === "G4t$by1130!") {
+    displayName = "sai";
+    msgDiv.classList.add("sai");
+  }
 
   if (data.user === username) msgDiv.classList.add("user");
 
@@ -124,6 +128,7 @@ socket.on("user list", (users) => {
     if (u === "JairoIsraelTeliz") displayName = "ISRAEL";
     if (u === "EzekielGreen333") displayName = "Zeke";
     if (u === "-173A") displayName = "Tem sold me fent";
+    if (u === "G4t$by1130!") displayName = "sai";
 
 
     const div = document.createElement("div");
@@ -136,6 +141,7 @@ socket.on("user list", (users) => {
     if (u === "JairoIsraelTeliz") div.classList.add("israel");
     if (u === "EzekielGreen333") div.classList.add("zeke");
     if (u === "-173A") div.classList.add("tem-sold-me-fent");
+    if (u === "G4t$by1130!") div.classList.add("sai");
 
 
     usersList.appendChild(div);
