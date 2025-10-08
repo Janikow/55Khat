@@ -664,6 +664,112 @@ body {
 }
 
 
+/* --- Sai (Red Electric) --- */
+.chat-message.sai {
+  position: relative;
+  background: rgba(25, 0, 0, 0.95); /* Dark red background for contrast */
+  border: 1.5px solid rgba(255, 0, 0, 0.9);
+  color: #ff4d4d;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 8px #ff1a1a,
+    0 0 18px #ff0000;
+  box-shadow:
+    0 0 6px #ff1a1a inset,
+    0 0 10px #ff0000,
+    0 0 20px rgba(255, 0, 0, 0.75),
+    0 0 35px rgba(255, 50, 50, 0.55);
+  animation: saiFlicker 1.2s infinite alternate;
+  overflow: visible;
+  min-width: 140px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  flex-shrink: 0;
+}
+
+/* Username */
+.chat-message.sai .username {
+  color: #ff8080;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 8px #ff4d4d,
+    0 0 12px #ff0000;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+/* Electric scanlines overlay */
+.chat-message.sai::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0.12) 0px,
+    rgba(255, 0, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  animation: saiScan 0.8s infinite linear;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+/* Electric ghost “spark” effect */
+.chat-message.sai::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2.5px;
+  top: 2.5px;
+  color: rgba(255, 100, 100, 0.5);
+  text-shadow:
+    -1px 0 #ff0000,
+    1px 0 #ff4d4d,
+    0 0 15px #ff0000,
+    0 0 25px #ff4d4d;
+  overflow: hidden;
+  clip-path: inset(0 0 50% 0);
+  animation: saiElectricShift 0.5s infinite steps(2);
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+/* Flicker intensity animation */
+@keyframes saiFlicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  45% { opacity: 0.9; filter: brightness(1.1); }
+  50% { opacity: 0.75; filter: brightness(1.3); }
+  55% { opacity: 0.95; filter: brightness(1.1); }
+}
+
+/* Red scanline shimmer */
+@keyframes saiScan {
+  from { transform: translateY(0); }
+  to { transform: translateY(6px); }
+}
+
+/* Electric pulse ghost shift */
+@keyframes saiElectricShift {
+  0% {
+    clip-path: inset(0 0 50% 0);
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    clip-path: inset(50% 0 0 0);
+    transform: translate(2px, 2px);
+    filter: hue-rotate(30deg);
+  }
+  100% {
+    clip-path: inset(0 0 50% 0);
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(0deg);
+  }
+}
+
+
+
 
 /* Responsive fix to maintain readability on smaller devices */
 /* Ensures the chat messages don't shrink below minimum widths */
@@ -674,7 +780,8 @@ body {
   .chat-message.hydreil,
   .chat-message.israel,
   .chat-message.zeke,
-  .chat=message.tem-sold-me-fent {
+  .chat=message.tem-sold-me-fent,
+  .chat=message.sai {
     max-width: 90%;
     min-width: 140px;
     font-size: 13px;
@@ -686,7 +793,8 @@ body {
   .chat-message.wobbler .username,
   .chat-message.israel .username,
   .chat-message.zeke .username,
-  .chat-message.tem-sold-me-fent .username {
+  .chat-message.tem-sold-me-fent .username,
+  .chat-message.sai .username {
     font-size: 11px;
   }
 }
