@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>55Khat Update Logs</title>
+  <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Page-specific tweaks to blend with your existing theme */
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding-top: 50px;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0d0d0d);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-y: auto;
+    }
 
+    .logs-container {
+      background: rgba(30, 30, 30, 0.8);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      box-shadow: 0 0 15px rgba(255, 60, 60, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      width: 90%;
+      max-width: 700px;
+      margin-top: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px #ff3c3c;
+    }
+
+    .log-entry {
+      border-left: 3px solid #ff3c3c;
+      padding-left: 10px;
+      margin-bottom: 15px;
+      background: rgba(255, 60, 60, 0.05);
+      border-radius: 6px;
+    }
+
+    .log-entry h3 {
+      color: #ff5a5a;
+      margin: 0;
+      font-size: 1.1em;
+    }
+
+    .log-entry p {
+      margin: 5px 0 0;
+      font-size: 0.95em;
+      color: #ccc;
+    }
+
+    button {
+      background: #ff3c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 8px rgba(255, 60, 60, 0.7);
+      transition: 0.2s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background: #ff5252;
+      box-shadow: 0 0 12px rgba(255, 80, 80, 0.9);
+    }
+  </style>
+</head>
+<body>
+  <img src="/images/55khatl.png" alt="Logo" 
+       style="width: 120px; margin-bottom: 10px; filter: drop-shadow(0 0 6px #ff3c3c);">
+
+  <h2>Update Logs</h2>
+
+  <div class="logs-container">
+    <div class="log-entry">
+      <h3>v1.2 — October 2025</h3>
+      <p>• Added update logs button to the main screen.</p>
+      <p>• Improved chat performance and visuals.</p>
+    </div>
+
+    <div class="log-entry">
+      <h3>v1.1 — September 2025</h3>
+      <p>• Image sending added to chat.</p>
+      <p>• Minor bug fixes and visual polish.</p>
+    </div>
+
+    <div class="log-entry">
+      <h3>v1.0 — Launch Release</h3>
+      <p>• 55Khat officially launched.</p>
+      <p>• Core chat, login system, and user list fully implemented.</p>
+    </div>
+  </div>
+
+  <button onclick="window.location.href='index.html'">⬅ Back to Home</button>
+</body>
+</html>
