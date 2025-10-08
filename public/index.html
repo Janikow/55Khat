@@ -14,13 +14,14 @@
          style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
     <h2>Welcome to 55Khat</h2>
     <input type="text" id="usernameInput" placeholder="Enter a username...">
-    <button onclick="setUsername()">Join Chat</button>
+    <button onclick="setUsername()" 
+      style="margin-top: 10px;">Join Chat</button>
+    <button onclick="window.location.href='updatelogs.html'" 
+      style="margin-top: 8px;">View Logs</button>
   </div>
 
   <!-- Chat screen -->
   <div id="chatPage" class="chat-container hidden">
-    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
-
     <!-- Sidebar -->
     <div class="users-panel">
       <h3>Online (<span id="userCount">0</span>)</h3>
