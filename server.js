@@ -51,6 +51,13 @@ io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id} | IP: ${ip}`);
 
   socket.on("join", (name) => {
+    // Check if name is already taken
+    const nameTaken = Object.values(users).some((u) => u.name === name);
+    if (nameTaken) {
+      socket.emit("username taken");
+      return;
+    }
+
     users[socket.id] = { name, ip };
     console.log(`${name} joined from ${ip}`);
     io.emit("user list", Object.values(users).map((u) => u.name));
@@ -102,7 +109,10 @@ io.on("connection", (socket) => {
           io.emit("chat message", { user: "Server", text: banMessage });
         } else {
           console.log("Ban failed — user or IP not found.");
-          io.emit("chat message", { user: "Server", text: "Ban failed — user or IP not found." });
+          io.emit("chat message", {
+            user: "Server",
+            text: "Ban failed — user or IP not found.",
+          });
         }
 
         return;
@@ -132,7 +142,10 @@ io.on("connection", (socket) => {
           io.emit("chat message", { user: "Server", text: unbanMessage });
         } else {
           console.log("Unban failed — IP or user not found or not banned.");
-          io.emit("chat message", { user: "Server", text: "Unban failed — IP or user not found or not banned." });
+          io.emit("chat message", {
+            user: "Server",
+            text: "Unban failed — IP or user not found or not banned.",
+          });
         }
 
         return;
@@ -159,25 +172,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
