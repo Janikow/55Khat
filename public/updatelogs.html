@@ -7,7 +7,7 @@
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Page-specific tweaks to blend with your existing theme */
+    
     body {
       display: flex;
       flex-direction: column;
@@ -77,6 +77,22 @@
       background: #ff5252;
       box-shadow: 0 0 12px rgba(255, 80, 80, 0.9);
     }
+
+    .disclaimer {
+      position: fixed;
+      bottom: 10px;
+      left: 15px;
+      font-size: 0.75em;
+      color: #888;
+      opacity: 0.8;
+      user-select: none;
+    }
+
+    .disclaimer:hover {
+      opacity: 1;
+      color: #bbb;
+    }
+    
   </style>
 </head>
 <body>
@@ -87,14 +103,23 @@
 
   <div class="logs-container">
     <div class="log-entry">
+      <h3>Coming Soon</h3>
+      <p>• Username security. Only one of each username allowed at a time.</p>
+      <p>• Profile Pictures (Maybe)</p>
+    </div>
+    
+    <div class="log-entry"> 
       <h3>v1.2 — October 2025</h3>
       <p>• Added update logs button to the main screen.</p>
       <p>• Improved chat performance and visuals.</p>
+      <p>• Added private chats, /w "target username". Only works with no spaces in name.</p>
+      <p>• Improved ban screen.</p>
     </div>
 
     <div class="log-entry">
       <h3>v1.1 — September 2025</h3>
-      <p>• Image sending added to chat.</p>
+      <p>• Image/gif sending added to chat.</p>
+      <p>• Added banning and unbanning.</p>
       <p>• Minor bug fixes and visual polish.</p>
     </div>
 
@@ -106,5 +131,10 @@
   </div>
 
   <button onclick="window.location.href='index.html'">⬅ Back to Home</button>
+
+  <div class="disclaimer">
+    This website is not affiliated with any organization or entity. 55Khat is an independent third-party service.
+  </div>
+  
 </body>
 </html>
