@@ -15,7 +15,8 @@ function setFavicon(src) {
 function setUsername() {
   const input = document.getElementById("usernameInput");
   username = input.value.trim();
-  if (username.length < 2 || username.length > 18) return alert("Username must be 2–18 characters.");
+  if (username.length < 2 || username.length > 18)
+    return alert("Username must be 2–18 characters.");
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
@@ -29,6 +30,49 @@ function sendMessage() {
   const message = input.value.trim();
   if (!message || message.length > 600) return;
 
+  // --- COMMAND HANDLING ---
+  if (message.startsWith("/")) {
+    // Match commands with optional quotes
+    const match = message.match(/^\/(\w+)\s+(?:"([^"]+)"|(\S+))(?:\s+(.*))?$/);
+    if (!match) return;
+
+    const command = match[1].toLowerCase();
+    const targetName = match[2] || match[3]; // name (quoted or unquoted)
+    const rest = match[4]?.trim() || "";
+
+    // --- Whisper Command ---
+    if (command === "w" || command === "whisper") {
+      socket.emit("whisper", {
+        from: username,
+        to: targetName,
+        text: rest,
+      });
+      input.value = "";
+      return;
+    }
+
+    // --- Ban Command ---
+    if (command === "ban") {
+      socket.emit("ban", {
+        from: username,
+        target: targetName,
+      });
+      input.value = "";
+      return;
+    }
+
+    // --- Unban Command ---
+    if (command === "unban") {
+      socket.emit("unban", {
+        from: username,
+        target: targetName,
+      });
+      input.value = "";
+      return;
+    }
+  }
+
+  // --- Normal Chat Message ---
   socket.emit("chat message", { user: username, text: message });
   input.value = "";
 }
@@ -45,10 +89,12 @@ document.getElementById("chatInput").addEventListener("keydown", (e) => {
 function sendImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024) return alert("GIF > 5MB not allowed.");
+  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024)
+    return alert("GIF > 5MB not allowed.");
 
   const reader = new FileReader();
-  reader.onload = () => socket.emit("chat message", { user: username, image: reader.result });
+  reader.onload = () =>
+    socket.emit("chat message", { user: username, image: reader.result });
   reader.readAsDataURL(file);
   event.target.value = "";
 }
@@ -65,29 +111,14 @@ socket.on("chat message", (data) => {
   if (data.user === "TristanGlizzy") displayName = "Fishtan", msgDiv.classList.add("glitchy");
   if (data.user === "BowdownP3asents") displayName = "Wobbler", msgDiv.classList.add("wobbler");
   if (data.user === "JonathanZachery") displayName = "Hydreil", msgDiv.classList.add("hydreil");
-  if (data.user === "JairoIsraelTeliz") {
-    displayName = "ISRAEL";
-    msgDiv.classList.add("israel");
-  }
-  if (data.user === "EzekielGreen333") {
-    displayName = "Zeke";
-    msgDiv.classList.add("zeke");
-  }
-  if (data.user === "-173A") {
-    displayName = "Tem sold me fent";
-    msgDiv.classList.add("tem-sold-me-fent");
-  }
-  if (data.user === "G4t$by1130!") {
-    displayName = "sai";
-    msgDiv.classList.add("sai");
-  }
+  if (data.user === "JairoIsraelTeliz") displayName = "ISRAEL", msgDiv.classList.add("israel");
+  if (data.user === "EzekielGreen333") displayName = "Zeke", msgDiv.classList.add("zeke");
+  if (data.user === "-173A") displayName = "Tem sold me fent", msgDiv.classList.add("tem-sold-me-fent");
+  if (data.user === "G4t$by1130!") displayName = "sai", msgDiv.classList.add("sai");
 
   if (data.user === username) msgDiv.classList.add("user");
 
-  // whisper styling (only server sets data.whisper)
-  if (data.whisper) {
-    msgDiv.classList.add("whisper");
-  }
+  if (data.whisper) msgDiv.classList.add("whisper");
 
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
@@ -97,10 +128,13 @@ socket.on("chat message", (data) => {
   if (data.text) {
     const textSpan = document.createElement("span");
     textSpan.classList.add("message-text");
-    // indicate whisper visually in the chat text itself
     if (data.whisper) {
-      // if the message was sent to a named target, show "→ target" for clarity on the sender side
-      const direction = (data.to && data.user === username) ? ` → ${data.to}` : (data.to ? ` (to ${data.to})` : "");
+      const direction =
+        data.to && data.user === username
+          ? ` → ${data.to}`
+          : data.to
+          ? ` (to ${data.to})`
+          : "";
       textSpan.textContent = `(whisper)${direction} ${data.text}`;
     } else {
       textSpan.textContent = data.text;
@@ -120,7 +154,10 @@ socket.on("chat message", (data) => {
   chatBox.appendChild(msgDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  if (document.hidden) { setFavicon(alertFavicon); hasNewMessage = true; }
+  if (document.hidden) {
+    setFavicon(alertFavicon);
+    hasNewMessage = true;
+  }
 });
 
 // --- User list ---
@@ -129,7 +166,7 @@ socket.on("user list", (users) => {
   const userCount = document.getElementById("userCount");
 
   usersList.innerHTML = "";
-  users.forEach(u => {
+  users.forEach((u) => {
     let displayName = u;
     if (u === "TemMoose") displayName = "Tem";
     if (u === "TristanGlizzy") displayName = "Fishtan";
@@ -158,24 +195,11 @@ socket.on("user list", (users) => {
   userCount.textContent = users.length;
 });
 
-// --- Banned handler ---
-socket.on('banned', (info) => {
-  alert(`You have been banned by "server". You will be unbanned at the end of the day.`);
-  window.location.href = '/banned.html';
-});
-
-// --- Reset favicon ---
-window.addEventListener("focus", () => {
-  if (hasNewMessage) { setFavicon(defaultFavicon); hasNewMessage = false; }
-});
-
-// --- Handle banned users ---
+// --- Ban handler ---
 socket.on("banned", (data) => {
-  // Hide chat page
   const chatPage = document.getElementById("chatPage");
-  chatPage.innerHTML = ""; // Clear content
+  chatPage.innerHTML = "";
 
-  // Create ban message container
   const banDiv = document.createElement("div");
   banDiv.style.display = "flex";
   banDiv.style.flexDirection = "column";
@@ -195,9 +219,7 @@ socket.on("banned", (data) => {
   title.style.textShadow = "0 0 10px red";
 
   const reason = document.createElement("p");
-  reason.textContent = data.by
-    ? `Banned by: ${data.by}`
-    : "Banned by server";
+  reason.textContent = data.by ? `Banned by: ${data.by}` : "Banned by server";
   reason.style.fontSize = "1.5rem";
   reason.style.marginBottom = "30px";
 
@@ -210,4 +232,12 @@ socket.on("banned", (data) => {
   banDiv.appendChild(info);
 
   chatPage.appendChild(banDiv);
+});
+
+// --- Reset favicon ---
+window.addEventListener("focus", () => {
+  if (hasNewMessage) {
+    setFavicon(defaultFavicon);
+    hasNewMessage = false;
+  }
 });
