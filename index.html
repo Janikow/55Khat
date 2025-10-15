@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>55Khat</title>
+  <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Login screen -->
+  <div id="loginPage" class="login-container">
+    <img src="/images/55khatl.png" alt="Logo" 
+         style="width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 6px #ff3c3c);">
+    <h2>Welcome to 55Khat</h2>
+    <input type="text" id="usernameInput" placeholder="Enter a username...">
+    <button onclick="setUsername()" 
+      style="margin-top: 10px;">Join Chat</button>
+    <button onclick="window.location.href='updatelogs.html'" 
+      style="margin-top: 8px;">View Logs</button>
+  </div>
+
+  <!-- Chat screen -->
+  <div id="chatPage" class="chat-container hidden">
+    <!-- Sidebar -->
+    <div class="users-panel">
+      <h3>Online (<span id="userCount">0</span>)</h3>
+      <div id="usersList"></div>
+    </div>
+
+    <!-- Main chat -->
+    <div class="chat-main">
+      <div id="chatBox" class="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <!-- Hidden file input for images -->
+        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="sendImage(event)">
+        <!-- Button to trigger file input -->
+        <button onclick="document.getElementById('imageInput').click()">📎</button>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
