@@ -1,7 +1,8 @@
 const socket = io();
 let username = "";
+let serverPort = "";
 
-// --- Favicon notification setup ---
+// --- Favicon setup ---
 const favicon = document.getElementById("favicon");
 const defaultFavicon = "favicon.ico";
 const alertFavicon = "favicon-alert.ico";
@@ -11,17 +12,23 @@ function setFavicon(src) {
   favicon.href = src;
 }
 
-// --- Set username ---
+// --- Set username and port ---
 function setUsername() {
-  const input = document.getElementById("usernameInput");
-  username = input.value.trim();
+  const nameInput = document.getElementById("usernameInput");
+  const portInput = document.getElementById("serverPortInput");
+
+  username = nameInput.value.trim();
+  serverPort = portInput.value.trim();
+
   if (username.length < 2 || username.length > 18)
     return alert("Username must be 2–18 characters.");
+  if (!serverPort)
+    return alert("Please enter a server port.");
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("chatPage").classList.remove("hidden");
 
-  socket.emit("join", username);
+  socket.emit("join", { name: username, port: serverPort });
 }
 
 // --- Send message ---
@@ -30,54 +37,38 @@ function sendMessage() {
   const message = input.value.trim();
   if (!message || message.length > 600) return;
 
-  // --- COMMAND HANDLING ---
   if (message.startsWith("/")) {
-    // Match commands with optional quotes
     const match = message.match(/^\/(\w+)\s+(?:"([^"]+)"|(\S+))(?:\s+(.*))?$/);
     if (!match) return;
 
     const command = match[1].toLowerCase();
-    const targetName = match[2] || match[3]; // name (quoted or unquoted)
+    const targetName = match[2] || match[3];
     const rest = match[4]?.trim() || "";
 
-    // --- Whisper Command ---
     if (command === "w" || command === "whisper") {
-      socket.emit("whisper", {
-        from: username,
-        to: targetName,
-        text: rest,
-      });
+      socket.emit("whisper", { from: username, to: targetName, text: rest });
       input.value = "";
       return;
     }
 
-    // --- Ban Command ---
     if (command === "ban") {
-      socket.emit("ban", {
-        from: username,
-        target: targetName,
-      });
+      socket.emit("ban", { from: username, target: targetName });
       input.value = "";
       return;
     }
 
-    // --- Unban Command ---
     if (command === "unban") {
-      socket.emit("unban", {
-        from: username,
-        target: targetName,
-      });
+      socket.emit("unban", { from: username, target: targetName });
       input.value = "";
       return;
     }
   }
 
-  // --- Normal Chat Message ---
   socket.emit("chat message", { user: username, text: message });
   input.value = "";
 }
 
-// --- Chat input Enter-to-send ---
+// --- Enter to send ---
 document.getElementById("chatInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -117,7 +108,6 @@ socket.on("chat message", (data) => {
   if (data.user === "G4t$by1130!") displayName = "sai", msgDiv.classList.add("sai");
 
   if (data.user === username) msgDiv.classList.add("user");
-
   if (data.whisper) msgDiv.classList.add("whisper");
 
   const nameSpan = document.createElement("span");
@@ -179,64 +169,23 @@ socket.on("user list", (users) => {
 
     const div = document.createElement("div");
     div.textContent = displayName;
-
-    if (u === "TemMoose") div.classList.add("tem");
-    if (u === "TristanGlizzy") div.classList.add("glitchy");
-    if (u === "BowdownP3asents") div.classList.add("wobbler");
-    if (u === "JonathanZachery") div.classList.add("hydreil");
-    if (u === "JairoIsraelTeliz") div.classList.add("israel");
-    if (u === "EzekielGreen333") div.classList.add("zeke");
-    if (u === "-173A") div.classList.add("tem-sold-me-fent");
-    if (u === "G4t$by1130!") div.classList.add("sai");
-
+    div.classList.add("user-entry");
+    if (u === username) div.classList.add("self");
     usersList.appendChild(div);
   });
 
   userCount.textContent = users.length;
 });
 
-// --- Ban handler ---
+// --- Ban handling ---
 socket.on("banned", (data) => {
-  const chatPage = document.getElementById("chatPage");
-  chatPage.innerHTML = "";
-
-  const banDiv = document.createElement("div");
-  banDiv.style.display = "flex";
-  banDiv.style.flexDirection = "column";
-  banDiv.style.justifyContent = "center";
-  banDiv.style.alignItems = "center";
-  banDiv.style.height = "100vh";
-  banDiv.style.background = "linear-gradient(135deg, #2c2c2c, #1a1a1a)";
-  banDiv.style.color = "#ff3c3c";
-  banDiv.style.fontFamily = "Arial, sans-serif";
-  banDiv.style.textAlign = "center";
-  banDiv.style.padding = "20px";
-
-  const title = document.createElement("h1");
-  title.textContent = "You have been banned!";
-  title.style.fontSize = "3rem";
-  title.style.marginBottom = "20px";
-  title.style.textShadow = "0 0 10px red";
-
-  const reason = document.createElement("p");
-  reason.textContent = data.by ? `Banned by: ${data.by}` : "Banned by server";
-  reason.style.fontSize = "1.5rem";
-  reason.style.marginBottom = "30px";
-
-  const info = document.createElement("p");
-  info.textContent = "You cannot access the chat anymore.";
-  info.style.fontSize = "1rem";
-
-  banDiv.appendChild(title);
-  banDiv.appendChild(reason);
-  banDiv.appendChild(info);
-
-  chatPage.appendChild(banDiv);
+  alert(`You were banned by ${data.by || "the server"}.`);
+  window.location.reload();
 });
 
-// --- Reset favicon ---
-window.addEventListener("focus", () => {
-  if (hasNewMessage) {
+// --- Reset favicon when tab active ---
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && hasNewMessage) {
     setFavicon(defaultFavicon);
     hasNewMessage = false;
   }
