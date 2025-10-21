@@ -10,11 +10,11 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-// Map of socket.id -> { name, ip, socket }
+// Map of socket.id -> { name, ip, socket, port }
 let users = {};
 const bansFile = path.join(__dirname, "bans.json");
 
-// Load banned IPs from file
+// Load banned IPs
 let bannedIPs = {};
 if (fs.existsSync(bansFile)) {
   try {
@@ -39,7 +39,7 @@ function getClientIP(socket) {
   return ip;
 }
 
-// Helper to parse a command target and the rest of the text.
+// Helper to parse whisper target
 function parseTargetAndRest(rest) {
   if (!rest) return { target: null, rest: null };
   const m = rest.match(/^(?:"([^"]+)"|(\S+))(?:\s+([\s\S]+))?$/);
@@ -52,7 +52,7 @@ function parseTargetAndRest(rest) {
 io.on("connection", (socket) => {
   const ip = getClientIP(socket);
 
-  // Immediately disconnect banned users
+  // Disconnect banned users
   if (bannedIPs[ip]) {
     socket.emit("banned", { by: "server" });
     return socket.disconnect(true);
@@ -60,20 +60,27 @@ io.on("connection", (socket) => {
 
   console.log(`User connected: ${socket.id} | IP: ${ip}`);
 
-  socket.on("join", (name) => {
-    users[socket.id] = { name, ip, socket };
-    console.log(`${name} joined from ${ip}`);
-    io.emit("user list", Object.values(users).map((u) => u.name));
+  // --- JOIN EVENT ---
+  socket.on("join", ({ name, port }) => {
+    users[socket.id] = { name, ip, socket, port };
+    socket.join(port);
+    console.log(`${name} joined from ${ip} in server ${port}`);
+
+    const roomUsers = Object.values(users)
+      .filter(u => u.port === port)
+      .map(u => u.name);
+
+    io.to(port).emit("user list", roomUsers);
   });
 
-  // --- Handle chat messages ---
+  // --- CHAT MESSAGE ---
   socket.on("chat message", (msg) => {
     const sender = users[socket.id];
     if (!sender) return;
 
     const text = (msg.text || "").trim();
 
-    // COMMAND PARSING (optional fallback)
+    // Command fallback
     if (text.startsWith("/")) {
       const cmdMatch = text.match(/^\/(\w+)\s*(.*)$/);
       if (!cmdMatch) return;
@@ -87,47 +94,54 @@ io.on("connection", (socket) => {
           socket.emit("chat message", { user: "Server", text: 'Usage: /w "Target Name" message' });
           return;
         }
-        const targetSocketId = Object.keys(users).find(id => users[id].name === target);
+
+        const targetSocketId = Object.keys(users).find(
+          id => users[id].name === target && users[id].port === sender.port
+        );
+
         if (!targetSocketId) {
-          socket.emit("chat message", { user: "Server", text: `User "${target}" not found.` });
+          socket.emit("chat message", { user: "Server", text: `User "${target}" not found in this server.` });
           return;
         }
+
         const whisperPayload = { user: sender.name, text: rest, whisper: true, to: target };
         io.to(targetSocketId).emit("chat message", whisperPayload);
         socket.emit("chat message", whisperPayload);
         return;
       }
 
-      // Admin commands handled later via dedicated events
       return;
     }
 
-    // Normal chat
-    console.log(`[${msg.user}] ${msg.text}`);
-    io.emit("chat message", msg);
+    console.log(`[${msg.user}] (${sender.port}): ${msg.text}`);
+    io.to(sender.port).emit("chat message", msg);
   });
 
-  // --- WHISPER event (from updated client) ---
+  // --- WHISPER EVENT ---
   socket.on("whisper", ({ from, to, text }) => {
-    const sender = Object.values(users).find(u => u.name === from);
+    const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender) return;
 
-    const targetSocketId = Object.keys(users).find(id => users[id].name === to);
+    const targetSocketId = Object.keys(users).find(
+      id => users[id].name === to && users[id].port === sender.port
+    );
     if (!targetSocketId) {
-      sender.socket.emit("chat message", { user: "Server", text: `User "${to}" not found.` });
+      sender.socket.emit("chat message", { user: "Server", text: `User "${to}" not found in this server.` });
       return;
     }
 
     const payload = { user: from, text, whisper: true, to };
     io.to(targetSocketId).emit("chat message", payload);
     sender.socket.emit("chat message", payload);
-    console.log(`${from} whispered to ${to}: ${text}`);
+    console.log(`${from} whispered to ${to} (${sender.port}): ${text}`);
   });
 
-  // --- BAN event (admin only) ---
+  // --- BAN EVENT ---
   socket.on("ban", ({ from, target }) => {
-    const sender = Object.values(users).find(u => u.name === from);
+    const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender || sender.name !== "TemMoose") return;
+
+    const port = sender.port;
 
     // IP-like target
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(target)) {
@@ -141,14 +155,16 @@ io.on("connection", (socket) => {
       }
       const msg = `${targetIP} was banned.`;
       console.log(msg);
-      io.emit("chat message", { user: "Server", text: msg });
+      io.to(port).emit("chat message", { user: "Server", text: msg });
       return;
     }
 
     // Username target
-    const targetSocketId = Object.keys(users).find(id => users[id].name === target);
+    const targetSocketId = Object.keys(users).find(
+      id => users[id].name === target && users[id].port === port
+    );
     if (!targetSocketId) {
-      io.emit("chat message", { user: "Server", text: "Ban failed — user not found." });
+      io.to(port).emit("chat message", { user: "Server", text: "Ban failed — user not found." });
       return;
     }
 
@@ -159,30 +175,34 @@ io.on("connection", (socket) => {
     io.sockets.sockets.get(targetSocketId)?.disconnect(true);
     const msg = `${target} was banned.`;
     console.log(msg);
-    io.emit("chat message", { user: "Server", text: msg });
+    io.to(port).emit("chat message", { user: "Server", text: msg });
   });
 
-  // --- UNBAN event (admin only) ---
+  // --- UNBAN EVENT ---
   socket.on("unban", ({ from, target }) => {
-    const sender = Object.values(users).find(u => u.name === from);
+    const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender || sender.name !== "TemMoose") return;
 
-    // IP-like target
+    const port = sender.port;
+
+    // IP target
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(target)) {
       if (bannedIPs[target]) {
         delete bannedIPs[target];
         saveBans();
         const msg = `${target} was unbanned.`;
         console.log(msg);
-        io.emit("chat message", { user: "Server", text: msg });
+        io.to(port).emit("chat message", { user: "Server", text: msg });
       } else {
-        io.emit("chat message", { user: "Server", text: `Unban failed — ${target} not banned.` });
+        io.to(port).emit("chat message", { user: "Server", text: `Unban failed — ${target} not banned.` });
       }
       return;
     }
 
     // Username target
-    const targetSocketId = Object.keys(users).find(id => users[id].name === target);
+    const targetSocketId = Object.keys(users).find(
+      id => users[id].name === target && users[id].port === port
+    );
     let targetIP = targetSocketId ? users[targetSocketId].ip : null;
 
     if (targetIP && bannedIPs[targetIP]) {
@@ -190,24 +210,28 @@ io.on("connection", (socket) => {
       saveBans();
       const msg = `${target} was unbanned.`;
       console.log(msg);
-      io.emit("chat message", { user: "Server", text: msg });
+      io.to(port).emit("chat message", { user: "Server", text: msg });
     } else if (bannedIPs[target]) {
-      // fallback if argument itself is a banned IP
       delete bannedIPs[target];
       saveBans();
       const msg = `${target} was unbanned.`;
       console.log(msg);
-      io.emit("chat message", { user: "Server", text: msg });
+      io.to(port).emit("chat message", { user: "Server", text: msg });
     } else {
-      io.emit("chat message", { user: "Server", text: "Unban failed — IP or user not found or not banned." });
+      io.to(port).emit("chat message", { user: "Server", text: "Unban failed — IP or user not found or not banned." });
     }
   });
 
+  // --- DISCONNECT EVENT ---
   socket.on("disconnect", () => {
     if (users[socket.id]) {
-      console.log(`${users[socket.id].name} disconnected`);
+      const port = users[socket.id].port;
+      console.log(`${users[socket.id].name} disconnected from ${port}`);
       delete users[socket.id];
-      io.emit("user list", Object.values(users).map((u) => u.name));
+      const roomUsers = Object.values(users)
+        .filter(u => u.port === port)
+        .map(u => u.name);
+      io.to(port).emit("user list", roomUsers);
     }
   });
 });
