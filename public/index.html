@@ -14,6 +14,7 @@
       <img src="/images/55khatl.png" alt="Logo" class="logo">
       <h2>&lt;welcome&gt; to <span class="tag">55Khat</span> &lt;/welcome&gt;</h2>
       <input type="text" id="usernameInput" placeholder="Enter username...">
+      <input type="number" id="serverPortInput" placeholder="Enter server port..." min="1" max="65535">
       <button onclick="setUsername()">Join Chat</button>
       <button onclick="window.location.href='updatelogs.html'">View Logs</button>
     </div>
@@ -39,7 +40,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
