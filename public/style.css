@@ -1,5 +1,10 @@
 /* ================== Retro Console Base Layout ================== */
 
+.hidden {
+  display: none !important;
+}
+
+
 /* Background */
 body {
   font-family: 'Consolas', 'Courier New', monospace;
