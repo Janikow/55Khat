@@ -226,3 +226,9 @@ body {
   .users-panel { display: none; }
   .chat-message { max-width: 90%; }
 }
+
+/* ================== Hidden Class ================== */
+.hidden {
+  display: none;
+}
+
