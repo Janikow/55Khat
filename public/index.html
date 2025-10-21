@@ -10,26 +10,26 @@
 <body>
   <!-- ================== LOGIN SCREEN ================== -->
   <div id="loginPage" class="login-container">
-    <img src="/images/55khatl.png" alt="Logo" class="logo">
-    <h2>&lt;welcome&gt; to <span class="tag">55Khat</span> &lt;/welcome&gt;</h2>
-
-    <input type="text" id="usernameInput" placeholder="Enter username...">
-    <button onclick="setUsername()">Join Chat</button>
-    <button onclick="window.location.href='updatelogs.html'">View Logs</button>
+    <div class="login-content">
+      <img src="/images/55khatl.png" alt="Logo" class="logo">
+      <h2>&lt;welcome&gt; to <span class="tag">55Khat</span> &lt;/welcome&gt;</h2>
+      <input type="text" id="usernameInput" placeholder="Enter username...">
+      <button onclick="setUsername()">Join Chat</button>
+      <button onclick="window.location.href='updatelogs.html'">View Logs</button>
+    </div>
   </div>
 
   <!-- ================== CHAT SCREEN ================== -->
   <div id="chatPage" class="chat-container hidden">
-    <!-- Users Panel -->
+    <!-- Sidebar -->
     <div class="users-panel">
       <h3>&lt;online&gt; <span id="userCount">0</span> &lt;/online&gt;</h3>
       <div id="usersList"></div>
     </div>
 
-    <!-- Chat Window -->
+    <!-- Chat area -->
     <div class="chat-main">
       <div id="chatBox" class="chat-box"></div>
-
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
@@ -39,7 +39,7 @@
     </div>
   </div>
 
-  <!-- ================== SCRIPTS ================== -->
+  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
