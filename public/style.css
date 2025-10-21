@@ -1,4 +1,4 @@
-/* ================== HTML5 Console Theme ================== */
+/* ================== HTML5 Console Theme - Full Screen ================== */
 
 :root {
   --tag: #00bfff;
@@ -14,8 +14,10 @@
   display: none !important;
 }
 
+* {
+  box-sizing: border-box;
+}
 
-/* Base */
 body {
   margin: 0;
   height: 100vh;
@@ -27,7 +29,7 @@ body {
   overflow: hidden;
 }
 
-/* CRT scanline overlay */
+/* Subtle CRT overlay */
 body::before {
   content: "";
   position: fixed;
@@ -41,53 +43,48 @@ body::before {
   );
   mix-blend-mode: screen;
   pointer-events: none;
-  z-index: 5;
+  z-index: 999;
 }
 
-/* Layout */
-.chat-container,
-.login-container {
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.4s ease;
-  overflow: hidden;
-}
-
+/* Shared Layouts */
+.login-container,
 .chat-container {
-  flex-direction: column;
-  padding: 10px 30px;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  animation: fadeIn 0.4s ease;
 }
 
 /* ================== Login ================== */
-#loginPage {
-  gap: 14px;
-  text-align: center;
+.login-container {
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.85);
+  flex-direction: column;
+}
+
+.login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 130px;
+  filter: drop-shadow(0 0 8px #00ffaa);
 }
 
 #loginPage h2 {
-  font-size: 22px;
+  font-size: 24px;
   color: var(--accent);
   text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
 }
 
 #usernameInput {
-  width: 60%;
+  width: 250px;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--accent);
@@ -119,16 +116,60 @@ body::before {
 
 /* ================== Chat ================== */
 
-.chat-box {
-  flex: 1;
-  width: 100%;
-  overflow-y: auto;
-  padding: 10px;
-  border-top: 1px solid rgba(0, 255, 128, 0.15);
-  border-bottom: 1px solid rgba(0, 255, 128, 0.15);
+.chat-container {
+  display: flex;
+  flex-direction: row;
+  background: rgba(0, 0, 0, 0.7);
 }
 
-/* Message style — looks like console output */
+.users-panel {
+  width: 240px;
+  border-right: 1px solid rgba(0, 255, 128, 0.2);
+  padding: 16px;
+  background: rgba(0, 20, 10, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.users-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: var(--accent);
+  border-bottom: 1px solid rgba(0, 255, 128, 0.3);
+  padding-bottom: 4px;
+}
+
+#usersList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#usersList div {
+  padding: 6px;
+  font-size: 13px;
+  transition: 0.2s;
+  color: var(--text);
+}
+
+#usersList div:hover {
+  color: var(--accent);
+}
+
+/* Chat Area */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+}
+
+/* Messages */
 .chat-message {
   margin: 8px 0;
   font-size: 14px;
@@ -142,24 +183,17 @@ body::before {
   margin-right: 6px;
 }
 
-.chat-message .message-text {
-  color: var(--text);
-}
+.chat-message .message-text span.tag { color: var(--tag); }
+.chat-message .message-text span.attr { color: var(--attr); }
+.chat-message .message-text span.value { color: var(--value); }
+.chat-message .message-text span.comment { color: #555; font-style: italic; }
 
-/* Syntax colors inside messages */
-.message-text span.tag { color: var(--tag); }
-.message-text span.attr { color: var(--attr); }
-.message-text span.value { color: var(--value); }
-.message-text span.comment { color: #555; font-style: italic; }
-
-/* ================== Input ================== */
-
+/* Input */
 .chat-input {
   display: flex;
-  gap: 8px;
-  padding: 10px 0;
-  width: 100%;
-  align-items: center;
+  padding: 12px;
+  background: rgba(0, 20, 10, 0.8);
+  border-top: 1px solid rgba(0, 255, 128, 0.3);
 }
 
 .chat-input input {
@@ -182,8 +216,9 @@ body::before {
   border: 1px solid var(--accent);
   background: transparent;
   color: var(--accent);
-  padding: 8px 18px;
+  padding: 8px 16px;
   font-weight: bold;
+  margin-left: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -192,18 +227,25 @@ body::before {
   background: rgba(0, 255, 128, 0.1);
 }
 
-/* ================== Scrollbars ================== */
-.chat-box::-webkit-scrollbar {
+/* Scrollbars */
+.chat-box::-webkit-scrollbar,
+#usersList::-webkit-scrollbar {
   width: 4px;
 }
-.chat-box::-webkit-scrollbar-thumb {
+
+.chat-box::-webkit-scrollbar-thumb,
+#usersList::-webkit-scrollbar-thumb {
   background: var(--accent);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
-/* ================== Responsiveness ================== */
-@media (max-width: 480px) {
-  .chat-input input { font-size: 11px; }
-  #usernameInput { width: 80%; }
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
