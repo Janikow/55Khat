@@ -83,39 +83,9 @@ body::before {
   text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
 }
 
-#usernameInput {
-  width: 250px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--accent);
-  color: var(--text);
-  padding: 10px;
-  text-align: center;
-  transition: 0.2s;
-}
-
-#serverPortInput {
-  width: 250px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--accent);
-  color: var(--text);
-  padding: 10px;
-  text-align: center;
-  transition: 0.2s;
-}
-
-#passwordInput {
-  width: 250px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--accent);
-  color: var(--text);
-  padding: 10px;
-  text-align: center;
-  transition: 0.2s;
-}
-
+#usernameInput,
+#serverPortInput,
+#passwordInput,
 #profilePicInput {
   width: 250px;
   background: transparent;
@@ -127,21 +97,9 @@ body::before {
   transition: 0.2s;
 }
 
-#usernameInput:focus {
-  outline: none;
-  box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
-}
-
-#usernamePortInput:focus {
-  outline: none;
-  box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
-}
-
-#passwordInput:focus {
-  outline: none;
-  box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
-}
-
+#usernameInput:focus,
+#serverPortInput:focus,
+#passwordInput:focus,
 #profilePicInput:focus {
   outline: none;
   box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
@@ -166,20 +124,18 @@ body::before {
 
 .chat-container {
   display: flex;
-  flex-direction: row-reverse; /* ⬅ Moves the users panel to the right */
+  flex-direction: row-reverse;
   background: rgba(0, 0, 0, 0.7);
 }
 
 .users-panel {
   width: 240px;
-  border-right: 1px solid rgba(0, 255, 128, 0.2); /* ⬅ Changed from left to right */
-  border-left: none; /* ⬅ Remove the old left border */
+  border-right: 1px solid rgba(0, 255, 128, 0.2);
   padding: 16px;
   background: rgba(0, 20, 10, 0.2);
   display: flex;
   flex-direction: column;
 }
-
 
 .users-panel h3 {
   margin: 0 0 10px 0;
@@ -194,15 +150,31 @@ body::before {
   overflow-y: auto;
 }
 
-#usersList div {
+.user-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 6px;
-  font-size: 13px;
   transition: 0.2s;
-  color: var(--text);
 }
 
-#usersList div:hover {
+.user-entry:hover {
   color: var(--accent);
+}
+
+.user-entry img.profile-pic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 6px rgba(0, 255, 128, 0.3);
+}
+
+.user-entry span.username {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: bold;
 }
 
 /* Chat Area */
@@ -221,16 +193,38 @@ body::before {
 
 /* Messages */
 .chat-message {
-  margin: 8px 0;
-  font-size: 14px;
-  white-space: pre-wrap;
+  display: flex;
+  align-items: flex-start;
+  margin: 12px 0;
   animation: popIn 0.25s ease;
+}
+
+.chat-message .profile-pic {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
+  margin-right: 10px;
+}
+
+.chat-message-content {
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-message .username {
   color: var(--accent);
   font-weight: bold;
-  margin-right: 6px;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.chat-message .message-text {
+  font-size: 14px;
+  white-space: pre-wrap;
+  color: var(--text);
 }
 
 .chat-message .message-text span.tag { color: var(--tag); }
@@ -298,21 +292,4 @@ body::before {
 @keyframes popIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Profile Pic */
-
-.profile-pic {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
-  transition: 0.2s;
-}
-
-.profile-pic:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(0, 255, 128, 0.6);
 }
