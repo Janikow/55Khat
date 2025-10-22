@@ -194,7 +194,7 @@ body::before {
 /* Messages */
 .chat-message {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; /* Align profile pic to the top */
   margin: 12px 0;
   animation: popIn 0.25s ease;
 }
@@ -211,14 +211,15 @@ body::before {
 
 .chat-message-content {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Stack username on top of message */
+  justify-content: flex-start;
 }
 
 .chat-message .username {
   color: var(--accent);
   font-weight: bold;
   font-size: 14px;
-  margin-bottom: 2px;
+  margin-bottom: 4px; /* Space between username and message */
 }
 
 .chat-message .message-text {
@@ -226,6 +227,7 @@ body::before {
   white-space: pre-wrap;
   color: var(--text);
 }
+
 
 .chat-message .message-text span.tag { color: var(--tag); }
 .chat-message .message-text span.attr { color: var(--attr); }
