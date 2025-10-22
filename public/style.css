@@ -135,7 +135,7 @@ body::before {
 
 .users-panel {
   width: 240px;
-  border-right: 1px solid rgba(0, 255, 128, 0.2);
+  border-left: 1px solid rgba(0, 255, 128, 0.2);
   padding: 16px;
   background: rgba(0, 20, 10, 0.2);
   display: flex;
