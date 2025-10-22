@@ -6,21 +6,24 @@
   <title>Clever Education</title>
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
-  <!-- Ads -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4357116898226906"
-     crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4357116898226906" crossorigin="anonymous"></script>
 </head>
 <body>
-  
+
   <!-- ================== LOGIN SCREEN ================== -->
   <div id="loginPage" class="login-container">
     <div class="login-content">
       <img src="/images/55khatl.png" alt="Logo" class="logo">
-      <h2>&lt;welcome&gt; to <span class="tag">Clever Education</span> &lt;/welcome&gt;</h2>
+      <h2>Welcome to Clever Education</h2>
       <input type="text" id="usernameInput" placeholder="Enter username...">
       <input type="password" id="passwordInput" placeholder="Enter password...">
-      <input type="number" id="serverPortInput" placeholder="Enter rooom code (1-60000)..." min="1" max="65535">
-      <p>&lt;Note&gt;<span class="tag"> Public Room: 1</span> &lt;/Note&gt;</p>
+      <input type="number" id="serverPortInput" placeholder="Enter room code (1–60000)..." min="1" max="65535">
+      
+      <!-- Profile picture input -->
+      <p>Select a profile picture (optional):</p>
+      <input type="file" id="profilePicInput" accept="image/*">
+
+      <p><small>Public Room: 1</small></p>
       <button onclick="setUsername()">Join Chat</button>
       <button onclick="window.location.href='updatelogs.html'">View Logs</button>
     </div>
@@ -30,7 +33,7 @@
   <div id="chatPage" class="chat-container hidden">
     <!-- Sidebar -->
     <div class="users-panel">
-      <h3>&lt;online&gt; <span id="userCount">0</span> &lt;/online&gt;</h3>
+      <h3>Online: <span id="userCount">0</span></h3>
       <div id="usersList"></div>
     </div>
 
