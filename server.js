@@ -3,6 +3,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,7 @@ app.use(express.static("public"));
 // Map of socket.id -> { name, ip, socket, port }
 let users = {};
 const bansFile = path.join(__dirname, "bans.json");
+const usersFile = path.join(__dirname, "users.json");
 
 // Load banned IPs
 let bannedIPs = {};
@@ -25,12 +27,29 @@ if (fs.existsSync(bansFile)) {
   }
 }
 
-// Save banned IPs to file
+// Load registered users
+let registeredUsers = {};
+if (fs.existsSync(usersFile)) {
+  try {
+    registeredUsers = JSON.parse(fs.readFileSync(usersFile, "utf-8"));
+    console.log("Loaded registered users:", Object.keys(registeredUsers));
+  } catch (e) {
+    console.error("Failed to load users.json:", e);
+  }
+}
+
 function saveBans() {
   fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
 }
 
-// Helper to get real client IP
+function saveUsers() {
+  fs.writeFileSync(usersFile, JSON.stringify(registeredUsers, null, 2));
+}
+
+function hashPassword(password) {
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
+
 function getClientIP(socket) {
   let ip = socket.handshake.address;
   if (socket.handshake.headers["x-forwarded-for"]) {
@@ -39,7 +58,6 @@ function getClientIP(socket) {
   return ip;
 }
 
-// Helper to parse whisper target
 function parseTargetAndRest(rest) {
   if (!rest) return { target: null, rest: null };
   const m = rest.match(/^(?:"([^"]+)"|(\S+))(?:\s+([\s\S]+))?$/);
@@ -52,7 +70,6 @@ function parseTargetAndRest(rest) {
 io.on("connection", (socket) => {
   const ip = getClientIP(socket);
 
-  // Disconnect banned users
   if (bannedIPs[ip]) {
     socket.emit("banned", { by: "server" });
     return socket.disconnect(true);
@@ -60,8 +77,31 @@ io.on("connection", (socket) => {
 
   console.log(`User connected: ${socket.id} | IP: ${ip}`);
 
-  // --- JOIN EVENT ---
-  socket.on("join", ({ name, port }) => {
+  // --- LOGIN / REGISTER ---
+  socket.on("login", ({ name, password, port }) => {
+    if (!name || !password)
+      return socket.emit("loginResult", { success: false, message: "Missing username or password." });
+
+    const hashed = hashPassword(password);
+
+    if (registeredUsers[name]) {
+      if (registeredUsers[name] !== hashed) {
+        return socket.emit("loginResult", {
+          success: false,
+          message: "Incorrect password for this username."
+        });
+      }
+    } else {
+      registeredUsers[name] = hashed;
+      saveUsers();
+      console.log(`Registered new user: ${name}`);
+    }
+
+    if (bannedIPs[ip]) {
+      socket.emit("banned", { by: "server" });
+      return socket.disconnect(true);
+    }
+
     users[socket.id] = { name, ip, socket, port };
     socket.join(port);
     console.log(`${name} joined from ${ip} in server ${port}`);
@@ -71,6 +111,7 @@ io.on("connection", (socket) => {
       .map(u => u.name);
 
     io.to(port).emit("user list", roomUsers);
+    socket.emit("loginResult", { success: true });
   });
 
   // --- CHAT MESSAGE ---
@@ -80,7 +121,6 @@ io.on("connection", (socket) => {
 
     const text = (msg.text || "").trim();
 
-    // Command fallback
     if (text.startsWith("/")) {
       const cmdMatch = text.match(/^\/(\w+)\s*(.*)$/);
       if (!cmdMatch) return;
@@ -117,7 +157,7 @@ io.on("connection", (socket) => {
     io.to(sender.port).emit("chat message", msg);
   });
 
-  // --- WHISPER EVENT ---
+  // --- WHISPER ---
   socket.on("whisper", ({ from, to, text }) => {
     const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender) return;
@@ -136,14 +176,13 @@ io.on("connection", (socket) => {
     console.log(`${from} whispered to ${to} (${sender.port}): ${text}`);
   });
 
-  // --- BAN EVENT ---
+  // --- BAN / UNBAN (same as before) ---
   socket.on("ban", ({ from, target }) => {
     const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender || sender.name !== "TemMoose") return;
 
     const port = sender.port;
 
-    // IP-like target
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(target)) {
       const targetIP = target;
       bannedIPs[targetIP] = true;
@@ -159,7 +198,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Username target
     const targetSocketId = Object.keys(users).find(
       id => users[id].name === target && users[id].port === port
     );
@@ -178,55 +216,47 @@ io.on("connection", (socket) => {
     io.to(port).emit("chat message", { user: "Server", text: msg });
   });
 
-  // --- UNBAN EVENT ---
   socket.on("unban", ({ from, target }) => {
     const sender = Object.values(users).find(u => u.name === from && u.socket.id === socket.id);
     if (!sender || sender.name !== "TemMoose") return;
 
     const port = sender.port;
 
-    // IP target
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(target)) {
-      if (bannedIPs[target]) {
-        delete bannedIPs[target];
+      const targetIP = target;
+      if (bannedIPs[targetIP]) {
+        delete bannedIPs[targetIP];
         saveBans();
-        const msg = `${target} was unbanned.`;
-        console.log(msg);
+        const msg = `IP ${targetIP} has been unbanned.`;
         io.to(port).emit("chat message", { user: "Server", text: msg });
-      } else {
-        io.to(port).emit("chat message", { user: "Server", text: `Unban failed — ${target} not banned.` });
+        return;
       }
+      io.to(port).emit("chat message", { user: "Server", text: `IP ${targetIP} is not banned.` });
       return;
     }
 
-    // Username target
     const targetSocketId = Object.keys(users).find(
       id => users[id].name === target && users[id].port === port
     );
-    let targetIP = targetSocketId ? users[targetSocketId].ip : null;
-
-    if (targetIP && bannedIPs[targetIP]) {
-      delete bannedIPs[targetIP];
-      saveBans();
-      const msg = `${target} was unbanned.`;
-      console.log(msg);
-      io.to(port).emit("chat message", { user: "Server", text: msg });
-    } else if (bannedIPs[target]) {
-      delete bannedIPs[target];
-      saveBans();
-      const msg = `${target} was unbanned.`;
-      console.log(msg);
-      io.to(port).emit("chat message", { user: "Server", text: msg });
-    } else {
-      io.to(port).emit("chat message", { user: "Server", text: "Unban failed — IP or user not found or not banned." });
+    if (targetSocketId) {
+      const targetIP = users[targetSocketId].ip;
+      if (bannedIPs[targetIP]) {
+        delete bannedIPs[targetIP];
+        saveBans();
+        const msg = `${target} has been unbanned.`;
+        io.to(port).emit("chat message", { user: "Server", text: msg });
+        return;
+      }
     }
+
+    io.to(port).emit("chat message", { user: "Server", text: `${target} is not banned.` });
   });
 
-  // --- DISCONNECT EVENT ---
   socket.on("disconnect", () => {
-    if (users[socket.id]) {
-      const port = users[socket.id].port;
-      console.log(`${users[socket.id].name} disconnected from ${port}`);
+    const user = users[socket.id];
+    if (user) {
+      const port = user.port;
+      console.log(`${user.name} disconnected from server ${port}`);
       delete users[socket.id];
       const roomUsers = Object.values(users)
         .filter(u => u.port === port)
@@ -236,7 +266,5 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = 3000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
