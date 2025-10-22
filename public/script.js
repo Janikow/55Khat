@@ -12,24 +12,35 @@ function setFavicon(src) {
   favicon.href = src;
 }
 
-// --- Set username and port ---
+// --- Login / Register ---
 function setUsername() {
   const nameInput = document.getElementById("usernameInput");
+  const passInput = document.getElementById("passwordInput");
   const portInput = document.getElementById("serverPortInput");
 
   username = nameInput.value.trim();
+  const password = passInput.value.trim();
   serverPort = portInput.value.trim();
 
   if (username.length < 2 || username.length > 18)
     return alert("Username must be 2–18 characters.");
+  if (!password)
+    return alert("Please enter a password.");
   if (!serverPort)
     return alert("Please enter a server port.");
 
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("chatPage").classList.remove("hidden");
-
-  socket.emit("join", { name: username, port: serverPort });
+  socket.emit("login", { name: username, password, port: serverPort });
 }
+
+// --- Handle login result ---
+socket.on("loginResult", (data) => {
+  if (data.success) {
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("chatPage").classList.remove("hidden");
+  } else {
+    alert(data.message);
+  }
+});
 
 // --- Send message ---
 function sendMessage() {
