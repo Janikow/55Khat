@@ -24,6 +24,7 @@
       <input type="file" id="profilePicInput" accept="image/*">
 
       <p><small>Public Room: 1</small></p>
+      <p><small>Profile Picture Saves</small></p>
       <button onclick="setUsername()">Join Chat</button>
       <button onclick="window.location.href='updatelogs.html'">View Logs</button>
     </div>
@@ -43,7 +44,7 @@
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
-        <button title="Attach file" onclick="document.getElementById('imageInput').click()">📎</button>
+        <button title="Attach file" onclick="document.getElementById('imageInput').click()">Image</button>
         <button onclick="sendMessage()">Send</button>
       </div>
     </div>
