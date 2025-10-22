@@ -8,94 +8,167 @@
   <link rel="stylesheet" href="style.css">
   <style>
     
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      margin: 0;
-      padding-top: 50px;
-      background: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0d0d0d);
-      color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow-y: auto;
-    }
+    :root {
+  --tag: #00bfff;
+  --attr: #ffcc66;
+  --value: #ff6666;
+  --text: #aaffcc;
+  --accent: #00ffaa;
+  --bg: #000;
+  --sub-bg: #020202;
+}
 
-    .logs-container {
-      background: rgba(30, 30, 30, 0.8);
-      border: 1.5px solid rgba(255, 60, 60, 0.6);
-      box-shadow: 0 0 15px rgba(255, 60, 60, 0.3);
-      border-radius: 16px;
-      padding: 25px;
-      width: 90%;
-      max-width: 700px;
-      margin-top: 20px;
-    }
+/* ========== Global Layout ========== */
+* {
+  box-sizing: border-box;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-      text-shadow: 0 0 10px #ff3c3c;
-    }
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  margin: 0;
+  padding-top: 50px;
+  font-family: "Consolas", "Courier New", monospace;
+  color: var(--text);
+  background: radial-gradient(circle at center, var(--bg) 0%, var(--sub-bg) 100%);
+  text-shadow: 0 0 6px rgba(0, 255, 128, 0.3);
+  overflow-y: auto;
+}
 
-    .log-entry {
-      border-left: 3px solid #ff3c3c;
-      padding-left: 10px;
-      margin-bottom: 15px;
-      background: rgba(255, 60, 60, 0.05);
-      border-radius: 6px;
-    }
+/* Subtle CRT overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 255, 0, 0.02) 0px,
+    rgba(0, 255, 0, 0.02) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 999;
+}
 
-    .log-entry h3 {
-      color: #ff5a5a;
-      margin: 0;
-      font-size: 1.1em;
-    }
+/* ========== Logs Container ========== */
+.logs-container {
+  background: rgba(0, 20, 10, 0.5);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 128, 0.2);
+  border-radius: 16px;
+  padding: 25px;
+  width: 90%;
+  max-width: 700px;
+  margin-top: 20px;
+  animation: fadeIn 0.5s ease;
+}
 
-    .log-entry p {
-      margin: 5px 0 0;
-      font-size: 0.95em;
-      color: #ccc;
-    }
+/* ========== Headers ========== */
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
+  letter-spacing: 1px;
+}
 
-    button {
-      background: #ff3c3c;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1em;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 0 8px rgba(255, 60, 60, 0.7);
-      transition: 0.2s;
-      margin-top: 20px;
-    }
+/* ========== Log Entries ========== */
+.log-entry {
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+  margin-bottom: 15px;
+  background: rgba(0, 255, 128, 0.05);
+  border-radius: 6px;
+  transition: 0.2s;
+  animation: popIn 0.25s ease;
+}
 
-    button:hover {
-      background: #ff5252;
-      box-shadow: 0 0 12px rgba(255, 80, 80, 0.9);
-    }
+.log-entry:hover {
+  background: rgba(0, 255, 128, 0.08);
+  transform: translateX(2px);
+}
 
-    .disclaimer {
-      position: fixed;
-      bottom: 10px;
-      left: 15px;
-      font-size: 0.75em;
-      color: #888;
-      opacity: 0.8;
-      user-select: none;
-    }
+.log-entry h3 {
+  color: var(--value);
+  margin: 0;
+  font-size: 1.1em;
+  text-shadow: 0 0 6px rgba(255, 100, 100, 0.6);
+}
 
-    .disclaimer:hover {
-      opacity: 1;
-      color: #bbb;
-    }
+.log-entry p {
+  margin: 5px 0 0;
+  font-size: 0.95em;
+  color: var(--text);
+  opacity: 0.9;
+}
 
-    .disclaimer + .disclaimer {
-      bottom: 50px; /* Stack the second disclaimer slightly above the first */
-    }
+/* ========== Button ========== */
+button {
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 255, 128, 0.4);
+  transition: 0.2s;
+  margin-top: 20px;
+}
+
+button:hover {
+  background: rgba(0, 255, 128, 0.1);
+  box-shadow: 0 0 12px rgba(0, 255, 128, 0.4);
+  transform: scale(1.05);
+}
+
+/* ========== Disclaimers ========== */
+.disclaimer {
+  position: fixed;
+  bottom: 10px;
+  left: 15px;
+  font-size: 0.75em;
+  color: rgba(0, 255, 128, 0.4);
+  user-select: none;
+  transition: 0.2s;
+}
+
+.disclaimer:hover {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.disclaimer + .disclaimer {
+  bottom: 25px; /* Stack the second disclaimer above */
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 8px;
+}
+
+/* ========== Animations ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
     
   </style>
 </head>
