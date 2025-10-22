@@ -35,12 +35,30 @@
     <!-- Sidebar -->
     <div class="users-panel">
       <h3>Online: <span id="userCount">0</span></h3>
-      <div id="usersList"></div>
+      <div id="usersList">
+        <!-- Example user (generated dynamically)
+        <div class="user-entry">
+          <img src="profile.jpg" class="profile-pic">
+          <span class="username">Username</span>
+        </div>
+        -->
+      </div>
     </div>
 
     <!-- Chat area -->
     <div class="chat-main">
-      <div id="chatBox" class="chat-box"></div>
+      <div id="chatBox" class="chat-box">
+        <!-- Example message structure (generated dynamically)
+        <div class="chat-message">
+          <img src="profile.jpg" class="profile-pic">
+          <div class="chat-message-content">
+            <div class="username">Username</div>
+            <div class="message-text">Message text goes here...</div>
+          </div>
+        </div>
+        -->
+      </div>
+
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
