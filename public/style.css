@@ -177,7 +177,7 @@ body::before {
 
 .user-entry span.username {
   font-size: 15px;
-  color: var(--text);
+  color: inherit;
   font-weight: bold;
 }
 
@@ -232,7 +232,7 @@ body::before {
 
 /* Username styling (Discord-like bold + color) */
 .chat-message .username {
-  color: var(--accent);
+  color: inherit;
   font-weight: 600;
   font-size: 14px;
   display: inline-block;
