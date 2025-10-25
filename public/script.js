@@ -2,6 +2,7 @@ const socket = io();
 let username = "";
 let serverPort = "";
 let profilePicData = "";
+let usernameColor = "rgb(0, 255, 170)"; // Default color
 
 // --- Favicon setup ---
 const favicon = document.getElementById("favicon");
@@ -9,6 +10,23 @@ const defaultFavicon = "favicon.ico";
 const alertFavicon = "favicon-alert.ico";
 let hasNewMessage = false;
 function setFavicon(src) { favicon.href = src; }
+
+// --- RGB Slider Preview ---
+const rSlider = document.getElementById("rSlider");
+const gSlider = document.getElementById("gSlider");
+const bSlider = document.getElementById("bSlider");
+const colorPreview = document.getElementById("colorPreview");
+
+function updateColorPreview() {
+  usernameColor = `rgb(${rSlider.value}, ${gSlider.value}, ${bSlider.value})`;
+  colorPreview.style.background = usernameColor;
+}
+if (rSlider && gSlider && bSlider) {
+  [rSlider, gSlider, bSlider].forEach(slider => {
+    slider.addEventListener("input", updateColorPreview);
+  });
+  updateColorPreview();
+}
 
 // --- Login / Register ---
 function setUsername() {
@@ -41,7 +59,7 @@ function setUsername() {
 }
 
 function sendLogin(username, password, port, pfp) {
-  socket.emit("login", { name: username, password, port, profilePic: pfp });
+  socket.emit("login", { name: username, password, port, profilePic: pfp, color: usernameColor });
 }
 
 // --- Handle login result ---
@@ -60,7 +78,7 @@ function sendMessage() {
   const message = input.value.trim();
   if (!message || message.length > 600) return;
 
-  socket.emit("chat message", { user: username, text: message });
+  socket.emit("chat message", { user: username, text: message, color: usernameColor });
   input.value = "";
 }
 
@@ -81,7 +99,7 @@ function sendImage(event) {
 
   const reader = new FileReader();
   reader.onload = () =>
-    socket.emit("chat message", { user: username, image: reader.result });
+    socket.emit("chat message", { user: username, image: reader.result, color: usernameColor });
   reader.readAsDataURL(file);
   event.target.value = "";
 }
@@ -106,6 +124,7 @@ socket.on("chat message", (data) => {
   const nameSpan = document.createElement("span");
   nameSpan.classList.add("username");
   nameSpan.textContent = data.user;
+  nameSpan.style.color = data.color || "var(--accent)";
   headerDiv.appendChild(nameSpan);
 
   msgDiv.appendChild(headerDiv);
@@ -154,6 +173,7 @@ socket.on("user list", (users) => {
 
     const span = document.createElement("span");
     span.textContent = u.name;
+    span.style.color = u.color || "var(--accent)";
     div.appendChild(span);
 
     if (u.name === username) div.classList.add("self");
@@ -176,4 +196,3 @@ document.addEventListener("visibilitychange", () => {
     hasNewMessage = false;
   }
 });
-
