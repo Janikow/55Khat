@@ -160,7 +160,11 @@ body::before {
 
 .user-entry:hover {
   color: var(--accent);
+  text-shadow: 0 0 8px var(--accent), 0 0 16px rgba(0, 255, 128, 0.5);
+  transform: scale(1.02);
+  transition: all 0.15s ease;
 }
+
 
 .user-entry img.profile-pic {
   width: 36px;
@@ -191,7 +195,7 @@ body::before {
   border-bottom: 1px solid rgba(0, 255, 128, 0.2);
 }
 
-/* ================== Chat Message (Discord-Inspired) ================== */
+/* ================== Chat Message (Discord-Inspired, Fixed Layout) ================== */
 .chat-message {
   display: flex;
   align-items: flex-start;
@@ -223,6 +227,7 @@ body::before {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap; /* handles long usernames gracefully */
 }
 
 /* Username styling (Discord-like bold + color) */
@@ -230,6 +235,7 @@ body::before {
   color: var(--accent);
   font-weight: 600;
   font-size: 14px;
+  display: inline-block;
 }
 
 /* Optional timestamp, muted and smaller */
@@ -245,6 +251,8 @@ body::before {
   white-space: pre-wrap;
   line-height: 1.4;
   margin-top: 2px;
+  display: block; /* ensures it sits below username */
+  margin-left: 8px; /* slight indent like Discord */
 }
 
 /* Subtle hover effect to mimic Discord feel */
@@ -255,10 +263,12 @@ body::before {
   transition: background-color 0.15s ease;
 }
 
+/* Syntax highlighting colors for message text (like your original theme) */
 .chat-message .message-text span.tag { color: var(--tag); }
 .chat-message .message-text span.attr { color: var(--attr); }
 .chat-message .message-text span.value { color: var(--value); }
 .chat-message .message-text span.comment { color: #555; font-style: italic; }
+
 
 /* Input */
 .chat-input {
