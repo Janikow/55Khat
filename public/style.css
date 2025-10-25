@@ -191,43 +191,69 @@ body::before {
   border-bottom: 1px solid rgba(0, 255, 128, 0.2);
 }
 
-/* Messages */
+/* ================== Chat Message (Discord-Inspired) ================== */
 .chat-message {
   display: flex;
-  align-items: flex-start; /* Align profile pic to the top */
-  margin: 12px 0;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 14px 0;
   animation: popIn 0.25s ease;
 }
 
+/* Profile picture */
 .chat-message .profile-pic {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
-  margin-right: 10px;
+  border: 1px solid rgba(0, 255, 128, 0.25);
+  box-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
 }
 
+/* Message content container */
 .chat-message-content {
   display: flex;
-  flex-direction: column; /* Stack username on top of message */
+  flex-direction: column;
   justify-content: flex-start;
+  max-width: 85%;
 }
 
+/* Top row: username + timestamp */
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Username styling (Discord-like bold + color) */
 .chat-message .username {
   color: var(--accent);
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
-  margin-bottom: 4px; /* Space between username and message */
 }
 
+/* Optional timestamp, muted and smaller */
+.chat-message .timestamp {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Actual message text */
 .chat-message .message-text {
   font-size: 14px;
-  white-space: pre-wrap;
   color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.4;
+  margin-top: 2px;
 }
 
+/* Subtle hover effect to mimic Discord feel */
+.chat-message:hover {
+  background-color: rgba(0, 255, 128, 0.05);
+  border-radius: 6px;
+  padding: 4px 6px;
+  transition: background-color 0.15s ease;
+}
 
 .chat-message .message-text span.tag { color: var(--tag); }
 .chat-message .message-text span.attr { color: var(--attr); }
