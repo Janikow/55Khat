@@ -24,6 +24,15 @@
       <p>Select a profile picture (optional):</p>
       <input type="file" id="profilePicInput" accept="image/*">
 
+      <p>Choose your username color:</p>
+      <div id="colorSliders">
+      <label>R: <input type="range" id="rSlider" min="0" max="255" value="0"></label>
+      <label>G: <input type="range" id="gSlider" min="0" max="255" value="255"></label>
+      <label>B: <input type="range" id="bSlider" min="0" max="170" value="170"></label>
+      <div id="colorPreview"></div>
+      </div>
+
+
       <p><small>Public Room: 1</small></p>
       <p><small>Profile Picture Saves</small></p>
       <button onclick="setUsername()">Join Chat</button>
