@@ -173,8 +173,10 @@ socket.on("user list", (users) => {
 
     const span = document.createElement("span");
     span.textContent = u.name;
+    span.classList.add("username"); // <- add this
     span.style.color = u.color || "var(--accent)";
     div.appendChild(span);
+
 
     if (u.name === username) div.classList.add("self");
     usersList.appendChild(div);
