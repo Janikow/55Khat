@@ -18,14 +18,10 @@
   box-sizing: border-box;
 }
 
-html {
-  font-size: 16px;
-}
-
 body {
   margin: 0;
-  min-height: 100vh;
-  min-width: 100vw;
+  height: 100vh;
+  width: 100vw;
   font-family: "Consolas", "Courier New", monospace;
   color: var(--text);
   background: radial-gradient(circle at center, var(--bg) 0%, var(--sub-bg) 100%);
@@ -33,7 +29,7 @@ body {
   overflow: hidden;
 }
 
-/* CRT overlay */
+/* Subtle CRT overlay */
 body::before {
   content: "";
   position: fixed;
@@ -55,11 +51,10 @@ body::before {
 .chat-container {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  width: 100%;
-  height: 100%;
   animation: fadeIn 0.4s ease;
-  overflow: hidden;
 }
 
 /* ================== Login ================== */
@@ -68,24 +63,22 @@ body::before {
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
   flex-direction: column;
-  padding: 2rem;
 }
 
 .login-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  width: min(90%, 350px);
+  gap: 12px;
 }
 
 .logo {
-  width: clamp(80px, 20vw, 130px);
+  width: 130px;
   filter: drop-shadow(0 0 8px #00ffaa);
 }
 
 #loginPage h2 {
-  font-size: clamp(18px, 4vw, 24px);
+  font-size: 24px;
   color: var(--accent);
   text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
 }
@@ -94,7 +87,7 @@ body::before {
 #serverPortInput,
 #passwordInput,
 #profilePicInput {
-  width: 100%;
+  width: 250px;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--accent);
@@ -102,7 +95,6 @@ body::before {
   padding: 10px;
   text-align: center;
   transition: 0.2s;
-  font-size: 1rem;
 }
 
 #usernameInput:focus,
@@ -121,7 +113,6 @@ body::before {
   font-weight: bold;
   cursor: pointer;
   transition: 0.25s;
-  font-size: 1rem;
 }
 
 #loginPage button:hover {
@@ -130,22 +121,20 @@ body::before {
 }
 
 /* ================== Chat ================== */
+
 .chat-container {
   display: flex;
   flex-direction: row-reverse;
   background: rgba(0, 0, 0, 0.7);
-  flex-wrap: wrap;
 }
 
-/* Sidebar (Users List) */
 .users-panel {
-  flex: 0 0 240px;
+  width: 240px;
   border-right: 1px solid rgba(0, 255, 128, 0.2);
   padding: 16px;
   background: rgba(0, 20, 10, 0.2);
   display: flex;
   flex-direction: column;
-  min-height: 100%;
 }
 
 .users-panel h3 {
@@ -173,7 +162,9 @@ body::before {
   color: var(--accent);
   text-shadow: 0 0 8px var(--accent), 0 0 16px rgba(0, 255, 128, 0.5);
   transform: scale(1.02);
+  transition: all 0.15s ease;
 }
+
 
 .user-entry img.profile-pic {
   width: 36px;
@@ -186,6 +177,7 @@ body::before {
 
 .user-entry span.username {
   font-size: 15px;
+  color: inherit;
   font-weight: bold;
 }
 
@@ -194,7 +186,6 @@ body::before {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
 }
 
 .chat-box {
@@ -202,10 +193,9 @@ body::before {
   padding: 14px;
   overflow-y: auto;
   border-bottom: 1px solid rgba(0, 255, 128, 0.2);
-  word-wrap: break-word;
 }
 
-/* ================== Chat Message ================== */
+/* ================== Chat Message (Discord-Inspired, Fixed Layout) ================== */
 .chat-message {
   display: flex;
   align-items: flex-start;
@@ -214,59 +204,75 @@ body::before {
   animation: popIn 0.25s ease;
 }
 
+/* Profile picture */
 .chat-message .profile-pic {
-  width: clamp(32px, 5vw, 40px);
-  height: clamp(32px, 5vw, 40px);
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(0, 255, 128, 0.25);
   box-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
 }
 
+/* Message content container */
 .chat-message-content {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   max-width: 85%;
 }
 
+/* Top row: username + timestamp */
 .message-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* handles long usernames gracefully */
 }
 
+/* Username styling (Discord-like bold + color) */
 .chat-message .username {
+  color: inherit;
   font-weight: 600;
   font-size: 14px;
+  display: inline-block;
 }
 
+/* Optional timestamp, muted and smaller */
 .chat-message .timestamp {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* Actual message text */
 .chat-message .message-text {
   font-size: 14px;
   color: var(--text);
   white-space: pre-wrap;
   line-height: 1.4;
   margin-top: 2px;
-  margin-left: 8px;
-  overflow-wrap: break-word;
+  display: block; /* ensures it sits below username */
+  margin-left: 8px; /* slight indent like Discord */
 }
 
+/* Subtle hover effect to mimic Discord feel */
 .chat-message:hover {
   background-color: rgba(0, 255, 128, 0.05);
   border-radius: 6px;
   padding: 4px 6px;
+  transition: background-color 0.15s ease;
 }
+
+/* Syntax highlighting colors for message text (like your original theme) */
+.chat-message .message-text span.tag { color: var(--tag); }
+.chat-message .message-text span.attr { color: var(--attr); }
+.chat-message .message-text span.value { color: var(--value); }
+.chat-message .message-text span.comment { color: #555; font-style: italic; }
+
 
 /* Input */
 .chat-input {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   padding: 12px;
   background: rgba(0, 20, 10, 0.8);
   border-top: 1px solid rgba(0, 255, 128, 0.3);
@@ -274,7 +280,6 @@ body::before {
 
 .chat-input input {
   flex: 1;
-  min-width: 150px;
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(0, 255, 128, 0.3);
@@ -295,6 +300,7 @@ body::before {
   color: var(--accent);
   padding: 8px 16px;
   font-weight: bold;
+  margin-left: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -308,40 +314,14 @@ body::before {
 #usersList::-webkit-scrollbar {
   width: 4px;
 }
+
 .chat-box::-webkit-scrollbar-thumb,
 #usersList::-webkit-scrollbar-thumb {
   background: var(--accent);
   border-radius: 8px;
 }
 
-/* ================== Responsive Breakpoints ================== */
-@media (max-width: 768px) {
-  .chat-container {
-    flex-direction: column;
-  }
-
-  .users-panel {
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    overflow-x: auto;
-    border-right: none;
-    border-bottom: 1px solid rgba(0, 255, 128, 0.2);
-  }
-
-  .user-entry {
-    flex: 0 0 auto;
-  }
-
-  .chat-box {
-    font-size: 13px;
-  }
-
-  #loginPage h2 {
-    font-size: 20px;
-  }
-}
-
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
@@ -350,4 +330,35 @@ body::before {
 @keyframes popIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================== Username Color Picker ================== */
+#colorSliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+#colorSliders label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#colorSliders input[type="range"] {
+  width: 160px;
+  accent-color: var(--accent);
+}
+
+#colorPreview {
+  width: 60px;
+  height: 20px;
+  margin-top: 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0, 255, 128, 0.4);
 }
