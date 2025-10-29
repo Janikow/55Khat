@@ -1,4 +1,4 @@
-/* ================== HTML5 Console Theme - Full Screen ================== */
+/* ================== HTML5 Console Theme - Enhanced ================== */
 
 :root {
   --tag: #00bfff;
@@ -7,7 +7,9 @@
   --text: #aaffcc;
   --accent: #00ffaa;
   --bg: #000;
-  --sub-bg: #020202;
+  --sub-bg: #050a05;
+  --panel-bg: rgba(0, 20, 10, 0.3);
+  --glow: 0 0 12px rgba(0, 255, 128, 0.3);
 }
 
 .hidden {
@@ -29,24 +31,23 @@ body {
   overflow: hidden;
 }
 
-/* Subtle CRT overlay */
+/* CRT Overlay */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(0, 255, 0, 0.02) 0px,
-    rgba(0, 255, 0, 0.02) 1px,
+    rgba(0, 255, 0, 0.015) 0px,
+    rgba(0, 255, 0, 0.015) 1px,
     transparent 1px,
     transparent 2px
   );
-  mix-blend-mode: screen;
   pointer-events: none;
   z-index: 999;
 }
 
-/* Shared Layouts */
+/* Shared Layout */
 .login-container,
 .chat-container {
   position: fixed;
@@ -61,24 +62,33 @@ body::before {
 .login-container {
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.9);
   flex-direction: column;
+  backdrop-filter: blur(6px);
+  padding: 20px;
 }
 
 .login-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  padding: 30px 40px;
+  background: var(--panel-bg);
+  border: 1px solid rgba(0, 255, 128, 0.25);
+  border-radius: 12px;
+  box-shadow: var(--glow);
+  max-width: 90vw;
 }
 
 .logo {
   width: 130px;
-  filter: drop-shadow(0 0 8px #00ffaa);
+  filter: drop-shadow(0 0 8px var(--accent));
+  margin-bottom: 10px;
 }
 
 #loginPage h2 {
-  font-size: 24px;
+  font-size: 22px;
   color: var(--accent);
   text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
 }
@@ -87,14 +97,14 @@ body::before {
 #serverPortInput,
 #passwordInput,
 #profilePicInput {
-  width: 250px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--accent);
+  width: 260px;
+  background: rgba(0, 30, 10, 0.3);
+  border: 1px solid rgba(0, 255, 128, 0.3);
   color: var(--text);
-  padding: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  transition: 0.2s ease;
   text-align: center;
-  transition: 0.2s;
 }
 
 #usernameInput:focus,
@@ -102,52 +112,61 @@ body::before {
 #passwordInput:focus,
 #profilePicInput:focus {
   outline: none;
-  box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+  background: rgba(0, 40, 20, 0.4);
 }
 
 #loginPage button {
   border: 1px solid var(--accent);
-  background: transparent;
+  background: rgba(0, 40, 20, 0.3);
   color: var(--accent);
-  padding: 8px 20px;
+  padding: 10px 26px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.25s;
+  transition: 0.25s ease;
 }
 
 #loginPage button:hover {
   background: rgba(0, 255, 128, 0.1);
   transform: scale(1.05);
+  box-shadow: var(--glow);
 }
 
 /* ================== Chat ================== */
 
 .chat-container {
   display: flex;
-  flex-direction: row-reverse;
-  background: rgba(0, 0, 0, 0.7);
+  flex-direction: row;
+  background: rgba(0, 0, 0, 0.75);
 }
 
+/* Users panel (left) */
 .users-panel {
-  width: 240px;
-  border-right: 1px solid rgba(0, 255, 128, 0.2);
-  padding: 16px;
-  background: rgba(0, 20, 10, 0.2);
+  width: 260px;
+  border-right: 1px solid rgba(0, 255, 128, 0.25);
+  background: var(--panel-bg);
+  padding: 14px;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(3px);
 }
 
 .users-panel h3 {
   margin: 0 0 10px 0;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--accent);
   border-bottom: 1px solid rgba(0, 255, 128, 0.3);
   padding-bottom: 4px;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 255, 128, 0.4);
 }
 
 #usersList {
   flex: 1;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .user-entry {
@@ -155,24 +174,23 @@ body::before {
   align-items: center;
   gap: 10px;
   padding: 6px;
-  transition: 0.2s;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .user-entry:hover {
+  background-color: rgba(0, 255, 128, 0.08);
   color: var(--accent);
-  text-shadow: 0 0 8px var(--accent), 0 0 16px rgba(0, 255, 128, 0.5);
-  transform: scale(1.02);
-  transition: all 0.15s ease;
+  transform: scale(1.03);
 }
 
-
 .user-entry img.profile-pic {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  box-shadow: 0 0 6px rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(0, 255, 128, 0.25);
+  box-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
 }
 
 .user-entry span.username {
@@ -181,7 +199,7 @@ body::before {
   font-weight: bold;
 }
 
-/* Chat Area */
+/* Chat area (right) */
 .chat-main {
   flex: 1;
   display: flex;
@@ -190,129 +208,122 @@ body::before {
 
 .chat-box {
   flex: 1;
-  padding: 14px;
+  padding: 16px;
   overflow-y: auto;
   border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+  scroll-behavior: smooth;
 }
 
-/* ================== Chat Message (Discord-Inspired, Fixed Layout) ================== */
+/* Chat messages */
 .chat-message {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 14px 0;
+  margin: 10px 0;
+  padding: 6px 8px;
+  border-radius: 8px;
   animation: popIn 0.25s ease;
+  transition: 0.2s ease;
 }
 
-/* Profile picture */
+.chat-message:hover {
+  background-color: rgba(0, 255, 128, 0.05);
+  transform: translateY(-1px);
+}
+
 .chat-message .profile-pic {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.25);
-  box-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.25);
 }
 
-/* Message content container */
 .chat-message-content {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   max-width: 85%;
 }
 
-/* Top row: username + timestamp */
 .message-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap; /* handles long usernames gracefully */
+  flex-wrap: wrap;
 }
 
-/* Username styling (Discord-like bold + color) */
 .chat-message .username {
-  color: inherit;
+  color: var(--accent);
   font-weight: 600;
   font-size: 14px;
-  display: inline-block;
 }
 
-/* Optional timestamp, muted and smaller */
 .chat-message .timestamp {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-/* Actual message text */
 .chat-message .message-text {
   font-size: 14px;
   color: var(--text);
   white-space: pre-wrap;
   line-height: 1.4;
-  margin-top: 2px;
-  display: block; /* ensures it sits below username */
-  margin-left: 8px; /* slight indent like Discord */
+  margin-top: 3px;
 }
 
-/* Subtle hover effect to mimic Discord feel */
-.chat-message:hover {
-  background-color: rgba(0, 255, 128, 0.05);
-  border-radius: 6px;
-  padding: 4px 6px;
-  transition: background-color 0.15s ease;
-}
-
-/* Syntax highlighting colors for message text (like your original theme) */
+/* Syntax highlighting inside messages */
 .chat-message .message-text span.tag { color: var(--tag); }
 .chat-message .message-text span.attr { color: var(--attr); }
 .chat-message .message-text span.value { color: var(--value); }
 .chat-message .message-text span.comment { color: #555; font-style: italic; }
 
-
-/* Input */
+/* Input area */
 .chat-input {
   display: flex;
-  padding: 12px;
+  padding: 14px;
   background: rgba(0, 20, 10, 0.8);
   border-top: 1px solid rgba(0, 255, 128, 0.3);
 }
 
 .chat-input input {
   flex: 1;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(0, 40, 20, 0.3);
+  border: 1px solid rgba(0, 255, 128, 0.3);
   color: var(--text);
   padding: 10px;
+  border-radius: 6px;
   font-size: 14px;
+  transition: 0.2s ease;
 }
 
 .chat-input input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 2px 10px rgba(0, 255, 128, 0.3);
+  box-shadow: var(--glow);
 }
 
 .chat-input button {
   border: 1px solid var(--accent);
-  background: transparent;
+  background: rgba(0, 255, 128, 0.05);
   color: var(--accent);
-  padding: 8px 16px;
+  padding: 10px 18px;
   font-weight: bold;
-  margin-left: 8px;
+  border-radius: 6px;
+  margin-left: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
 }
 
 .chat-input button:hover {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(0, 255, 128, 0.15);
+  box-shadow: var(--glow);
 }
 
 /* Scrollbars */
 .chat-box::-webkit-scrollbar,
 #usersList::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .chat-box::-webkit-scrollbar-thumb,
@@ -360,5 +371,6 @@ body::before {
   margin-top: 8px;
   border: 1px solid var(--accent);
   border-radius: 4px;
-  box-shadow: 0 0 6px rgba(0, 255, 128, 0.4);
+  box-shadow: var(--glow);
 }
+
