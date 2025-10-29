@@ -411,6 +411,120 @@ button {
   }
 }
 
+/* ==========================================================
+   OPTIMIZATION FOR 1366x768 DISPLAYS AKA CHROMEBOOK
+   ========================================================== */
+
+@media (max-width: 1400px) and (min-width: 700px) {
+  html, body {
+    font-size: 15px;
+  }
+
+  /* Adjust login layout for tighter vertical space */
+  .login-container {
+    justify-content: flex-start;
+    padding-top: 80px;
+  }
+
+  .login-content {
+    gap: 10px;
+  }
+
+  .logo {
+    width: 110px;
+  }
+
+  #loginPage h2 {
+    font-size: 22px;
+  }
+
+  #usernameInput,
+  #serverPortInput,
+  #passwordInput,
+  #profilePicInput {
+    width: 230px;
+    padding: 8px;
+  }
+
+  #loginPage button {
+    padding: 6px 20px;
+  }
+
+  /* Chat panel refinements */
+  .chat-container {
+    flex-direction: row-reverse;
+  }
+
+  .users-panel {
+    width: 200px;
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .users-panel h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  #usersList {
+    max-height: calc(100vh - 120px);
+  }
+
+  /* Chat box adjustments */
+  .chat-box {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .chat-message {
+    margin: 10px 0;
+  }
+
+  .chat-message .profile-pic {
+    width: 36px;
+    height: 36px;
+  }
+
+  .chat-message .message-text {
+    font-size: 13.5px;
+  }
+
+  /* Input area */
+  .chat-input {
+    padding: 10px;
+  }
+
+  .chat-input input {
+    font-size: 13.5px;
+  }
+
+  .chat-input button {
+    font-size: 13.5px;
+    padding: 6px 14px;
+  }
+
+  /* Scroll behavior */
+  .chat-box, #usersList {
+    scroll-behavior: smooth;
+  }
+
+  /* Subtle glow intensity reduction (less strain on 768px height screens) */
+  body {
+    text-shadow: 0 0 5px rgba(0, 255, 128, 0.25);
+  }
+
+  .user-entry:hover,
+  .chat-message:hover {
+    text-shadow: 0 0 6px rgba(0, 255, 128, 0.4);
+  }
+
+  /* CRT overlay less intense for mid-range screens */
+  body::before {
+    opacity: 0.4;
+  }
+}
+
+
 /* ===== MOBILE LANDSCAPE (≤ 768px) ===== */
 @media (max-width: 768px) {
   .chat-container {
