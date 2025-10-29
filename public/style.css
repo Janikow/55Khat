@@ -28,9 +28,10 @@ body {
   height: 100vh;
   width: 100vw;
   font-family: "Consolas", "Courier New", monospace;
+  font-size: clamp(14px, 1.2vw, 18px);
   color: var(--color-text);
   background: radial-gradient(circle at center, var(--color-bg) 0%, var(--color-sub-bg) 100%);
-  text-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
+  text-shadow: 0 0 clamp(4px, 0.4vw, 6px) rgba(0, 255, 128, 0.25);
   overflow: hidden;
   user-select: none;
 }
@@ -80,19 +81,19 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: clamp(10px, 1.2vw, 14px);
 }
 
 .logo {
-  width: 130px;
+  width: clamp(110px, 10vw, 130px);
   filter: drop-shadow(0 0 8px var(--color-accent));
   animation: pulseGlow 3s infinite ease-in-out;
 }
 
 #loginPage h2 {
-  font-size: 24px;
+  font-size: clamp(20px, 2.5vw, 24px);
   color: var(--color-accent);
-  text-shadow: 0 0 12px rgba(0, 255, 170, 0.8);
+  text-shadow: 0 0 clamp(8px, 1vw, 12px) rgba(0, 255, 170, 0.8);
   letter-spacing: 0.8px;
 }
 
@@ -100,12 +101,12 @@ button {
 #serverPortInput,
 #passwordInput,
 #profilePicInput {
-  width: 260px;
+  width: clamp(200px, 20vw, 260px);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--color-accent);
   color: var(--color-text);
-  padding: 10px;
+  padding: clamp(8px, 1vw, 10px);
   text-align: center;
   transition: var(--transition-fast);
 }
@@ -124,7 +125,7 @@ button {
   border: 1px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
-  padding: 8px 24px;
+  padding: clamp(6px, 0.8vw, 8px) clamp(18px, 2vw, 24px);
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -149,9 +150,9 @@ button {
 
 /* ===== USERS PANEL ===== */
 .users-panel {
-  width: 240px;
+  width: clamp(180px, 15vw, 280px);
   border-right: 1px solid rgba(0, 255, 128, 0.25);
-  padding: 16px;
+  padding: clamp(12px, 1vw, 16px);
   background: rgba(0, 20, 10, 0.2);
   display: flex;
   flex-direction: column;
@@ -159,8 +160,8 @@ button {
 }
 
 .users-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
+  margin: 0 0 clamp(8px, 0.5vw, 12px) 0;
+  font-size: clamp(12px, 1vw, 14px);
   color: var(--color-accent);
   border-bottom: 1px solid rgba(0, 255, 128, 0.3);
   padding-bottom: 4px;
@@ -177,8 +178,8 @@ button {
 .user-entry {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px;
+  gap: clamp(6px, 1vw, 10px);
+  padding: clamp(6px, 0.8vw, 8px);
   transition: var(--transition-fast);
   border-radius: 4px;
 }
@@ -191,8 +192,8 @@ button {
 }
 
 .user-entry img.profile-pic {
-  width: 36px;
-  height: 36px;
+  width: clamp(32px, 3vw, 44px);
+  height: clamp(32px, 3vw, 44px);
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(0, 255, 128, 0.3);
@@ -200,7 +201,7 @@ button {
 }
 
 .user-entry span.username {
-  font-size: 15px;
+  font-size: clamp(13px, 1vw, 15px);
   font-weight: bold;
 }
 
@@ -213,7 +214,7 @@ button {
 
 .chat-box {
   flex: 1;
-  padding: 14px;
+  padding: clamp(10px, 1vw, 14px);
   overflow-y: auto;
   border-bottom: 1px solid rgba(0, 255, 128, 0.25);
   scroll-behavior: smooth;
@@ -223,8 +224,8 @@ button {
 .chat-message {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  margin: 14px 0;
+  gap: clamp(6px, 1vw, 10px);
+  margin: clamp(10px, 1vw, 14px) 0;
   animation: popIn 0.25s ease-out;
   transition: background-color var(--transition-fast);
 }
@@ -236,8 +237,8 @@ button {
 }
 
 .chat-message .profile-pic {
-  width: 42px;
-  height: 42px;
+  width: clamp(32px, 3vw, 42px);
+  height: clamp(32px, 3vw, 42px);
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(0, 255, 128, 0.25);
@@ -260,16 +261,16 @@ button {
 .chat-message .username {
   color: var(--color-accent);
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(13px, 1.1vw, 14px);
 }
 
 .chat-message .timestamp {
-  font-size: 12px;
+  font-size: clamp(11px, 0.9vw, 12px);
   color: rgba(255, 255, 255, 0.35);
 }
 
 .chat-message .message-text {
-  font-size: 14px;
+  font-size: clamp(13px, 1vw, 14px);
   color: var(--color-text);
   white-space: pre-wrap;
   line-height: 1.4;
@@ -287,7 +288,7 @@ button {
 /* ===== CHAT INPUT ===== */
 .chat-input {
   display: flex;
-  padding: 12px;
+  padding: clamp(10px, 1vw, 12px);
   background: rgba(0, 20, 10, 0.8);
   border-top: 1px solid rgba(0, 255, 128, 0.3);
   backdrop-filter: blur(3px);
@@ -299,8 +300,8 @@ button {
   border: none;
   border-bottom: 1px solid rgba(0, 255, 128, 0.3);
   color: var(--color-text);
-  padding: 10px;
-  font-size: 14px;
+  padding: clamp(8px, 1vw, 10px);
+  font-size: clamp(13px, 1vw, 14px);
   transition: var(--transition-fast);
 }
 
@@ -314,7 +315,7 @@ button {
   border: 1px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
-  padding: 8px 16px;
+  padding: clamp(6px, 0.8vw, 8px) clamp(12px, 2vw, 16px);
   font-weight: bold;
   margin-left: 8px;
 }
@@ -336,27 +337,19 @@ button {
   border-radius: 8px;
 }
 
-/* ==========================================================
-   COLOR PICKER
-   ========================================================== */
+/* ===== COLOR PICKER ===== */
 #colorSliders {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1vw, 8px);
   align-items: center;
   margin-top: 12px;
   color: var(--color-accent);
-  font-size: 14px;
-}
-
-#colorSliders label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: clamp(12px, 1vw, 14px);
 }
 
 #colorSliders input[type="range"] {
-  width: 160px;
+  width: clamp(130px, 15vw, 160px);
   accent-color: var(--color-accent);
 }
 
@@ -388,240 +381,12 @@ button {
 }
 
 /* ==========================================================
-   RESPONSIVE DESIGN - HTML5 CONSOLE CHAT
+   RESPONSIVE DESIGN (optional media queries for extreme cases)
    ========================================================== */
-
-/* ===== TABLET (≤ 1024px) ===== */
-@media (max-width: 1024px) {
-  .users-panel {
-    width: 200px;
-    font-size: 13px;
-  }
-
-  .chat-message-content {
-    max-width: 80%;
-  }
-
-  .chat-input input {
-    font-size: 13px;
-  }
-
-  .chat-input button {
-    padding: 6px 14px;
-  }
-}
-
-/* ==========================================================
-   OPTIMIZATION FOR 1366x768 DISPLAYS AKA CHROMEBOOK
-   ========================================================== */
-
-@media (max-width: 1400px) and (min-width: 700px) {
-  html, body {
-    font-size: 15px;
-  }
-
-  /* Adjust login layout for tighter vertical space */
-  .login-container {
-    justify-content: flex-start;
-    padding-top: 80px;
-  }
-
-  .login-content {
-    gap: 10px;
-  }
-
-  .logo {
-    width: 110px;
-  }
-
-  #loginPage h2 {
-    font-size: 22px;
-  }
-
-  #usernameInput,
-  #serverPortInput,
-  #passwordInput,
-  #profilePicInput {
-    width: 230px;
-    padding: 8px;
-  }
-
-  #loginPage button {
-    padding: 6px 20px;
-  }
-
-  /* Chat panel refinements */
-  .chat-container {
-    flex-direction: row-reverse;
-  }
-
-  .users-panel {
-    width: 200px;
-    padding: 12px;
-    font-size: 13px;
-  }
-
-  .users-panel h3 {
-    font-size: 13px;
-    margin-bottom: 8px;
-  }
-
-  #usersList {
-    max-height: calc(100vh - 120px);
-  }
-
-  /* Chat box adjustments */
-  .chat-box {
-    padding: 12px;
-    font-size: 14px;
-  }
-
-  .chat-message {
-    margin: 10px 0;
-  }
-
-  .chat-message .profile-pic {
-    width: 36px;
-    height: 36px;
-  }
-
-  .chat-message .message-text {
-    font-size: 13.5px;
-  }
-
-  /* Input area */
-  .chat-input {
-    padding: 10px;
-  }
-
-  .chat-input input {
-    font-size: 13.5px;
-  }
-
-  .chat-input button {
-    font-size: 13.5px;
-    padding: 6px 14px;
-  }
-
-  /* Scroll behavior */
-  .chat-box, #usersList {
-    scroll-behavior: smooth;
-  }
-
-  /* Subtle glow intensity reduction (less strain on 768px height screens) */
-  body {
-    text-shadow: 0 0 5px rgba(0, 255, 128, 0.25);
-  }
-
-  .user-entry:hover,
-  .chat-message:hover {
-    text-shadow: 0 0 6px rgba(0, 255, 128, 0.4);
-  }
-
-  /* CRT overlay less intense for mid-range screens */
-  body::before {
-    opacity: 0.4;
-  }
-}
-
-
-/* ===== MOBILE LANDSCAPE (≤ 768px) ===== */
-@media (max-width: 768px) {
-  .chat-container {
-    flex-direction: column;
-  }
-
-  .users-panel {
-    order: 2;
-    width: 100%;
-    height: 140px;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border-right: none;
-    border-top: 1px solid rgba(0, 255, 128, 0.2);
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(6px);
-  }
-
-  .users-panel h3 {
-    display: none;
-  }
-
-  #usersList {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-  }
-
-  .user-entry {
-    flex-direction: column;
-    text-align: center;
-    padding: 8px;
-    min-width: 80px;
-  }
-
-  .user-entry img.profile-pic {
-    width: 44px;
-    height: 44px;
-  }
-
-  .chat-main {
-    order: 1;
-  }
-
-  .chat-box {
-    padding: 10px;
-  }
-
-  .chat-input {
-    padding: 10px;
-  }
-
-  .chat-input button {
-    padding: 6px 12px;
-  }
-}
-
-/* ===== MOBILE PORTRAIT (≤ 480px) ===== */
 @media (max-width: 480px) {
-  #loginPage h2 {
-    font-size: 20px;
-  }
-
-  #usernameInput,
-  #serverPortInput,
-  #passwordInput,
-  #profilePicInput {
-    width: 200px;
-    font-size: 13px;
-    padding: 8px;
-  }
-
-  #loginPage button {
-    padding: 6px 18px;
-    font-size: 13px;
-  }
-
-  .chat-message {
-    gap: 8px;
-    margin: 10px 0;
-  }
-
-  .chat-message .profile-pic {
-    width: 32px;
-    height: 32px;
-  }
-
-  .chat-message .message-text {
-    font-size: 13px;
-  }
-
   .chat-input {
     flex-direction: column;
-    gap: 8px;
+    gap: clamp(6px, 1vw, 8px);
   }
 
   .chat-input button {
@@ -630,30 +395,6 @@ button {
   }
 
   #colorSliders input[type="range"] {
-    width: 130px;
-  }
-}
-
-/* ===== ULTRAWIDE (≥ 1600px) ===== */
-@media (min-width: 1600px) {
-  .chat-message .message-text {
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  .users-panel {
-    width: 280px;
-  }
-
-  .chat-box {
-    padding: 20px;
-  }
-
-  .chat-input input {
-    font-size: 15px;
-  }
-
-  .chat-input button {
-    font-size: 15px;
+    width: clamp(100px, 25vw, 130px);
   }
 }
