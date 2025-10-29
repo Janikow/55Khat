@@ -1,21 +1,24 @@
-/* ================== HTML5 Console Theme - Enhanced ================== */
+/* ==========================================================
+   HTML5 CONSOLE UI - ENHANCED NEON TERMINAL THEME
+   Author: CSS (GPT-5)
+   ========================================================== */
 
+/* ===== VARIABLES ===== */
 :root {
-  --tag: #00bfff;
-  --attr: #ffcc66;
-  --value: #ff6666;
-  --text: #aaffcc;
-  --accent: #00ffaa;
-  --bg: #000;
-  --sub-bg: #050a05;
-  --panel-bg: rgba(0, 20, 10, 0.3);
-  --glow: 0 0 12px rgba(0, 255, 128, 0.3);
+  --color-tag: #00bfff;
+  --color-attr: #ffcc66;
+  --color-value: #ff6666;
+  --color-text: #aaffcc;
+  --color-accent: #00ffaa;
+  --color-bg: #000000;
+  --color-sub-bg: #020202;
+
+  --border-glow: 0 0 8px rgba(0, 255, 170, 0.25);
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.35s ease;
 }
 
-.hidden {
-  display: none !important;
-}
-
+/* ===== GLOBAL RESET ===== */
 * {
   box-sizing: border-box;
 }
@@ -25,47 +28,52 @@ body {
   height: 100vh;
   width: 100vw;
   font-family: "Consolas", "Courier New", monospace;
-  color: var(--text);
-  background: radial-gradient(circle at center, var(--bg) 0%, var(--sub-bg) 100%);
-  text-shadow: 0 0 6px rgba(0, 255, 128, 0.3);
+  color: var(--color-text);
+  background: radial-gradient(circle at center, var(--color-bg) 0%, var(--color-sub-bg) 100%);
+  text-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
   overflow: hidden;
+  user-select: none;
 }
 
-/* CRT Overlay */
+/* ===== CRT OVERLAY ===== */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(0, 255, 0, 0.015) 0px,
-    rgba(0, 255, 0, 0.015) 1px,
-    transparent 1px,
+    rgba(0, 255, 0, 0.025) 0px,
+    rgba(0, 255, 0, 0.025) 1px,
     transparent 2px
   );
+  mix-blend-mode: screen;
   pointer-events: none;
   z-index: 999;
+  opacity: 0.6;
 }
 
-/* Shared Layout */
-.login-container,
-.chat-container {
+/* ===== GENERAL UTILITIES ===== */
+.hidden {
+  display: none !important;
+}
+
+button {
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+/* ==========================================================
+   LOGIN SECTION
+   ========================================================== */
+.login-container {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
   display: flex;
-  animation: fadeIn 0.4s ease;
-}
-
-/* ================== Login ================== */
-.login-container {
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.9);
-  flex-direction: column;
-  backdrop-filter: blur(6px);
-  padding: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  animation: fadeIn var(--transition-medium);
 }
 
 .login-content {
@@ -73,24 +81,19 @@ body::before {
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding: 30px 40px;
-  background: var(--panel-bg);
-  border: 1px solid rgba(0, 255, 128, 0.25);
-  border-radius: 12px;
-  box-shadow: var(--glow);
-  max-width: 90vw;
 }
 
 .logo {
   width: 130px;
-  filter: drop-shadow(0 0 8px var(--accent));
-  margin-bottom: 10px;
+  filter: drop-shadow(0 0 8px var(--color-accent));
+  animation: pulseGlow 3s infinite ease-in-out;
 }
 
 #loginPage h2 {
-  font-size: 22px;
-  color: var(--accent);
-  text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
+  font-size: 24px;
+  color: var(--color-accent);
+  text-shadow: 0 0 12px rgba(0, 255, 170, 0.8);
+  letter-spacing: 0.8px;
 }
 
 #usernameInput,
@@ -98,13 +101,13 @@ body::before {
 #passwordInput,
 #profilePicInput {
   width: 260px;
-  background: rgba(0, 30, 10, 0.3);
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  color: var(--text);
-  padding: 10px 14px;
-  border-radius: 6px;
-  transition: 0.2s ease;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-accent);
+  color: var(--color-text);
+  padding: 10px;
   text-align: center;
+  transition: var(--transition-fast);
 }
 
 #usernameInput:focus,
@@ -112,61 +115,63 @@ body::before {
 #passwordInput:focus,
 #profilePicInput:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--glow);
-  background: rgba(0, 40, 20, 0.4);
+  border-bottom-color: var(--color-tag);
+  box-shadow: var(--border-glow);
+  transform: scale(1.02);
 }
 
 #loginPage button {
-  border: 1px solid var(--accent);
-  background: rgba(0, 40, 20, 0.3);
-  color: var(--accent);
-  padding: 10px 26px;
-  border-radius: 6px;
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  padding: 8px 24px;
   font-weight: bold;
-  cursor: pointer;
-  transition: 0.25s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 #loginPage button:hover {
   background: rgba(0, 255, 128, 0.1);
-  transform: scale(1.05);
-  box-shadow: var(--glow);
+  box-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+  transform: translateY(-1px) scale(1.05);
 }
 
-/* ================== Chat ================== */
-
+/* ==========================================================
+   CHAT SECTION
+   ========================================================== */
 .chat-container {
   display: flex;
-  flex-direction: row;
-  background: rgba(0, 0, 0, 0.75);
+  flex-direction: row-reverse;
+  background: rgba(0, 0, 0, 0.7);
+  height: 100vh;
+  animation: fadeIn var(--transition-medium);
 }
 
-/* Users panel (left) */
+/* ===== USERS PANEL ===== */
 .users-panel {
-  width: 260px;
+  width: 240px;
   border-right: 1px solid rgba(0, 255, 128, 0.25);
-  background: var(--panel-bg);
-  padding: 14px;
+  padding: 16px;
+  background: rgba(0, 20, 10, 0.2);
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
 }
 
 .users-panel h3 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
-  color: var(--accent);
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--color-accent);
   border-bottom: 1px solid rgba(0, 255, 128, 0.3);
   padding-bottom: 4px;
-  text-align: center;
-  text-shadow: 0 0 8px rgba(0, 255, 128, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 #usersList {
   flex: 1;
   overflow-y: auto;
-  padding-right: 4px;
+  scrollbar-width: thin;
 }
 
 .user-entry {
@@ -174,32 +179,32 @@ body::before {
   align-items: center;
   gap: 10px;
   padding: 6px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
+  border-radius: 4px;
 }
 
 .user-entry:hover {
-  background-color: rgba(0, 255, 128, 0.08);
-  color: var(--accent);
+  color: var(--color-accent);
+  background-color: rgba(0, 255, 128, 0.05);
+  text-shadow: 0 0 8px var(--color-accent);
   transform: scale(1.03);
 }
 
 .user-entry img.profile-pic {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.25);
-  box-shadow: 0 0 6px rgba(0, 255, 128, 0.25);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  box-shadow: var(--border-glow);
 }
 
 .user-entry span.username {
   font-size: 15px;
-  color: inherit;
   font-weight: bold;
 }
 
-/* Chat area (right) */
+/* ===== CHAT MAIN ===== */
 .chat-main {
   flex: 1;
   display: flex;
@@ -208,35 +213,34 @@ body::before {
 
 .chat-box {
   flex: 1;
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+  border-bottom: 1px solid rgba(0, 255, 128, 0.25);
   scroll-behavior: smooth;
 }
 
-/* Chat messages */
+/* ===== CHAT MESSAGES ===== */
 .chat-message {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 10px 0;
-  padding: 6px 8px;
-  border-radius: 8px;
-  animation: popIn 0.25s ease;
-  transition: 0.2s ease;
+  margin: 14px 0;
+  animation: popIn 0.25s ease-out;
+  transition: background-color var(--transition-fast);
 }
 
 .chat-message:hover {
   background-color: rgba(0, 255, 128, 0.05);
-  transform: translateY(-1px);
+  border-radius: 6px;
+  padding: 4px 6px;
 }
 
 .chat-message .profile-pic {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(0, 255, 128, 0.25);
   box-shadow: 0 0 8px rgba(0, 255, 128, 0.25);
 }
 
@@ -254,103 +258,94 @@ body::before {
 }
 
 .chat-message .username {
-  color: var(--accent);
+  color: var(--color-accent);
   font-weight: 600;
   font-size: 14px;
 }
 
 .chat-message .timestamp {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .chat-message .message-text {
   font-size: 14px;
-  color: var(--text);
+  color: var(--color-text);
   white-space: pre-wrap;
   line-height: 1.4;
-  margin-top: 3px;
+  margin-top: 2px;
+  display: block;
+  margin-left: 8px;
 }
 
-/* Syntax highlighting inside messages */
-.chat-message .message-text span.tag { color: var(--tag); }
-.chat-message .message-text span.attr { color: var(--attr); }
-.chat-message .message-text span.value { color: var(--value); }
+/* ===== Syntax Highlights ===== */
+.chat-message .message-text span.tag { color: var(--color-tag); }
+.chat-message .message-text span.attr { color: var(--color-attr); }
+.chat-message .message-text span.value { color: var(--color-value); }
 .chat-message .message-text span.comment { color: #555; font-style: italic; }
 
-/* Input area */
+/* ===== CHAT INPUT ===== */
 .chat-input {
   display: flex;
-  padding: 14px;
+  padding: 12px;
   background: rgba(0, 20, 10, 0.8);
   border-top: 1px solid rgba(0, 255, 128, 0.3);
+  backdrop-filter: blur(3px);
 }
 
 .chat-input input {
   flex: 1;
-  background: rgba(0, 40, 20, 0.3);
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 255, 128, 0.3);
+  color: var(--color-text);
   padding: 10px;
-  border-radius: 6px;
   font-size: 14px;
-  transition: 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .chat-input input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--glow);
+  border-color: var(--color-accent);
+  box-shadow: var(--border-glow);
 }
 
 .chat-input button {
-  border: 1px solid var(--accent);
-  background: rgba(0, 255, 128, 0.05);
-  color: var(--accent);
-  padding: 10px 18px;
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  padding: 8px 16px;
   font-weight: bold;
-  border-radius: 6px;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: 0.2s ease;
+  margin-left: 8px;
 }
 
 .chat-input button:hover {
-  background: rgba(0, 255, 128, 0.15);
-  box-shadow: var(--glow);
+  background: rgba(0, 255, 128, 0.1);
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
 }
 
-/* Scrollbars */
+/* ===== SCROLLBARS ===== */
 .chat-box::-webkit-scrollbar,
 #usersList::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .chat-box::-webkit-scrollbar-thumb,
 #usersList::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--color-accent);
   border-radius: 8px;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ================== Username Color Picker ================== */
+/* ==========================================================
+   COLOR PICKER
+   ========================================================== */
 #colorSliders {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  margin-top: 10px;
-  color: var(--accent);
+  margin-top: 12px;
+  color: var(--color-accent);
   font-size: 14px;
 }
 
@@ -362,15 +357,189 @@ body::before {
 
 #colorSliders input[type="range"] {
   width: 160px;
-  accent-color: var(--accent);
+  accent-color: var(--color-accent);
 }
 
 #colorPreview {
   width: 60px;
   height: 20px;
   margin-top: 8px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--color-accent);
   border-radius: 4px;
-  box-shadow: var(--glow);
+  box-shadow: 0 0 6px rgba(0, 255, 128, 0.4);
 }
 
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--color-accent)); }
+  50% { filter: drop-shadow(0 0 16px var(--color-accent)); }
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN - HTML5 CONSOLE CHAT
+   ========================================================== */
+
+/* ===== TABLET (≤ 1024px) ===== */
+@media (max-width: 1024px) {
+  .users-panel {
+    width: 200px;
+    font-size: 13px;
+  }
+
+  .chat-message-content {
+    max-width: 80%;
+  }
+
+  .chat-input input {
+    font-size: 13px;
+  }
+
+  .chat-input button {
+    padding: 6px 14px;
+  }
+}
+
+/* ===== MOBILE LANDSCAPE (≤ 768px) ===== */
+@media (max-width: 768px) {
+  .chat-container {
+    flex-direction: column;
+  }
+
+  .users-panel {
+    order: 2;
+    width: 100%;
+    height: 140px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none;
+    border-top: 1px solid rgba(0, 255, 128, 0.2);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+  }
+
+  .users-panel h3 {
+    display: none;
+  }
+
+  #usersList {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .user-entry {
+    flex-direction: column;
+    text-align: center;
+    padding: 8px;
+    min-width: 80px;
+  }
+
+  .user-entry img.profile-pic {
+    width: 44px;
+    height: 44px;
+  }
+
+  .chat-main {
+    order: 1;
+  }
+
+  .chat-box {
+    padding: 10px;
+  }
+
+  .chat-input {
+    padding: 10px;
+  }
+
+  .chat-input button {
+    padding: 6px 12px;
+  }
+}
+
+/* ===== MOBILE PORTRAIT (≤ 480px) ===== */
+@media (max-width: 480px) {
+  #loginPage h2 {
+    font-size: 20px;
+  }
+
+  #usernameInput,
+  #serverPortInput,
+  #passwordInput,
+  #profilePicInput {
+    width: 200px;
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  #loginPage button {
+    padding: 6px 18px;
+    font-size: 13px;
+  }
+
+  .chat-message {
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .chat-message .profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+
+  .chat-message .message-text {
+    font-size: 13px;
+  }
+
+  .chat-input {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chat-input button {
+    width: 100%;
+    margin: 0;
+  }
+
+  #colorSliders input[type="range"] {
+    width: 130px;
+  }
+}
+
+/* ===== ULTRAWIDE (≥ 1600px) ===== */
+@media (min-width: 1600px) {
+  .chat-message .message-text {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .users-panel {
+    width: 280px;
+  }
+
+  .chat-box {
+    padding: 20px;
+  }
+
+  .chat-input input {
+    font-size: 15px;
+  }
+
+  .chat-input button {
+    font-size: 15px;
+  }
+}
