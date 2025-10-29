@@ -1,75 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clever Education</title>
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4357116898226906"
-     crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 </head>
 <body>
 
   <!-- ================== LOGIN SCREEN ================== -->
   <div id="loginPage" class="login-container">
-    <div class="login-content">
-      <img src="/images/55khatl.png" alt="Logo" class="logo">
-      <h2>Welcome to Clever Education</h2>
-      <input type="text" id="usernameInput" placeholder="Enter username...">
-      <input type="password" id="passwordInput" placeholder="Enter password...">
-      <input type="number" id="serverPortInput" placeholder="Enter room code (1–60000)..." min="1" max="65535">
-      
-      <!-- Profile picture input -->
-      <p>Select a profile picture (optional):</p>
-      <input type="file" id="profilePicInput" accept="image/*">
+    <div class="login-layout">
+      <!-- ===== Center Section ===== -->
+      <div class="login-center">
+        <div class="login-content">
+          <img src="/images/55khatl.png" alt="Logo" class="logo">
+          <h2>Welcome to Clever Education</h2>
 
-      <p>Choose your username color:</p>
-      <div id="colorSliders">
-      <label>R: <input type="range" id="rSlider" min="0" max="255" value="0"></label>
-      <label>G: <input type="range" id="gSlider" min="0" max="255" value="255"></label>
-      <label>B: <input type="range" id="bSlider" min="0" max="170" value="170"></label>
-      <div id="colorPreview"></div>
+          <input type="text" id="usernameInput" placeholder="Enter username...">
+          <input type="password" id="passwordInput" placeholder="Enter password...">
+          <input type="number" id="serverPortInput" placeholder="Enter room code (1–60000)..." min="1" max="65535">
+
+          <button onclick="setUsername()">Join Chat</button>
+          <button onclick="window.location.href='updatelogs.html'">View Logs</button>
+        </div>
       </div>
 
+      <!-- ===== Right Section ===== -->
+      <div class="login-side">
+        <div class="side-card">
+          <h3>Updates & Info</h3>
+          <p>- Public Room: 1</p>
+          <p>- Profile Picture Saves</p>
+          <p>- Version 1.4.2</p>
+          <p>- Last Updated: Oct 2025</p>
+        </div>
 
-      <p><small>Public Room: 1</small></p>
-      <p><small>Profile Picture Saves</small></p>
-      <button onclick="setUsername()">Join Chat</button>
-      <button onclick="window.location.href='updatelogs.html'">View Logs</button>
+        <div class="side-card">
+          <h3>Profile Customization</h3>
+          <p>Select a profile picture:</p>
+          <input type="file" id="profilePicInput" accept="image/*">
+
+          <p>Choose your username color:</p>
+          <div id="colorSliders">
+            <label>R: <input type="range" id="rSlider" min="0" max="255" value="0"></label>
+            <label>G: <input type="range" id="gSlider" min="0" max="255" value="255"></label>
+            <label>B: <input type="range" id="bSlider" min="0" max="170" value="170"></label>
+            <div id="colorPreview"></div>
+          </div>
+
+          <h4>Username Preview:</h4>
+          <div id="usernamePreviewContainer">
+            <img id="previewPic" src="/images/defaultpfp.png" alt="Preview" class="profile-pic">
+            <span id="usernamePreview">Username</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- ================== CHAT SCREEN ================== -->
   <div id="chatPage" class="chat-container hidden">
-    <!-- Sidebar -->
     <div class="users-panel">
       <h3>Online: <span id="userCount">0</span></h3>
-      <div id="usersList">
-        <!-- Example user (generated dynamically)
-        <div class="user-entry">
-          <img src="profile.jpg" class="profile-pic">
-          <span class="username">Username</span>
-        </div>
-        -->
-      </div>
+      <div id="usersList"></div>
     </div>
 
-    <!-- Chat area -->
     <div class="chat-main">
-      <div id="chatBox" class="chat-box">
-        <!-- Example message structure (generated dynamically)
-        <div class="chat-message">
-          <img src="profile.jpg" class="profile-pic">
-          <div class="chat-message-content">
-            <div class="username">Username</div>
-            <div class="message-text">Message text goes here...</div>
-          </div>
-        </div>
-        -->
-      </div>
-
+      <div id="chatBox" class="chat-box"></div>
       <div class="chat-input">
         <input type="text" id="chatInput" placeholder="Type a message...">
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
@@ -81,5 +82,34 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Live color + profile preview
+    const r = document.getElementById('rSlider');
+    const g = document.getElementById('gSlider');
+    const b = document.getElementById('bSlider');
+    const colorPreview = document.getElementById('colorPreview');
+    const usernamePreview = document.getElementById('usernamePreview');
+    const profilePicInput = document.getElementById('profilePicInput');
+    const previewPic = document.getElementById('previewPic');
+
+    function updateColor() {
+      const color = `rgb(${r.value}, ${g.value}, ${b.value})`;
+      colorPreview.style.background = color;
+      usernamePreview.style.color = color;
+    }
+
+    [r, g, b].forEach(slider => slider.addEventListener('input', updateColor));
+    updateColor();
+
+    profilePicInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => { previewPic.src = e.target.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
 </body>
 </html>
+
