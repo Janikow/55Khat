@@ -216,6 +216,7 @@ button {
   border-radius: 50%;
   border: 1px solid rgba(0, 255, 128, 0.4);
   object-fit: cover;
+   color: var(--color-accent);
 }
 
 /* ==========================================================
@@ -324,6 +325,7 @@ button {
   object-fit: cover;
   border: 1px solid rgba(0, 255, 128, 0.25);
   box-shadow: 0 0 8px rgba(0, 255, 128, 0.25);
+  color: var(--color-accent);
 }
 
 .chat-message-content {
