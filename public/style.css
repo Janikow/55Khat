@@ -499,3 +499,22 @@ button {
   }
 }
 
+/* ========== Disclaimers ========== */
+.disclaimer {
+  position: fixed;
+  bottom: 10px;
+  left: 15px;
+  font-size: 0.75em;
+  color: rgba(0, 255, 128, 0.4);
+  user-select: none;
+  transition: 0.2s;
+}
+
+.disclaimer:hover {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.disclaimer + .disclaimer {
+  bottom: 25px; /* Stack the second disclaimer above */
+}
