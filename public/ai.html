@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/img/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google" content="notranslate" />
+  <meta name="author" content="Rednotsus" />
+  <title>Google</title>
+
+  <link rel="stylesheet" href="/assets/css/style.css?v=2" />
+  <link rel="stylesheet" href="/assets/css/ai.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css?v=3" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/RedNotSus/RedNotSus@main/prism.css" />
+  <script src="/assets/js/font.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/RedNotSus/RedNotSus@main/prism.js"></script>
+</head>
+
+<body>
+  <nav>
+    <div class="navbar">
+      <a id="nav-title" href="/">Reds Exploit Corner</a>
+      <a href="/g"><i class="fa-solid fa-gamepad"></i> Games</a>
+      <a href="/a"><i class="fa-solid fa-box-archive"></i> Apps</a>
+      <a href="/-"><i class="fa-solid fa-tv"></i> Media</a>
+      <a href="/e"><i class="fa-solid fa-robot"></i> AI</a>
+      <a href="/s"><i class="fa-solid fa-gears"></i> Settings</a>
+      <a href="/chat"><i class="fa-solid fa-comments"></i></a>
+      <a href="/profile"><i class="fa-solid fa-user"></i></a>
+    </div>
+  </nav>
+
+  <div class="chat-container"></div>
+
+  <div class="typing-container">
+    <hr class="hr">
+    <div class="typing-content">
+      <div class="typing-textarea">
+        <textarea id="chat-input" spellcheck="false" placeholder="Enter a prompt here" required></textarea>
+      </div>
+      <div class="typing-controls">
+        <span id="send-btn" class="material-symbols-rounded fa-solid fa-paper-plane" aria-label="Send"></span>
+        <span id="delete-btn" class="material-symbols-rounded" aria-label="Delete">
+          <i class="fa-solid fa-trash"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/script.js?v=12"></script>
+  <script src="/assets/js/easteregg.min.js" async></script>
+  <script src="/assets/js/ai.js?v=3" defer></script>
+</body>
+</html>
