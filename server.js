@@ -7,7 +7,11 @@ const crypto = require("crypto");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+// 🔒 Prevent large Base64 messages from disconnecting clients
+const io = new Server(server, {
+  maxHttpBufferSize: 2 * 1024 * 1024 // 2MB limit
+});
 
 app.use(express.static("public"));
 
@@ -39,14 +43,23 @@ function getClientIP(socket) {
   return ip;
 }
 
+// Safe wrapper to prevent server crashes
+function safe(fn) {
+  return (...args) => {
+    try { fn(...args); }
+    catch (err) { console.error("Socket handler error:", err); }
+  };
+}
+
 io.on("connection", (socket) => {
   const ip = getClientIP(socket);
+
   if (bannedIPs[ip]) {
     socket.emit("banned", { by: "server" });
     return socket.disconnect(true);
   }
 
-  socket.on("login", ({ name, password, port, profilePic, color }) => {
+  socket.on("login", safe(({ name, password, port, profilePic, color }) => {
     if (!name || !password)
       return socket.emit("loginResult", { success: false, message: "Missing username or password." });
 
@@ -68,7 +81,7 @@ io.on("connection", (socket) => {
       socket,
       port,
       profilePic: registeredUsers[name].profilePic,
-      color: color || "rgb(255,255,255)" // default color
+      color: color || "rgb(255,255,255)"
     };
 
     socket.join(port);
@@ -79,11 +92,16 @@ io.on("connection", (socket) => {
 
     io.to(port).emit("user list", roomUsers);
     socket.emit("loginResult", { success: true });
-  });
+  }));
 
-  socket.on("chat message", (msg) => {
+  socket.on("chat message", safe((msg) => {
     const sender = users[socket.id];
-    if (!sender) return;
+    if (!sender) return; // user not logged in yet
+
+    // Block oversized Base64 data
+    if (msg.image && msg.image.length > 2_000_000)
+      return; // silently drop oversized packets
+
     const payload = {
       user: sender.name,
       text: msg.text,
@@ -92,29 +110,27 @@ io.on("connection", (socket) => {
       color: sender.color
     };
     io.to(sender.port).emit("chat message", payload);
-  });
+  }));
 
   // 🟢 Handle live color change
-  socket.on("colorChange", (newColor) => {
+  socket.on("colorChange", safe((newColor) => {
     const user = users[socket.id];
     if (user) {
       user.color = newColor;
 
-      // Update everyone in the same room
       io.to(user.port).emit("colorChange", {
         user: user.name,
         color: newColor
       });
 
-      // Also refresh user list with new color
       const roomUsers = Object.values(users)
         .filter(u => u.port === user.port)
         .map(u => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
       io.to(user.port).emit("user list", roomUsers);
     }
-  });
+  }));
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", safe(() => {
     const user = users[socket.id];
     if (user) {
       const port = user.port;
@@ -124,7 +140,7 @@ io.on("connection", (socket) => {
         .map(u => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
       io.to(port).emit("user list", roomUsers);
     }
-  });
+  }));
 });
 
 const PORT = 3000;
