@@ -2,9 +2,9 @@ const socket = io();
 let username = "";
 let serverPort = "";
 let profilePicData = "";
-let usernameColor = "rgb(0, 255, 170)"; // Default
+let usernameColor = "rgb(0, 255, 170)";
 
-// --- Favicon setup ---
+// --- Favicon ---
 const favicon = document.getElementById("favicon");
 const defaultFavicon = "favicon.ico";
 const alertFavicon = "favicon-alert.ico";
@@ -21,12 +21,10 @@ function updateColorPreview() {
   usernameColor = `rgb(${rSlider.value}, ${gSlider.value}, ${bSlider.value})`;
   colorPreview.style.background = usernameColor;
 
-  // Update your local display name colors
   document.querySelectorAll(".username").forEach(el => {
     if (el.textContent === username) el.style.color = usernameColor;
   });
 
-  // Broadcast new color to everyone (after login)
   if (username) socket.emit("colorChange", usernameColor);
 }
 
@@ -54,12 +52,18 @@ function setUsername() {
   if (!serverPort) return alert("Please enter a server port.");
 
   if (picInput.files.length > 0) {
+    const file = picInput.files[0];
+
+    // Block large profile pictures
+    if (file.size > 2 * 1024 * 1024)
+      return alert("Profile picture must be under 2MB.");
+
     const reader = new FileReader();
     reader.onload = () => {
       profilePicData = reader.result;
       sendLogin(username, password, serverPort, profilePicData);
     };
-    reader.readAsDataURL(picInput.files[0]);
+    reader.readAsDataURL(file);
   } else {
     sendLogin(username, password, serverPort, "");
   }
@@ -69,7 +73,6 @@ function sendLogin(username, password, port, pfp) {
   socket.emit("login", { name: username, password, port, profilePic: pfp, color: usernameColor });
 }
 
-// --- Login result ---
 socket.on("loginResult", (data) => {
   if (data.success) {
     document.getElementById("loginPage").classList.add("hidden");
@@ -84,6 +87,7 @@ function sendMessage() {
   const input = document.getElementById("chatInput");
   const message = input.value.trim();
   if (!message || message.length > 600) return;
+
   socket.emit("chat message", { user: username, text: message, color: usernameColor });
   input.value = "";
 }
@@ -99,11 +103,15 @@ document.getElementById("chatInput").addEventListener("keydown", (e) => {
 function sendImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (file.type === "image/gif" && file.size > 5 * 1024 * 1024)
-    return alert("GIF > 5MB not allowed.");
+
+  // 🔒 Safeguard: block oversized images BEFORE Base64
+  if (file.size > 2 * 1024 * 1024)
+    return alert("Images must be under 2MB.");
 
   const reader = new FileReader();
-  reader.onload = () => socket.emit("chat message", { user: username, image: reader.result, color: usernameColor });
+  reader.onload = () =>
+    socket.emit("chat message", { user: username, image: reader.result, color: usernameColor });
+
   reader.readAsDataURL(file);
   event.target.value = "";
 }
@@ -187,21 +195,20 @@ socket.on("user list", (users) => {
   userCount.textContent = users.length;
 });
 
-// --- Handle color change broadcast ---
+// --- Color change ---
 socket.on("colorChange", (data) => {
-  // Update colors in user list
   document.querySelectorAll(".username").forEach(el => {
     if (el.textContent === data.user) el.style.color = data.color;
   });
 });
 
-// --- Ban handling ---
+// --- Ban notice ---
 socket.on("banned", (data) => {
   alert(`You were banned by ${data.by || "the server"}.`);
   window.location.reload();
 });
 
-// --- Reset favicon when tab active ---
+// --- Reset favicon on focus ---
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     hasNewMessage = false;
