@@ -51,6 +51,149 @@ function safe(fn) {
   };
 }
 
+// ----------------------------
+// 🔥 WORD LISTS (3 categories)
+// ----------------------------
+
+// General profanity (mild → strong)
+const profanityWords = [
+  "arse",
+  "arsehead",
+  "arsehole",
+  "ass",
+  "asshole",
+  "ass hole",
+  "bastard",
+  "bitch",
+  "bollocks",
+  "bullshit",
+  "crap",
+  "dammit",
+  "damned",
+  "dick",
+  "dickhead",
+  "dick-head",
+  "dumbass",
+  "dumb ass",
+  "dumb-ass",
+  "hell",
+  "holyshit",
+  "horseshit",
+  "inshit"
+];
+
+// Hate speech / slurs
+const slurWords = [
+  "fag",
+  "faggot",
+  "nigga",
+  "nigra",
+  "elijah",
+  "logan"
+];
+
+// Sexual / explicit content
+const sexualWords = [
+  "childfucker",
+  "child-fucker",
+  "cock",
+  "cocksucker",
+  "cunt",
+  "fatherfucker",
+  "father-fucker",
+  "fuck",
+  "fucked",
+  "fucker",
+  "fucking",
+  "godsdamn",
+  "goddamn",
+  "god damn",
+  "goddammit",
+  "goddamnit",
+  "goddamned",
+  "motherfucker",
+  "mother fucker",
+  "mother-fucker",
+  "sex"
+];
+
+
+// ------------------------------------
+// 🔧 Normalization (bypass prevention)
+// ------------------------------------
+function normalizeChat(text) {
+  if (!text) return "";
+
+  let str = text.toLowerCase();
+
+  // Normalize unicode (stops Cyrillic tricks)
+  str = str.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+
+  // Replace numbers used as letters
+  const leetspeak = {
+    "4": "a",
+    "@": "a",
+    "8": "b",
+    "3": "e",
+    "6": "g",
+    "1": "i",
+    "!": "i",
+    "0": "o",
+    "5": "s",
+    "$": "s",
+    "7": "t",
+  };
+  str = str.replace(/[4836!105$7@]/g, (m) => leetspeak[m] || m);
+
+  // Remove ALL non-letters
+  str = str.replace(/[^a-z]/g, "");
+
+  return str;
+}
+
+
+// -----------------------------------
+// 🛑 FILTER SYSTEM — multi-category
+// -----------------------------------
+function filterMessage(text) {
+  if (!text) return { allowed: true, reason: "" };
+
+  const cleaned = normalizeChat(text);
+
+  // Check profanity
+  for (let w of profanityWords) {
+    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
+      return {
+        allowed: false,
+        reason: "Thats mean."
+      };
+    }
+  }
+
+  // Check sexual content
+  for (let w of sexualWords) {
+    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
+      return {
+        allowed: false,
+        reason: "Perv."
+      };
+    }
+  }
+
+  // Check hate speech
+  for (let w of slurWords) {
+    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
+      return {
+        allowed: false,
+        reason: "E"
+      };
+    }
+  }
+
+  return { allowed: true, reason: "" };
+}
+
+
 io.on("connection", (socket) => {
   const ip = getClientIP(socket);
 
@@ -96,11 +239,18 @@ io.on("connection", (socket) => {
 
   socket.on("chat message", safe((msg) => {
     const sender = users[socket.id];
-    if (!sender) return; // user not logged in yet
+    if (!sender) return;
 
     // Block oversized Base64 data
     if (msg.image && msg.image.length > 2_000_000)
-      return; // silently drop oversized packets
+      return;
+
+    // 🔒 Chat filter check
+    const filter = filterMessage(msg.text);
+    if (!filter.allowed) {
+      socket.emit("chatBlocked", { reason: filter.reason });
+      return;
+    }
 
     const payload = {
       user: sender.name,
@@ -145,4 +295,5 @@ io.on("connection", (socket) => {
 
 const PORT = 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
