@@ -6,118 +6,214 @@
   <title>Clever Education</title>
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4357116898226906"
-    crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <!-- ================== LOGIN SCREEN ================== -->
+  <!-- ════════════════════════════════════════
+       LOGIN PAGE
+       ════════════════════════════════════════ -->
   <div id="loginPage" class="login-container">
-    <div class="login-layout">
-      
-      <!-- ===== Center Section ===== -->
-      <div class="login-center">
-        <div class="login-content">
-          <img src="/images/55khatl.png" alt="Logo" class="logo">
-          <h2>Welcome to Clever Education</h2>
+    <div class="login-shell">
 
-          <input type="text" id="usernameInput" placeholder="Enter username..." required>
-          <input type="password" id="passwordInput" placeholder="Enter password..." required>
-          <input type="number" id="serverPortInput" placeholder="Enter room code (1–60000)..." min="1" max="65535" required>
+      <!-- Main card -->
+      <div class="login-card panel">
+        <div class="corner-tl"></div><div class="corner-tr"></div>
+        <div class="corner-bl"></div><div class="corner-br"></div>
 
-          <button onclick="setUsername()">Join Chat</button>
+        <div class="brand">
+          <img src="/images/55khatl.png" alt="Logo" class="brand-logo">
+          <div class="brand-title">Clever Education</div>
+          <div class="brand-sub">Secure Terminal Chat</div>
+        </div>
 
-          <div class="disclaimer">
-            Property of Oliver Lopez 2025.
-          </div>
+        <!-- Error display -->
+        <div id="loginError" class="login-error hidden"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="usernameInput">Username</label>
+          <input class="field-input" type="text" id="usernameInput"
+            placeholder="2–18 characters" autocomplete="off" spellcheck="false" maxlength="18">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="passwordInput">Password</label>
+          <input class="field-input" type="password" id="passwordInput"
+            placeholder="Your password" autocomplete="current-password">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="serverPortInput">Room Code</label>
+          <input class="field-input" type="number" id="serverPortInput"
+            placeholder="1 – 65535" min="1" max="65535">
+        </div>
+
+        <button id="loginBtn" class="btn-join" onclick="setUsername()">
+          &#x25B6; Enter Room
+        </button>
+
+        <div class="login-disclaimer">
+          Property of Oliver Lopez · 2025 · v0.5.1
         </div>
       </div>
 
-      <!-- ===== Right Section ===== -->
-      <div class="login-side">
-        <div class="side-card">
-          <h3>Updates & Info</h3>
-          <p>- Public Room: 1</p>
-          <p>- Info is deleted on update</p>
-          <p>- Please be respectful towards others in the chatrooms</p>
-          <p>- Version 0.5.1</p>
+      <!-- Sidebar -->
+      <div class="login-sidebar">
+
+        <!-- Info card -->
+        <div class="side-card panel">
+          <div class="corner-tl"></div><div class="corner-tr"></div>
+          <div class="corner-bl"></div><div class="corner-br"></div>
+          <div class="side-card-title">Updates &amp; Info</div>
+          <ul class="updates-list">
+            <li>Public Room: <strong>1</strong></li>
+            <li>Accounts persist across sessions</li>
+            <li>Profile data resets on update</li>
+            <li>Please be respectful to others</li>
+            <li>Max message length: 600 chars</li>
+          </ul>
         </div>
 
-        <div class="side-card">
-          <h3>Profile Customization</h3>
-          <p>Select a profile picture:</p>
-          <input type="file" id="profilePicInput" accept="image/*">
+        <!-- Customization card -->
+        <div class="side-card panel">
+          <div class="corner-tl"></div><div class="corner-tr"></div>
+          <div class="corner-bl"></div><div class="corner-br"></div>
+          <div class="side-card-title">Profile Customization</div>
 
-          <!-- ⭐ Added: Missing profile image preview -->
-          <img id="previewPic" class="profile-preview" src="" alt="Profile Preview">
+          <!-- Profile picture -->
+          <div class="pfp-upload-area">
+            <img id="previewPic" class="pfp-preview" src="" alt="Preview">
+            <button class="btn-upload" id="pfpBtn" onclick="document.getElementById('profilePicInput').click()">
+              Upload Picture
+            </button>
+            <input type="file" id="profilePicInput" accept="image/*" class="hidden">
+          </div>
 
-          <p>Choose your username color:</p>
-          <div id="colorSliders">
-            <label>R: <input type="range" id="rSlider" min="0" max="255" value="0"></label>
-            <label>G: <input type="range" id="gSlider" min="0" max="255" value="255"></label>
-            <label>B: <input type="range" id="bSlider" min="0" max="170" value="170"></label>
+          <!-- Color sliders -->
+          <div class="color-picker-rows" style="margin-top:14px;">
+            <div class="slider-row">
+              <span class="slider-label">R</span>
+              <input type="range" id="rSlider" min="0" max="255" value="0">
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">G</span>
+              <input type="range" id="gSlider" min="0" max="255" value="210">
+            </div>
+            <div class="slider-row">
+              <span class="slider-label">B</span>
+              <input type="range" id="bSlider" min="0" max="255" value="255">
+            </div>
+          </div>
 
+          <div class="color-preview-row">
             <div id="colorPreview"></div>
-
-            <!-- ⭐ Added: Missing username color preview -->
             <div id="usernamePreview">Username</div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 
-  <!-- ================== CHAT SCREEN ================== -->
+
+  <!-- ════════════════════════════════════════
+       CHAT PAGE
+       ════════════════════════════════════════ -->
   <div id="chatPage" class="chat-container hidden">
+
+    <!-- Users panel -->
     <div class="users-panel">
-      <h3>Online: <span id="userCount">0</span></h3>
+      <div class="panel-header">
+        <span class="panel-header-title">Online</span>
+        <span class="online-badge">
+          <span class="online-dot"></span>
+          <span id="userCount">0</span>
+        </span>
+      </div>
       <div id="usersList"></div>
     </div>
 
+    <!-- Main chat -->
     <div class="chat-main">
-      <div id="chatBox" class="chat-box"></div>
 
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="chat-header-title">Clever Education</div>
+        <div class="chat-header-room" id="chatRoomLabel">Room —</div>
+      </div>
+
+      <!-- Connection status -->
+      <div id="connectionStatus" class="status-bar hidden"></div>
+
+      <!-- Messages -->
+      <div id="chatBox"></div>
+
+      <!-- Typing indicator -->
+      <div id="typingIndicator" class="hidden"></div>
+
+      <!-- Input bar -->
       <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type a message...">
+        <input type="text" id="chatInput" placeholder="Type a message…" maxlength="600" autocomplete="off">
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
-        <button title="Attach file" onclick="document.getElementById('imageInput').click()">Image</button>
-        <button onclick="sendMessage()">Send</button>
+        <button class="btn-image" title="Send image"
+          onclick="document.getElementById('imageInput').click()">📎</button>
+        <button class="btn-send" onclick="sendMessage()">Send</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 
   <script>
-    // Live color + profile preview
+    // Live color + profile preview (inline to avoid ordering issues)
     const r = document.getElementById('rSlider');
     const g = document.getElementById('gSlider');
     const b = document.getElementById('bSlider');
-    const colorPreview = document.getElementById('colorPreview');
-    const usernamePreview = document.getElementById('usernamePreview'); // added preview element
+    const colorPreviewEl = document.getElementById('colorPreview');
+    const usernamePreviewEl = document.getElementById('usernamePreview');
     const profilePicInput = document.getElementById('profilePicInput');
-    const previewPic = document.getElementById('previewPic'); // added preview element
+    const previewPic = document.getElementById('previewPic');
+    const pfpBtn = document.getElementById('pfpBtn');
 
-    function updateColor() {
+    function syncColor() {
       const color = `rgb(${r.value}, ${g.value}, ${b.value})`;
-      colorPreview.style.background = color;
-      usernamePreview.style.color = color;
+      if (colorPreviewEl) colorPreviewEl.style.background = color;
+      if (usernamePreviewEl) {
+        usernamePreviewEl.style.color = color;
+        usernamePreviewEl.style.textShadow = `0 0 8px ${color}`;
+        const nameVal = document.getElementById('usernameInput').value;
+        usernamePreviewEl.textContent = nameVal || 'Username';
+      }
     }
 
-    [r, g, b].forEach(slider => slider.addEventListener('input', updateColor));
-    updateColor();
+    [r, g, b].forEach(s => s.addEventListener('input', syncColor));
+    document.getElementById('usernameInput').addEventListener('input', syncColor);
+    syncColor();
 
     profilePicInput.addEventListener('change', e => {
       const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => { previewPic.src = e.target.result; };
-        reader.readAsDataURL(file);
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Profile picture must be under 2MB.');
+        return;
       }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        previewPic.src = ev.target.result;
+        previewPic.classList.add('visible');
+        pfpBtn.textContent = file.name.length > 14
+          ? file.name.slice(0, 12) + '…'
+          : file.name;
+      };
+      reader.readAsDataURL(file);
     });
+
+    // Update room label when entering chat
+    const _origLoginResult = window._loginResultHook;
   </script>
 
 </body>
 </html>
-
