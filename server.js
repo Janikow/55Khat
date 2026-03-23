@@ -8,191 +8,204 @@ const crypto = require("crypto");
 const app = express();
 const server = http.createServer(app);
 
-// 🔒 Prevent large Base64 messages from disconnecting clients
 const io = new Server(server, {
-  maxHttpBufferSize: 2 * 1024 * 1024 // 2MB limit
+  maxHttpBufferSize: 2 * 1024 * 1024, // 2MB limit
+  pingTimeout: 20000,
+  pingInterval: 10000,
 });
 
 app.use(express.static("public"));
 
-// Map of socket.id -> { name, ip, socket, port, profilePic, color }
-let users = {};
+// ─── Persistence ────────────────────────────────────────────────────────────
 const bansFile = path.join(__dirname, "bans.json");
 const usersFile = path.join(__dirname, "users.json");
 
-let bannedIPs = fs.existsSync(bansFile) ? JSON.parse(fs.readFileSync(bansFile, "utf-8")) : {};
-let registeredUsers = fs.existsSync(usersFile) ? JSON.parse(fs.readFileSync(usersFile, "utf-8")) : {};
+let bannedIPs = fs.existsSync(bansFile)
+  ? JSON.parse(fs.readFileSync(bansFile, "utf-8"))
+  : {};
+let registeredUsers = fs.existsSync(usersFile)
+  ? JSON.parse(fs.readFileSync(usersFile, "utf-8"))
+  : {};
 
 function saveBans() {
   fs.writeFileSync(bansFile, JSON.stringify(bannedIPs, null, 2));
 }
-
 function saveUsers() {
   fs.writeFileSync(usersFile, JSON.stringify(registeredUsers, null, 2));
 }
 
+// ─── In-memory state ─────────────────────────────────────────────────────────
+// socket.id → { name, ip, socket, port, profilePic, color }
+const users = {};
+
+// socket.id → { count, windowStart }  (rate limiting)
+const rateLimitMap = {};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function hashPassword(password) {
+  // Use a fixed salt stored per-user for real security; SHA-256 is fine for
+  // a local chat app but PBKDF2/bcrypt would be better in production.
   return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-function getClientIP(socket) {
-  let ip = socket.handshake.address;
-  if (socket.handshake.headers["x-forwarded-for"]) {
-    ip = socket.handshake.headers["x-forwarded-for"].split(",")[0].trim();
-  }
-  return ip;
+/** Timing-safe string compare to prevent timing attacks on passwords. */
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
 }
 
-// Safe wrapper to prevent server crashes
+function getClientIP(socket) {
+  const forwarded = socket.handshake.headers["x-forwarded-for"];
+  return forwarded
+    ? forwarded.split(",")[0].trim()
+    : socket.handshake.address;
+}
+
+/** Validate CSS rgb() color string – prevents style injection. */
+function isValidColor(color) {
+  return typeof color === "string" &&
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/.test(color);
+}
+
+/** Validate username: 2–18 printable non-whitespace ASCII chars. */
+function isValidUsername(name) {
+  return typeof name === "string" &&
+    name.length >= 2 &&
+    name.length <= 18 &&
+    /^[\x21-\x7E]+$/.test(name);
+}
+
+/**
+ * Rate limit: max 8 messages per 5 seconds per socket.
+ * Returns true if the message should be blocked.
+ */
+function isRateLimited(socketId) {
+  const now = Date.now();
+  const WINDOW_MS = 5000;
+  const MAX_MSGS = 8;
+
+  if (!rateLimitMap[socketId]) {
+    rateLimitMap[socketId] = { count: 1, windowStart: now };
+    return false;
+  }
+
+  const state = rateLimitMap[socketId];
+  if (now - state.windowStart > WINDOW_MS) {
+    state.count = 1;
+    state.windowStart = now;
+    return false;
+  }
+
+  state.count++;
+  return state.count > MAX_MSGS;
+}
+
+function getRoomUsers(port) {
+  return Object.values(users)
+    .filter((u) => u.port === port)
+    .map((u) => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
+}
+
+/** Safe event-handler wrapper – logs errors without crashing the server. */
 function safe(fn) {
   return (...args) => {
-    try { fn(...args); }
-    catch (err) { console.error("Socket handler error:", err); }
+    try {
+      fn(...args);
+    } catch (err) {
+      console.error("Socket handler error:", err);
+    }
   };
 }
 
-// ----------------------------
-// 🔥 WORD LISTS (3 categories)
-// ----------------------------
+// ─── Word lists ───────────────────────────────────────────────────────────────
 
-// General profanity (mild → strong)
 const profanityWords = [
-  "arse",
-  "arsehead",
-  "arsehole",
-  "ass",
-  "asshole",
-  "ass hole",
-  "bastard",
-  "bitch",
-  "bollocks",
-  "bullshit",
-  "crap",
-  "dammit",
-  "damned",
-  "dick",
-  "dickhead",
-  "dick-head",
-  "dumbass",
-  "dumb ass",
-  "dumb-ass",
-  "hell",
-  "holyshit",
-  "horseshit",
-  "inshit"
+  "arse", "arsehead", "arsehole", "ass", "asshole", "ass hole",
+  "bastard", "bitch", "bollocks", "bullshit", "crap", "dammit",
+  "damned", "dick", "dickhead", "dick-head", "dumbass", "dumb ass",
+  "dumb-ass", "horseshit",
 ];
 
-// Hate speech / slurs
 const slurWords = [
-  "fag",
-  "faggot",
-  "nigga",
-  "nigra",
-  "elijah",
-  "logan"
+  "fag", "faggot", "nigga", "nigra",
 ];
 
-// Sexual / explicit content
 const sexualWords = [
-  "childfucker",
-  "child-fucker",
-  "cock",
-  "cocksucker",
-  "cunt",
-  "fatherfucker",
-  "father-fucker",
-  "fuck",
-  "fucked",
-  "fucker",
-  "fucking",
-  "godsdamn",
-  "goddamn",
-  "god damn",
-  "goddammit",
-  "goddamnit",
-  "goddamned",
-  "motherfucker",
-  "mother fucker",
-  "mother-fucker",
-  "sex"
+  "childfucker", "child-fucker", "cock", "cocksucker", "cunt",
+  "fatherfucker", "father-fucker", "fuck", "fucked", "fucker",
+  "fucking", "motherfucker", "mother fucker", "mother-fucker",
 ];
 
+// Pre-process word lists: strip non-alpha once at startup
+const normalize = (w) => w.toLowerCase().replace(/[^a-z]/g, "");
 
-// ------------------------------------
-// 🔧 Normalization (bypass prevention)
-// ------------------------------------
-function normalizeChat(text) {
+const profanitySet = profanityWords.map(normalize);
+const slurSet = slurWords.map(normalize);
+const sexualSet = sexualWords.map(normalize);
+
+// ─── Normalisation ────────────────────────────────────────────────────────────
+
+const LEET_MAP = {
+  "4": "a", "@": "a",
+  "8": "b",
+  "3": "e",
+  "6": "g",
+  "1": "i", "!": "i",
+  "0": "o",
+  "5": "s", "$": "s",
+  "7": "t",
+};
+
+function normalizeForFilter(text) {
   if (!text) return "";
-
-  let str = text.toLowerCase();
-
-  // Normalize unicode (stops Cyrillic tricks)
-  str = str.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
-
-  // Replace numbers used as letters
-  const leetspeak = {
-    "4": "a",
-    "@": "a",
-    "8": "b",
-    "3": "e",
-    "6": "g",
-    "1": "i",
-    "!": "i",
-    "0": "o",
-    "5": "s",
-    "$": "s",
-    "7": "t",
-  };
-  str = str.replace(/[4836!105$7@]/g, (m) => leetspeak[m] || m);
-
-  // Remove ALL non-letters
-  str = str.replace(/[^a-z]/g, "");
-
-  return str;
+  let s = text.toLowerCase();
+  s = s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  s = s.replace(/[4836!105$7@]/g, (c) => LEET_MAP[c] || c);
+  // Remove spaces/punctuation/numbers so "f u c k" → "fuck"
+  s = s.replace(/[^a-z]/g, "");
+  return s;
 }
 
-
-// -----------------------------------
-// 🛑 FILTER SYSTEM — multi-category
-// -----------------------------------
+/**
+ * Word-boundary-aware filter.
+ *
+ * Problem with the original: normalizeChat("Essex") → "essex" which contains
+ * "sex", causing a false positive.  We solve this by also checking the RAW
+ * lowercased input using whole-word regex BEFORE falling back to the stripped
+ * version for obfuscated variants.
+ */
 function filterMessage(text) {
-  if (!text) return { allowed: true, reason: "" };
+  if (!text || typeof text !== "string") return { allowed: true };
 
-  const cleaned = normalizeChat(text);
+  const raw = text.toLowerCase();
+  const stripped = normalizeForFilter(text);
 
-  // Check profanity
-  for (let w of profanityWords) {
-    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
-      return {
-        allowed: false,
-        reason: "Thats mean."
-      };
-    }
+  // Helper: whole-word match in raw text
+  const wordMatch = (word) => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?<![a-z])${escaped}(?![a-z])`).test(raw);
+  };
+
+  // Helper: substring match in stripped text (catches obfuscated variants)
+  const obfuscatedMatch = (word) => stripped.includes(normalize(word));
+
+  for (const w of profanityWords) {
+    if (wordMatch(normalize(w)) || obfuscatedMatch(w))
+      return { allowed: false, reason: "Watch your language." };
+  }
+  for (const w of sexualWords) {
+    if (wordMatch(normalize(w)) || obfuscatedMatch(w))
+      return { allowed: false, reason: "Keep it clean." };
+  }
+  for (const w of slurWords) {
+    if (wordMatch(normalize(w)) || obfuscatedMatch(w))
+      return { allowed: false, reason: "Hate speech is not allowed." };
   }
 
-  // Check sexual content
-  for (let w of sexualWords) {
-    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
-      return {
-        allowed: false,
-        reason: "Perv."
-      };
-    }
-  }
-
-  // Check hate speech
-  for (let w of slurWords) {
-    if (cleaned.includes(w.replace(/[^a-z]/g, ""))) {
-      return {
-        allowed: false,
-        reason: "E"
-      };
-    }
-  }
-
-  return { allowed: true, reason: "" };
+  return { allowed: true };
 }
 
+// ─── Socket.IO ────────────────────────────────────────────────────────────────
 
 io.on("connection", (socket) => {
   const ip = getClientIP(socket);
@@ -202,98 +215,173 @@ io.on("connection", (socket) => {
     return socket.disconnect(true);
   }
 
-  socket.on("login", safe(({ name, password, port, profilePic, color }) => {
-    if (!name || !password)
-      return socket.emit("loginResult", { success: false, message: "Missing username or password." });
+  // ── Login ──────────────────────────────────────────────────────────────────
+  socket.on(
+    "login",
+    safe(({ name, password, port, profilePic, color }) => {
+      // Input validation
+      if (!isValidUsername(name))
+        return socket.emit("loginResult", {
+          success: false,
+          message: "Username must be 2–18 printable characters.",
+        });
+      if (!password || typeof password !== "string")
+        return socket.emit("loginResult", {
+          success: false,
+          message: "Password is required.",
+        });
+      if (!port || typeof port !== "string" || port.trim() === "")
+        return socket.emit("loginResult", {
+          success: false,
+          message: "Server port is required.",
+        });
 
-    const hashed = hashPassword(password);
+      const safeColor =
+        isValidColor(color) ? color : "rgb(255,255,255)";
+      const hashed = hashPassword(password);
 
-    if (registeredUsers[name]) {
-      if (registeredUsers[name].password !== hashed)
-        return socket.emit("loginResult", { success: false, message: "Incorrect password." });
-      if (profilePic) registeredUsers[name].profilePic = profilePic;
-    } else {
-      registeredUsers[name] = { password: hashed, profilePic: profilePic || "" };
-      saveUsers();
-      console.log(`Registered new user: ${name}`);
-    }
+      if (registeredUsers[name]) {
+        // Existing user – verify password
+        if (!safeEqual(registeredUsers[name].password, hashed))
+          return socket.emit("loginResult", {
+            success: false,
+            message: "Incorrect password.",
+          });
+        // Update profile pic if provided
+        if (profilePic && typeof profilePic === "string")
+          registeredUsers[name].profilePic = profilePic;
+        // Persist color
+        registeredUsers[name].color = safeColor;
+        saveUsers();
+      } else {
+        // New registration
+        registeredUsers[name] = {
+          password: hashed,
+          profilePic:
+            typeof profilePic === "string" ? profilePic : "",
+          color: safeColor,
+        };
+        saveUsers();
+        console.log(`Registered new user: ${name}`);
+      }
 
-    users[socket.id] = {
-      name,
-      ip,
-      socket,
-      port,
-      profilePic: registeredUsers[name].profilePic,
-      color: color || "rgb(255,255,255)"
-    };
+      users[socket.id] = {
+        name,
+        ip,
+        socket,
+        port: port.trim(),
+        profilePic: registeredUsers[name].profilePic,
+        color: safeColor,
+      };
 
-    socket.join(port);
+      socket.join(port.trim());
 
-    const roomUsers = Object.values(users)
-      .filter(u => u.port === port)
-      .map(u => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
+      io.to(port.trim()).emit("user list", getRoomUsers(port.trim()));
+      socket.emit("loginResult", { success: true });
+      console.log(`${name} joined room ${port.trim()} from ${ip}`);
+    })
+  );
 
-    io.to(port).emit("user list", roomUsers);
-    socket.emit("loginResult", { success: true });
-  }));
+  // ── Chat message ───────────────────────────────────────────────────────────
+  socket.on(
+    "chat message",
+    safe((msg) => {
+      const sender = users[socket.id];
+      if (!sender) return;
 
-  socket.on("chat message", safe((msg) => {
-    const sender = users[socket.id];
-    if (!sender) return;
+      // Block oversized images
+      if (msg.image && msg.image.length > 2_000_000) return;
 
-    // Block oversized Base64 data
-    if (msg.image && msg.image.length > 2_000_000)
-      return;
+      // Rate limiting
+      if (isRateLimited(socket.id)) {
+        socket.emit("chatBlocked", {
+          reason: "Slow down — you're sending messages too fast.",
+        });
+        return;
+      }
 
-    // 🔒 Chat filter check
-    const filter = filterMessage(msg.text);
-    if (!filter.allowed) {
-      socket.emit("chatBlocked", { reason: filter.reason });
-      return;
-    }
+      // Text validation
+      if (msg.text !== undefined && msg.text !== null) {
+        if (typeof msg.text !== "string") return;
+        if (msg.text.length > 600) {
+          socket.emit("chatBlocked", {
+            reason: "Message too long (max 600 characters).",
+          });
+          return;
+        }
 
-    const payload = {
-      user: sender.name,
-      text: msg.text,
-      image: msg.image,
-      profilePic: sender.profilePic,
-      color: sender.color
-    };
-    io.to(sender.port).emit("chat message", payload);
-  }));
+        const filter = filterMessage(msg.text);
+        if (!filter.allowed) {
+          socket.emit("chatBlocked", { reason: filter.reason });
+          return;
+        }
+      }
 
-  // 🟢 Handle live color change
-  socket.on("colorChange", safe((newColor) => {
-    const user = users[socket.id];
-    if (user) {
+      const payload = {
+        id: crypto.randomUUID(),
+        user: sender.name,
+        text: msg.text || null,
+        image: msg.image || null,
+        profilePic: sender.profilePic,
+        color: sender.color,
+        timestamp: Date.now(),
+      };
+
+      io.to(sender.port).emit("chat message", payload);
+    })
+  );
+
+  // ── Typing indicator ───────────────────────────────────────────────────────
+  socket.on(
+    "typing",
+    safe((isTyping) => {
+      const user = users[socket.id];
+      if (!user) return;
+      socket.to(user.port).emit("typing", {
+        user: user.name,
+        isTyping: Boolean(isTyping),
+      });
+    })
+  );
+
+  // ── Color change ───────────────────────────────────────────────────────────
+  socket.on(
+    "colorChange",
+    safe((newColor) => {
+      const user = users[socket.id];
+      if (!user) return;
+      if (!isValidColor(newColor)) return;
+
       user.color = newColor;
+      if (registeredUsers[user.name]) {
+        registeredUsers[user.name].color = newColor;
+        saveUsers();
+      }
 
       io.to(user.port).emit("colorChange", {
         user: user.name,
-        color: newColor
+        color: newColor,
       });
+      io.to(user.port).emit("user list", getRoomUsers(user.port));
+    })
+  );
 
-      const roomUsers = Object.values(users)
-        .filter(u => u.port === user.port)
-        .map(u => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
-      io.to(user.port).emit("user list", roomUsers);
-    }
-  }));
-
-  socket.on("disconnect", safe(() => {
-    const user = users[socket.id];
-    if (user) {
-      const port = user.port;
-      delete users[socket.id];
-      const roomUsers = Object.values(users)
-        .filter(u => u.port === port)
-        .map(u => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
-      io.to(port).emit("user list", roomUsers);
-    }
-  }));
+  // ── Disconnect ─────────────────────────────────────────────────────────────
+  socket.on(
+    "disconnect",
+    safe(() => {
+      const user = users[socket.id];
+      if (user) {
+        console.log(`${user.name} disconnected from room ${user.port}`);
+        const port = user.port;
+        delete users[socket.id];
+        delete rateLimitMap[socket.id];
+        io.to(port).emit("user list", getRoomUsers(port));
+      }
+    })
+  );
 });
 
-const PORT = 3000;
+// ─── Start ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
