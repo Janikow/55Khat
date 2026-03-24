@@ -360,6 +360,49 @@ input, button { font-family: var(--font-mono); }
   color: var(--c-accent);
 }
 
+/* Nav links (Quick Links card) */
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--c-text-dim);
+  text-decoration: none;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transition: var(--t-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,210,255,0.07) 0%, transparent 100%);
+  opacity: 0;
+  transition: var(--t-fast);
+}
+
+.nav-link:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent-dim);
+  text-shadow: var(--glow-sm);
+  transform: translateX(3px);
+}
+
+.nav-link:hover::before { opacity: 1; }
+
 /* Color picker */
 .color-picker-rows {
   display: flex;
