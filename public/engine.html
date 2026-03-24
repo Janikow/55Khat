@@ -1,0 +1,3431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAVITAS — Physics Sandbox</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1a1a;
+  --panel:#242424;
+  --panel2:#2c2c2c;
+  --panel3:#333333;
+  --border:#3a3a3a;
+  --border2:#444;
+  --accent:#e0e0e0;
+  --accent2:#ff5555;
+  --accent3:#ffcc44;
+  --accent4:#55aaff;
+  --text:#c8c8c8;
+  --dim:#666;
+  --dim2:#888;
+  --active:#4a9eff;
+  --active-bg:rgba(74,158,255,0.12);
+  --red:#cc3333;
+  --green:#44bb66;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Share Tech Mono',monospace;overflow:hidden;user-select:none;}
+canvas#three{display:block;position:fixed;inset:0;width:100%;height:100%;}
+
+/* ── MAIN LAYOUT ── */
+#hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;}
+
+/* ── TOP BAR ── */
+#top-bar{display:flex;align-items:stretch;pointer-events:all;
+  background:var(--panel);border-bottom:2px solid var(--border);flex-shrink:0;height:38px;}
+#logo{padding:0 14px;display:flex;align-items:center;gap:6px;border-right:1px solid var(--border);}
+h1.logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+  letter-spacing:.08em;color:var(--accent);line-height:1;}
+.sub{font-size:8px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+#tabs{display:flex;align-items:stretch;}
+.tab-btn{padding:0 13px;background:transparent;border:none;border-right:1px solid var(--border);
+  color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:10px;
+  cursor:pointer;letter-spacing:.06em;transition:all .12s;text-transform:uppercase;
+  border-bottom:2px solid transparent;margin-bottom:-2px;}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.tab-btn.active{color:var(--active);border-bottom:2px solid var(--active);background:var(--active-bg);}
+
+/* tool bar */
+#tool-bar{display:flex;align-items:center;gap:3px;padding:0 8px;margin-left:auto;}
+.tool-btn{padding:4px 9px;background:var(--panel2);border:1px solid var(--border2);
+  color:var(--dim2);font-family:'Share Tech Mono',monospace;font-size:9px;
+  cursor:pointer;letter-spacing:.03em;transition:all .12s;text-transform:uppercase;border-radius:2px;}
+.tool-btn:hover,.tool-btn.active{border-color:var(--active);color:var(--active);background:var(--active-bg);}
+.tool-btn.red:hover,.tool-btn.red.active{border-color:var(--red);color:var(--red);background:rgba(204,51,51,.1);}
+.tool-btn.sep{border-left:1px solid var(--border);margin-left:3px;padding-left:8px;}
+
+/* ── MAIN AREA ── */
+#mid{display:flex;flex:1;overflow:hidden;pointer-events:none;}
+
+/* ── SIDEBAR ── */
+#side{width:210px;background:var(--panel);border-right:2px solid var(--border);
+  pointer-events:all;overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;}
+#side::-webkit-scrollbar{width:4px;}
+#side::-webkit-scrollbar-track{background:var(--panel);}
+#side::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+.tab-content{display:none;flex-direction:column;flex:1;}
+.tab-content.active{display:flex;}
+
+.psec{padding:9px 11px;border-bottom:1px solid var(--border);}
+.slabel{font-size:8px;letter-spacing:.22em;color:var(--dim2);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Object grid */
+.igrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;}
+.ibtn{padding:8px 2px;background:var(--panel2);border:1px solid var(--border);
+  color:var(--dim2);font-family:'Share Tech Mono',monospace;font-size:8px;
+  cursor:grab;transition:all .12s;text-align:center;text-transform:uppercase;border-radius:2px;
+  position:relative;}
+.ibtn:hover{border-color:var(--dim2);color:var(--text);background:var(--panel3);}
+.ibtn.sel{border-color:var(--active);color:var(--active);background:var(--active-bg);}
+.ibtn .ic{font-size:14px;display:block;margin-bottom:2px;pointer-events:none;}
+.ibtn .drag-hint{position:absolute;bottom:1px;right:2px;font-size:6px;color:var(--dim);opacity:0.6;}
+.ibtn:active{cursor:grabbing;}
+
+/* Colors */
+.crow{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.csw{width:18px;height:18px;border-radius:2px;cursor:pointer;
+  border:2px solid transparent;transition:transform .1s,border-color .1s;}
+.csw:hover{transform:scale(1.25);}
+.csw.active{border-color:#fff;}
+
+/* Sliders */
+.srow{margin-bottom:7px;}
+.srow label{display:flex;justify-content:space-between;font-size:9px;color:var(--dim2);margin-bottom:3px;}
+.srow label span{color:var(--accent3);}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;
+  background:var(--border2);border-radius:1px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;
+  border-radius:50%;background:var(--active);cursor:pointer;}
+
+/* Buttons */
+.abtn{width:100%;padding:6px;background:var(--panel2);border:1px solid var(--border2);
+  color:var(--dim2);font-family:'Share Tech Mono',monospace;font-size:9px;
+  cursor:pointer;transition:all .12s;text-transform:uppercase;margin-bottom:4px;
+  letter-spacing:.04em;border-radius:2px;text-align:left;}
+.abtn:hover{border-color:var(--active);color:var(--active);background:var(--active-bg);}
+.abtn.d{border-color:rgba(204,51,51,.4);color:var(--red);}
+.abtn.d:hover{border-color:var(--red);background:rgba(204,51,51,.08);}
+.abtn.g{border-color:rgba(68,187,102,.3);color:var(--green);}
+.abtn.g:hover{border-color:var(--green);background:rgba(68,187,102,.08);}
+
+/* ── GRAVITY COMPASS ── */
+#grav-compass-wrap{padding:10px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;}
+#grav-compass{width:90px;height:90px;border-radius:50%;background:var(--panel2);
+  border:2px solid var(--border2);cursor:crosshair;position:relative;flex-shrink:0;}
+#grav-compass svg{width:100%;height:100%;}
+.gcomp-label{font-size:8px;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;}
+.gdir-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;width:100%;}
+.gdir-btn{padding:4px 2px;background:var(--panel2);border:1px solid var(--border);
+  color:var(--dim2);font-size:8px;font-family:'Share Tech Mono',monospace;cursor:pointer;text-align:center;
+  transition:all .12s;border-radius:2px;}
+.gdir-btn:hover{border-color:var(--active);color:var(--active);}
+
+/* ── STATUS BAR ── */
+#status{pointer-events:all;background:var(--panel);border-top:2px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:4px 12px;font-size:9px;color:var(--dim);flex-shrink:0;}
+#status b{color:var(--accent3);}
+.hint kbd{background:var(--panel2);border:1px solid var(--border2);
+  border-radius:2px;padding:1px 4px;color:var(--text);font-size:8px;margin:0 1px;}
+.sdiv{color:var(--border2);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:44px;left:50%;transform:translateX(-50%);
+  background:var(--panel);border:1px solid var(--border2);color:var(--text);
+  font-size:10px;padding:5px 14px;letter-spacing:.08em;opacity:0;transition:opacity .3s;
+  pointer-events:none;border-radius:2px;}
+
+/* ── DRAG GHOST ── */
+#drag-ghost{position:fixed;pointer-events:none;opacity:0;z-index:9999;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  background:rgba(74,158,255,.18);border:1px solid var(--active);border-radius:2px;
+  font-size:18px;transform:translate(-50%,-50%);}
+
+/* ── DROP ZONE OVERLAY ── */
+#drop-overlay{position:fixed;inset:0;pointer-events:none;opacity:0;
+  background:rgba(74,158,255,.04);border:2px dashed rgba(74,158,255,.3);
+  transition:opacity .2s;z-index:1;}
+#drop-overlay.active{opacity:1;}
+
+/* Checkboxes */
+.cbox-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.cbox-row input[type=checkbox]{accent-color:var(--active);width:12px;height:12px;}
+.cbox-row label{font-size:9px;color:var(--dim2);}
+
+/* Link palette */
+.link-palette{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:4px;}
+.link-palette .csw{width:100%;height:16px;border-radius:2px;}
+
+/* Stat row */
+.stat-inline{font-size:9px;color:var(--dim);margin-bottom:3px;}
+.stat-inline b{color:var(--accent3);}
+
+/* ── STL IMPORT ── */
+#stl-drop-zone{
+  border:2px dashed var(--border2);border-radius:3px;padding:18px 10px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--panel2);
+  margin-bottom:6px;position:relative;
+}
+#stl-drop-zone:hover,#stl-drop-zone.dragover{
+  border-color:var(--active);background:var(--active-bg);
+}
+#stl-drop-zone .dz-icon{font-size:22px;display:block;margin-bottom:5px;}
+#stl-drop-zone .dz-text{font-size:9px;color:var(--dim2);line-height:1.5;}
+#stl-drop-zone .dz-sub{font-size:8px;color:var(--dim);margin-top:3px;}
+#stl-file-input{display:none;}
+.stl-library{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;margin-top:4px;}
+.stl-library::-webkit-scrollbar{width:3px;}
+.stl-library::-webkit-scrollbar-thumb{background:var(--border2);}
+.stl-item{display:flex;align-items:center;gap:6px;padding:5px 7px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:2px;
+  cursor:grab;transition:all .12s;}
+.stl-item:hover{border-color:var(--active);background:var(--active-bg);}
+.stl-item.sel{border-color:var(--active);background:var(--active-bg);}
+.stl-item-icon{font-size:14px;flex-shrink:0;}
+.stl-item-info{flex:1;min-width:0;}
+.stl-item-name{font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stl-item-meta{font-size:7px;color:var(--dim);margin-top:1px;}
+.stl-item-del{font-size:10px;color:var(--dim);cursor:pointer;padding:2px 4px;flex-shrink:0;border-radius:2px;}
+.stl-item-del:hover{color:var(--red);background:rgba(204,51,51,.15);}
+#stl-status{font-size:8px;color:var(--dim);text-align:center;padding:4px;min-height:18px;}
+#stl-progress{width:100%;height:2px;background:var(--border);border-radius:1px;margin-bottom:4px;display:none;}
+#stl-progress-bar{height:100%;width:0%;background:var(--active);border-radius:1px;transition:width .1s;}
+.stl-preview-wrap{width:100%;height:80px;background:var(--panel2);border:1px solid var(--border);
+  border-radius:2px;margin-bottom:6px;overflow:hidden;display:none;position:relative;}
+#stl-preview-canvas{width:100%;height:100%;}
+.stl-no-items{font-size:9px;color:var(--dim);text-align:center;padding:12px;font-style:italic;}
+
+/* ── LABELS SYSTEM ── */
+#label-canvas-overlay{position:fixed;inset:0;pointer-events:none;z-index:5;}
+.body-label{
+  position:absolute;pointer-events:none;transform:translate(-50%,-100%);
+  white-space:nowrap;font-family:'Share Tech Mono',monospace;
+  transition:opacity .15s;
+}
+.body-label .lbl-inner{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 7px 2px 6px;border-radius:2px;
+  font-size:11px;line-height:1.4;
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(3px);
+}
+.body-label .lbl-line{
+  position:absolute;left:50%;top:100%;
+  width:1px;transform-origin:top center;
+  background:rgba(255,255,255,.25);
+}
+/* name list in panel */
+.name-list{display:flex;flex-direction:column;gap:2px;max-height:220px;overflow-y:auto;margin-top:4px;}
+.name-list::-webkit-scrollbar{width:3px;}
+.name-list::-webkit-scrollbar-thumb{background:var(--border2);}
+.name-item{display:flex;align-items:center;gap:5px;padding:4px 7px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:2px;
+  font-size:9px;cursor:pointer;transition:all .12s;user-select:none;}
+.name-item:hover{border-color:var(--active);color:var(--active);}
+.name-item.assigned{border-color:var(--green);color:var(--green);}
+.name-item.selected{border-color:var(--accent3);color:var(--accent3);background:rgba(255,204,68,.08);}
+.name-item .ni-idx{color:var(--dim);font-size:8px;width:14px;flex-shrink:0;}
+.name-item .ni-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.name-item .ni-body{font-size:7px;color:var(--dim);flex-shrink:0;}
+.name-item .ni-del{font-size:9px;color:var(--dim);cursor:pointer;padding:1px 3px;border-radius:2px;flex-shrink:0;}
+.name-item .ni-del:hover{color:var(--red);}
+.lbl-drop-zone{border:2px dashed var(--border2);border-radius:3px;padding:14px 10px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--panel2);margin-bottom:6px;}
+.lbl-drop-zone:hover,.lbl-drop-zone.dragover{border-color:var(--active);background:var(--active-bg);}
+.lbl-drop-zone .dz-icon{font-size:18px;display:block;margin-bottom:4px;}
+.lbl-drop-zone .dz-text{font-size:9px;color:var(--dim2);line-height:1.5;}
+#lbl-file-input{display:none;}
+.lbl-swatch-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.lbl-swatch{width:16px;height:16px;border-radius:2px;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s;}
+.lbl-swatch:hover{transform:scale(1.25);}
+.lbl-swatch.active{border-color:#fff;}
+#lbl-assign-mode-btn.active{border-color:var(--accent3);color:var(--accent3);background:rgba(255,204,68,.1);}
+</style>
+</head>
+<body>
+<canvas id="three"></canvas>
+<div id="label-canvas-overlay"></div>
+<div id="toast"></div>
+<div id="drag-ghost" id="drag-ghost">●</div>
+<div id="drop-overlay"></div>
+
+<div id="hud">
+  <div id="top-bar">
+    <div id="logo">
+      <div>
+        <h1 class="logo">GRAVITAS</h1>
+        <div class="sub">Physics Sandbox &nbsp;<span id="version-badge" style="color:var(--active);letter-spacing:.1em;"></span></div>
+      </div>
+    </div>
+    <div id="tabs">
+      <button class="tab-btn active" data-tab="spawn">Spawn</button>
+      <button class="tab-btn" data-tab="gravity">Gravity</button>
+      <button class="tab-btn" data-tab="physics">Physics</button>
+      <button class="tab-btn" data-tab="human">Human</button>
+      <button class="tab-btn" data-tab="connect">Connect</button>
+      <button class="tab-btn" data-tab="import">📦 Import</button>
+      <button class="tab-btn" data-tab="labels">🏷️ Labels</button>
+    </div>
+    <div id="tool-bar">
+      <button class="tool-btn active" id="btn-grab-tool">✋ Grab</button>
+      <button class="tool-btn" id="btn-push-tool">💨 Push</button>
+      <button class="tool-btn" id="btn-pull-tool">🧲 Pull</button>
+      <button class="tool-btn" id="btn-explode-tool">💥 Explode</button>
+      <button class="tool-btn" id="btn-freeze-tool">❄️ Freeze</button>
+      <button class="tool-btn" id="btn-link-tool">🔗 Link</button>
+      <button class="tool-btn" id="btn-cut-tool">✂️ Cut</button>
+      <button class="tool-btn sep red" id="btn-clear">✕ Clear</button>
+    </div>
+  </div>
+
+  <div id="mid">
+    <div id="side">
+
+      <!-- ═══ SPAWN ═══ -->
+      <div class="tab-content active" id="tab-spawn">
+        <div class="psec">
+          <div class="slabel">Objects <span style="font-size:7px;color:var(--dim)">(drag to place)</span></div>
+          <div class="igrid">
+            <button class="ibtn sel" data-shape="sphere"><span class="ic">●</span>Sphere<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="box"><span class="ic">■</span>Box<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="cone"><span class="ic">▲</span>Cone<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="cyl"><span class="ic">⬬</span>Cyl<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="torus"><span class="ic">◎</span>Torus<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="icosa"><span class="ic">⬡</span>Icosa<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="capsule"><span class="ic">💊</span>Caps<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="octahedron"><span class="ic">◇</span>Octa<span class="drag-hint">drag</span></button>
+            <button class="ibtn" data-shape="tetrahedron"><span class="ic">△</span>Tetra<span class="drag-hint">drag</span></button>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Material</div>
+          <div class="srow">
+            <label>Metalness <span id="val-metal">0.45</span></label>
+            <input type="range" id="sl-metal" min="0" max="1" step="0.05" value="0.45">
+          </div>
+          <div class="srow">
+            <label>Roughness <span id="val-rough">0.40</span></label>
+            <input type="range" id="sl-rough" min="0" max="1" step="0.05" value="0.40">
+          </div>
+          <div class="srow">
+            <label>Emissive <span id="val-emit">0.10</span></label>
+            <input type="range" id="sl-emit" min="0" max="1" step="0.05" value="0.10">
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-wire">
+            <label for="chk-wire">Wireframe</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-ghost">
+            <label for="chk-ghost">Ghost (transparent)</label>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Color</div>
+          <div class="crow" id="color-row"></div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Size & Mass</div>
+          <div class="srow">
+            <label>Scale <span id="val-scale">1.0</span></label>
+            <input type="range" id="sl-scale" min="0.2" max="4" step="0.1" value="1">
+          </div>
+          <div class="srow">
+            <label>Mass <span id="val-mass">1.0</span></label>
+            <input type="range" id="sl-mass" min="0.1" max="10" step="0.1" value="1">
+          </div>
+          <div class="srow">
+            <label>Initial Vel X <span id="val-vx">0</span></label>
+            <input type="range" id="sl-vx" min="-20" max="20" step="1" value="0">
+          </div>
+          <div class="srow">
+            <label>Initial Vel Y <span id="val-vy">0</span></label>
+            <input type="range" id="sl-vy" min="-20" max="20" step="1" value="0">
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Actions</div>
+          <button class="abtn" id="btn-drop">⬡ Drop Object</button>
+          <button class="abtn" id="btn-rain">☂ Object Rain</button>
+          <button class="abtn" id="btn-explosion-spawn">💥 Explosion Spawn</button>
+          <button class="abtn d" id="btn-clear-objects">✕ Clear Objects</button>
+        </div>
+      </div>
+
+      <!-- ═══ GRAVITY ═══ -->
+      <div class="tab-content" id="tab-gravity">
+        <div class="psec">
+          <div class="slabel">Direction</div>
+          <div id="grav-compass-wrap">
+            <div class="gcomp-label">Click / drag to aim gravity</div>
+            <div id="grav-compass">
+              <svg viewBox="0 0 90 90" id="compass-svg">
+                <defs>
+                  <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#333"/>
+                    <stop offset="100%" stop-color="#222"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="45" cy="45" r="43" fill="url(#cg)" stroke="#444" stroke-width="1.5"/>
+                <!-- cardinal rings -->
+                <circle cx="45" cy="45" r="30" fill="none" stroke="#383838" stroke-width="0.5" stroke-dasharray="2 3"/>
+                <circle cx="45" cy="45" r="15" fill="none" stroke="#383838" stroke-width="0.5"/>
+                <!-- axis lines -->
+                <line x1="45" y1="5" x2="45" y2="85" stroke="#3a3a3a" stroke-width="0.8"/>
+                <line x1="5" y1="45" x2="85" y2="45" stroke="#3a3a3a" stroke-width="0.8"/>
+                <!-- labels -->
+                <text x="45" y="11" text-anchor="middle" fill="#555" font-size="7" font-family="monospace">−Y</text>
+                <text x="45" y="84" text-anchor="middle" fill="#555" font-size="7" font-family="monospace">+Y</text>
+                <text x="8"  y="47" text-anchor="middle" fill="#555" font-size="7" font-family="monospace">−X</text>
+                <text x="82" y="47" text-anchor="middle" fill="#555" font-size="7" font-family="monospace">+X</text>
+                <!-- gravity arrow (updated by JS) -->
+                <g id="grav-arrow">
+                  <line id="grav-line" x1="45" y1="45" x2="45" y2="75" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"/>
+                  <polygon id="grav-head" points="45,78 42,72 48,72" fill="#4a9eff"/>
+                  <circle cx="45" cy="45" r="3" fill="#4a9eff"/>
+                </g>
+              </svg>
+            </div>
+            <div class="gdir-btns">
+              <button class="gdir-btn" data-dir="up">↑ Up</button>
+              <button class="gdir-btn" data-dir="down">↓ Down</button>
+              <button class="gdir-btn" data-dir="left">← Left</button>
+              <button class="gdir-btn" data-dir="right">→ Right</button>
+              <button class="gdir-btn" data-dir="forward">◉ Fwd</button>
+              <button class="gdir-btn" data-dir="zero">○ Zero</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Strength</div>
+          <div class="srow">
+            <label>Gravity <span id="val-gravity">14</span></label>
+            <input type="range" id="sl-gravity" min="0" max="60" step="0.5" value="14">
+          </div>
+          <div class="srow">
+            <label>X Tilt <span id="val-gx">0.0</span></label>
+            <input type="range" id="sl-gx" min="-1" max="1" step="0.05" value="0">
+          </div>
+          <div class="srow">
+            <label>Z Tilt <span id="val-gz">0.0</span></label>
+            <input type="range" id="sl-gz" min="-1" max="1" step="0.05" value="0">
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Presets</div>
+          <button class="abtn g" id="btn-zerog">○ Zero-G</button>
+          <button class="abtn" id="btn-moong">🌙 Moon Gravity</button>
+          <button class="abtn" id="btn-jupiterg">🪐 Jupiter Gravity</button>
+          <button class="abtn" id="btn-reverseg">↑ Reverse Gravity</button>
+          <button class="abtn" id="btn-chaosG">🌀 Chaos Mode</button>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Vortex</div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-vortex">
+            <label for="chk-vortex">Vortex Force</label>
+          </div>
+          <div class="srow">
+            <label>Strength <span id="val-vortex">8</span></label>
+            <input type="range" id="sl-vortex" min="0" max="40" step="1" value="8">
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-attractor">
+            <label for="chk-attractor">Point Attractor</label>
+          </div>
+          <div class="srow">
+            <label>Att. Str <span id="val-attr">12</span></label>
+            <input type="range" id="sl-attr" min="0" max="60" step="1" value="12">
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PHYSICS ═══ -->
+      <div class="tab-content" id="tab-physics">
+        <div class="psec">
+          <div class="slabel">World</div>
+          <div class="srow">
+            <label>Bounce <span id="val-bounce">0.30</span></label>
+            <input type="range" id="sl-bounce" min="0" max="1.2" step="0.01" value="0.3">
+          </div>
+          <div class="srow">
+            <label>Friction <span id="val-friction">0.82</span></label>
+            <input type="range" id="sl-friction" min="0.4" max="1" step="0.01" value="0.82">
+          </div>
+          <div class="srow">
+            <label>Air Drag <span id="val-drag">0.010</span></label>
+            <input type="range" id="sl-drag" min="0" max="0.2" step="0.002" value="0.01">
+          </div>
+          <div class="srow">
+            <label>Time Scale <span id="val-timescale">1.00</span></label>
+            <input type="range" id="sl-timescale" min="0.05" max="3" step="0.05" value="1">
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Environment</div>
+          <button class="abtn" id="btn-floor-toggle">Floor: ON</button>
+          <button class="abtn" id="btn-walls-toggle">Walls: OFF</button>
+          <button class="abtn" id="btn-ceiling-toggle">Ceiling: OFF</button>
+          <button class="abtn d" id="btn-nuke">💥 Nuke Scene</button>
+        </div>
+        <div class="psec">
+          <div class="slabel">Simulation</div>
+          <div class="srow">
+            <label>Sub-Steps <span id="val-substeps">6</span></label>
+            <input type="range" id="sl-substeps" min="1" max="16" step="1" value="6">
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-trails">
+            <label for="chk-trails">Object Trails</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-sleeping">
+            <label for="chk-sleeping">Sleep Inactive</label>
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Stats</div>
+          <div class="stat-inline">Bodies: <b id="stat-obj">0</b></div>
+          <div class="stat-inline">Links: <b id="stat-links">0</b></div>
+          <div class="stat-inline">Ragdolls: <b id="stat-rags">0</b></div>
+          <div class="stat-inline">FPS: <b id="stat-fps">0</b></div>
+          <div class="stat-inline">Gravity: <b id="stat-g">↓ 14.0</b></div>
+        </div>
+      </div>
+
+      <!-- ═══ HUMAN ═══ -->
+      <div class="tab-content" id="tab-human">
+        <div class="psec">
+          <div class="slabel">Spawn</div>
+          <button class="abtn g" id="btn-spawn-rag">👤 Spawn Standing</button>
+          <button class="abtn" id="btn-spawn-rag-fall">🫸 Spawn Airborne</button>
+          <button class="abtn" id="btn-spawn-multi">👥 Spawn 5 Humans</button>
+          <button class="abtn d" id="btn-rm-rags">✕ Remove All</button>
+        </div>
+        <div class="psec">
+          <div class="slabel">Joint Settings</div>
+          <div class="srow">
+            <label>Stiffness <span id="val-stiff">12</span></label>
+            <input type="range" id="sl-stiff" min="1" max="30" step="1" value="12">
+          </div>
+          <div class="srow">
+            <label>Damping <span id="val-damp">0.88</span></label>
+            <input type="range" id="sl-damp" min="0.5" max="1.0" step="0.01" value="0.88">
+          </div>
+          <div class="srow">
+            <label>Body Scale <span id="val-ragscale">1.0</span></label>
+            <input type="range" id="sl-ragscale" min="0.4" max="2.5" step="0.1" value="1">
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Pose</div>
+          <button class="abtn" id="btn-floppy">😵 Go Floppy</button>
+          <button class="abtn" id="btn-stiffen">🧍 Stiffen Up</button>
+          <button class="abtn" id="btn-tpose">🤸 T-Pose</button>
+          <button class="abtn d" id="btn-explode-rag">💥 Explode All</button>
+        </div>
+      </div>
+
+      <!-- ═══ CONNECT ═══ -->
+      <div class="tab-content" id="tab-connect">
+        <div class="psec">
+          <div class="slabel">🔗 Link Tool</div>
+          <p style="font-size:8px;color:var(--dim);line-height:1.6;margin-bottom:6px;">
+            Select <b style="color:var(--active)">🔗 Link</b> then click two objects to connect them.
+            Use <b style="color:var(--red)">✂️ Cut</b> to sever links.
+          </p>
+          <div class="stat-inline">Active links: <b id="stat-links2">0</b></div>
+          <div style="font-size:9px;color:var(--accent3);margin-top:4px;" id="link-status">No object selected</div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Link Mode</div>
+          <div class="igrid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:6px;">
+            <button class="ibtn sel" data-linkmode="weld"><span class="ic">🔩</span>Weld</button>
+            <button class="ibtn" data-linkmode="rod"><span class="ic">📏</span>Rod</button>
+            <button class="ibtn" data-linkmode="spring"><span class="ic">🌀</span>Spring</button>
+            <button class="ibtn" data-linkmode="rope"><span class="ic">🪢</span>Rope</button>
+            <button class="ibtn" data-linkmode="hinge"><span class="ic">🔄</span>Hinge</button>
+            <button class="ibtn" data-linkmode="ball"><span class="ic">⚽</span>Ball</button>
+          </div>
+          <div style="font-size:8px;color:var(--dim);line-height:1.5;" id="linkmode-desc">
+            Full 6-DOF rigid weld. Objects move and rotate as one. No stretch, no rotation.
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Settings</div>
+          <div class="srow" id="row-link-rest">
+            <label>Rest Length <span id="val-link-rest">Auto</span></label>
+            <input type="range" id="sl-link-rest" min="0" max="12" step="0.1" value="0">
+          </div>
+          <div class="srow" id="row-link-k">
+            <label>Stiffness <span id="val-link-k">120</span></label>
+            <input type="range" id="sl-link-k" min="5" max="1200" step="5" value="120">
+          </div>
+          <div class="srow" id="row-link-d">
+            <label>Damping <span id="val-link-d">8</span></label>
+            <input type="range" id="sl-link-d" min="0" max="80" step="1" value="8">
+          </div>
+          <div class="srow">
+            <label>Weld Iters <span id="val-weld-iters">8</span></label>
+            <input type="range" id="sl-weld-iters" min="1" max="20" step="1" value="8">
+          </div>
+          <div class="srow">
+            <label>Thickness <span id="val-link-thick">1.0</span></label>
+            <input type="range" id="sl-link-thick" min="0.5" max="5" step="0.5" value="1">
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Breakable</div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-link-break">
+            <label for="chk-link-break">Enable break on force</label>
+          </div>
+          <div class="srow">
+            <label>Break Force <span id="val-break">50</span></label>
+            <input type="range" id="sl-break" min="5" max="500" step="5" value="50">
+          </div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Link Color</div>
+          <div class="link-palette" id="link-color-row"></div>
+        </div>
+        <div class="psec">
+          <div class="slabel">Actions</div>
+          <button class="abtn" id="btn-pin-toggle">📌 Pin Selected to Air</button>
+          <button class="abtn" id="btn-chain">⛓️ Chain Selected</button>
+          <button class="abtn" id="btn-weld-all">🔩 Weld All to First</button>
+          <button class="abtn d" id="btn-cut-all">✂️ Cut All Links</button>
+        </div>
+      </div>
+
+      <!-- ═══ IMPORT ═══ -->
+      <div class="tab-content" id="tab-import">
+        <div class="psec">
+          <div class="slabel">Import STL</div>
+          <input type="file" id="stl-file-input" accept=".stl">
+          <div id="stl-drop-zone">
+            <span class="dz-icon">📦</span>
+            <div class="dz-text">Drop STL file here<br>or click to browse</div>
+            <div class="dz-sub">Binary &amp; ASCII supported</div>
+          </div>
+          <div id="stl-progress"><div id="stl-progress-bar"></div></div>
+          <div id="stl-status"></div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Import Settings</div>
+          <div class="srow">
+            <label>Auto-Scale <span id="val-stl-scale">1.0</span></label>
+            <input type="range" id="sl-stl-scale" min="0.05" max="5" step="0.05" value="1">
+          </div>
+          <div class="srow">
+            <label>Spawn Mass <span id="val-stl-mass">1.0</span></label>
+            <input type="range" id="sl-stl-mass" min="0.1" max="20" step="0.1" value="1">
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-stl-center" checked>
+            <label for="chk-stl-center">Auto-center geometry</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-stl-smooth">
+            <label for="chk-stl-smooth">Smooth normals</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-stl-wire">
+            <label for="chk-stl-wire">Wireframe overlay</label>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Collision Proxy</div>
+          <div style="font-size:8px;color:var(--dim);line-height:1.5;margin-bottom:6px;">
+            Physics uses a bounding-sphere proxy. Radius is auto-computed from mesh size.
+          </div>
+          <div class="srow">
+            <label>Proxy Scale <span id="val-stl-proxy">1.0</span></label>
+            <input type="range" id="sl-stl-proxy" min="0.2" max="2" step="0.05" value="1">
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Library <span id="stl-count" style="color:var(--dim)">(0)</span></div>
+          <div class="stl-preview-wrap" id="stl-preview-wrap">
+            <canvas id="stl-preview-canvas"></canvas>
+          </div>
+          <div class="stl-library" id="stl-library">
+            <div class="stl-no-items">No STL files imported yet</div>
+          </div>
+          <br>
+          <button class="abtn" id="btn-stl-spawn">⬡ Spawn Selected</button>
+          <button class="abtn" id="btn-stl-rain">☂ STL Rain</button>
+          <button class="abtn d" id="btn-stl-clear-lib">✕ Clear Library</button>
+        </div>
+      </div>
+
+      <!-- ═══ LABELS ═══ -->
+      <div class="tab-content" id="tab-labels">
+
+        <div class="psec">
+          <div class="slabel">Load Names</div>
+          <input type="file" id="lbl-file-input" accept=".txt,.json">
+          <div class="lbl-drop-zone" id="lbl-drop-zone">
+            <span class="dz-icon">🏷️</span>
+            <div class="dz-text">Drop .txt or .json here<br>or click to browse</div>
+          </div>
+          <div style="font-size:8px;color:var(--dim);line-height:1.6;margin-bottom:6px;">
+            <b style="color:var(--dim2)">.txt</b> — one name per line<br>
+            <b style="color:var(--dim2)">.json</b> — array of strings or objects<br>
+            <code style="color:var(--accent3);font-size:7px;">["Alice","Bob"]</code> or<br>
+            <code style="color:var(--accent3);font-size:7px;">[{"name":"Alice","color":"#f55"}]</code>
+          </div>
+          <button class="abtn" id="btn-lbl-paste">📋 Paste / Type Names</button>
+          <textarea id="lbl-paste-area" placeholder="One name per line..." style="display:none;width:100%;height:80px;background:var(--panel2);border:1px solid var(--border2);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px;border-radius:2px;resize:vertical;margin-top:4px;outline:none;"></textarea>
+          <button class="abtn" id="btn-lbl-paste-confirm" style="display:none;">✓ Import Text</button>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Assign Mode</div>
+          <button class="abtn" id="lbl-assign-mode-btn">🏷️ Click-to-Assign: OFF</button>
+          <p style="font-size:8px;color:var(--dim);line-height:1.5;margin-bottom:4px;">
+            When ON, clicking a body assigns the selected name from the list below.
+          </p>
+          <div class="srow">
+            <label>Auto-advance <span id="val-lbl-advance" style="color:var(--accent3)">ON</span></label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-lbl-advance" checked>
+            <label for="chk-lbl-advance">Advance to next name after assign</label>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Label Style</div>
+          <div class="srow">
+            <label>Font Size <span id="val-lbl-size">11</span>px</label>
+            <input type="range" id="sl-lbl-size" min="7" max="24" step="1" value="11">
+          </div>
+          <div class="srow">
+            <label>Line Height <span id="val-lbl-line">18</span>px</label>
+            <input type="range" id="sl-lbl-line" min="4" max="40" step="1" value="18">
+          </div>
+          <div class="srow">
+            <label>Opacity <span id="val-lbl-opacity">1.0</span></label>
+            <input type="range" id="sl-lbl-opacity" min="0.1" max="1" step="0.05" value="1">
+          </div>
+          <div class="srow">
+            <label>Y Offset <span id="val-lbl-yoff">0.6</span></label>
+            <input type="range" id="sl-lbl-yoff" min="0" max="4" step="0.1" value="0.6">
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-lbl-bg" checked>
+            <label for="chk-lbl-bg">Background pill</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-lbl-line">
+            <label for="chk-lbl-line">Connector line</label>
+          </div>
+          <div class="cbox-row">
+            <input type="checkbox" id="chk-lbl-face">
+            <label for="chk-lbl-face">Always face camera</label>
+          </div>
+          <div class="slabel" style="margin-top:6px;">Label Color</div>
+          <div class="lbl-swatch-row" id="lbl-color-row"></div>
+          <div class="slabel" style="margin-top:6px;">Background</div>
+          <div class="lbl-swatch-row" id="lbl-bg-row"></div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Name List <span id="lbl-count" style="color:var(--dim)">(0)</span></div>
+          <div class="name-list" id="name-list">
+            <div class="stl-no-items">No names loaded</div>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="slabel">Actions</div>
+          <button class="abtn" id="btn-lbl-assign-all">⚡ Auto-assign All Bodies</button>
+          <button class="abtn" id="btn-lbl-unassign-all">↩ Clear All Assignments</button>
+          <button class="abtn" id="btn-lbl-export">💾 Export Assignments JSON</button>
+          <button class="abtn d" id="btn-lbl-clear">✕ Clear Name List</button>
+        </div>
+
+      </div>
+
+    </div><!-- /side -->
+  </div><!-- /mid -->
+
+  <div id="status">
+    <span>Bodies: <b id="stat-obj2">0</b></span>
+    <span class="sdiv">|</span>
+    <span>FPS: <b id="stat-fps2">0</b></span>
+    <span class="sdiv">|</span>
+    <span>Grav: <b id="stat-g2">↓14</b></span>
+    <span class="sdiv">|</span>
+    <span class="hint"><kbd>WASD</kbd>Move <kbd>RMB</kbd>Look <kbd>Scroll</kbd>Zoom <kbd>LMB</kbd>Interact <kbd>Drag</kbd>Place <kbd>1-7</kbd>Tools <kbd>H</kbd>Human <kbd>G</kbd>Gravity <kbd>C</kbd>Clear <kbd>P</kbd>Pin <kbd>Space</kbd>Drop</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════
+//  RENDERER
+// ════════════════════════════════════════════════════════
+const canvas = document.getElementById('three');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.setClearColor(0x181818);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x181818, 0.011);
+const camera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 600);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x303030, 1.2));
+const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
+sun.position.set(20,50,18); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-60,right:60,top:60,bottom:-60,near:.1,far:300});
+sun.shadow.bias=-0.001; scene.add(sun);
+const fillL=new THREE.PointLight(0x3355aa,0.5,90); fillL.position.set(-18,6,-10); scene.add(fillL);
+const rimL =new THREE.PointLight(0x667799,0.3,70); rimL.position.set(10,16,-20);  scene.add(rimL);
+
+// Floor / Grid
+const FLOOR_Y=-8, CEIL_Y=30, ARENA=60, HALF=ARENA/2-0.8;
+const floorMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(ARENA,ARENA,40,40),
+  new THREE.MeshStandardMaterial({color:0x141414,roughness:.95,metalness:.02}));
+floorMesh.rotation.x=-Math.PI/2; floorMesh.position.y=FLOOR_Y;
+floorMesh.receiveShadow=true; scene.add(floorMesh);
+const grid=new THREE.GridHelper(ARENA,30,0x2a2a2a,0x1e1e1e);
+grid.position.y=FLOOR_Y+.01; scene.add(grid);
+
+// Ceiling mesh (hidden initially)
+const ceilMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(ARENA,ARENA),
+  new THREE.MeshStandardMaterial({color:0x111111,transparent:true,opacity:.3,side:THREE.DoubleSide}));
+ceilMesh.rotation.x=Math.PI/2; ceilMesh.position.y=CEIL_Y; ceilMesh.visible=false; scene.add(ceilMesh);
+
+// Walls
+const wallMeshes=[];
+[[0,FLOOR_Y+15,-ARENA/2,0,0],[0,FLOOR_Y+15,ARENA/2,0,Math.PI],
+ [-ARENA/2,FLOOR_Y+15,0,0,Math.PI/2],[ARENA/2,FLOOR_Y+15,0,0,-Math.PI/2]
+].forEach(([x,y,z,,ry2])=>{
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(ARENA,30),
+    new THREE.MeshStandardMaterial({color:0x181818,transparent:true,opacity:.2,side:THREE.DoubleSide}));
+  m.position.set(x,y,z); m.rotation.set(0,ry2,0); m.visible=false;
+  scene.add(m); wallMeshes.push(m);
+});
+
+// Attractor indicator
+const attraMesh=new THREE.Mesh(
+  new THREE.SphereGeometry(.3,8,8),
+  new THREE.MeshStandardMaterial({color:0xff8844,emissive:0xff4400,emissiveIntensity:.8,wireframe:true}));
+attraMesh.visible=false; scene.add(attraMesh);
+
+// ════════════════════════════════════════════════════════
+//  PHYSICS — XPBD
+// ════════════════════════════════════════════════════════
+let gravity=14;
+let gravDir = new THREE.Vector3(0,-1,0); // normalized gravity direction
+let bounce=0.3, friction=0.82, airDrag=0.01;
+let floorOn=true, wallsOn=false, ceilOn=false;
+let simTime=0, timeScale=1.0;
+let simSubSteps=6;
+let vortexOn=false, vortexStrength=8;
+let attractorOn=false, attractorStrength=12;
+let attractorPos=new THREE.Vector3(0,FLOOR_Y+4,0);
+let chaosMode=false, chaosTimer=0;
+let sleepEnabled=false;
+
+const bodies   = [];
+const ragdolls = [];
+const userLinks= [];
+
+// ════════════════════════════════════════════════════════
+//  CONVEX HULL  (QuickHull 3D — compact iterative version)
+//  Returns Float32Array of unique support vertices (local space)
+// ════════════════════════════════════════════════════════
+function buildConvexHull(geometry){
+  // Extract unique vertices from geometry
+  const pos = geometry.attributes.position;
+  const EPS = 1e-6;
+  const pts = [];
+  const seen = new Map();
+  for(let i=0;i<pos.count;i++){
+    const x=+pos.getX(i).toFixed(5), y=+pos.getY(i).toFixed(5), z=+pos.getZ(i).toFixed(5);
+    const key=`${x},${y},${z}`;
+    if(!seen.has(key)){ seen.set(key,true); pts.push(new THREE.Vector3(x,y,z)); }
+  }
+  if(pts.length<4) return pts; // degenerate
+
+  // Use Three.js convex geometry approach — just keep unique verts as the hull
+  // For GJK we only need the support function which iterates all verts, so
+  // we can simplify: decimate to ≤256 points for performance while keeping shape
+  if(pts.length > 256){
+    // Spatially subsample: keep every Nth
+    const step = Math.ceil(pts.length/256);
+    const sub = [];
+    for(let i=0;i<pts.length;i+=step) sub.push(pts[i]);
+    // Also always keep extremes in 6 axis directions
+    const axes=[new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0),new THREE.Vector3(0,0,1),
+                new THREE.Vector3(-1,0,0),new THREE.Vector3(0,-1,0),new THREE.Vector3(0,0,-1)];
+    for(const ax of axes){
+      let best=pts[0],bd=-Infinity;
+      for(const p of pts){ const d=p.dot(ax); if(d>bd){bd=d;best=p;} }
+      if(!sub.includes(best)) sub.push(best);
+    }
+    return sub;
+  }
+  return pts;
+}
+
+// GJK support function: furthest point in direction d (world-space)
+// hull = local verts, pos = world pos, quatInv = inverse quat of body
+const _gjkLocal = new THREE.Vector3();
+function support(hull, isSphere, radius, worldPos, quat, quatInv, dir){
+  if(isSphere){
+    // Sphere support: center + radius*dir
+    return worldPos.clone().addScaledVector(dir, radius);
+  }
+  // Transform dir into local space
+  _gjkLocal.copy(dir).applyQuaternion(quatInv);
+  let best=-Infinity, bx=0,by=0,bz=0;
+  for(const v of hull){
+    const d=v.x*_gjkLocal.x+v.y*_gjkLocal.y+v.z*_gjkLocal.z;
+    if(d>best){best=d;bx=v.x;by=v.y;bz=v.z;}
+  }
+  // Transform back to world space
+  const lv=new THREE.Vector3(bx,by,bz);
+  lv.applyQuaternion(quat);
+  lv.add(worldPos);
+  return lv;
+}
+
+// GJK — returns null if separated, or simplex array for EPA
+function gjk(hullA,spA,rA,posA,qA,qAi, hullB,spB,rB,posB,qB,qBi){
+  const simplex=[];
+
+  function minkDiff(d){
+    const nd=d.clone().negate();
+    const a=support(hullA,spA,rA,posA,qA,qAi,d).clone();
+    const b=support(hullB,spB,rB,posB,qB,qBi,nd).clone();
+    return a.sub(b);
+  }
+
+  let dir=new THREE.Vector3().subVectors(posB,posA);
+  if(dir.lengthSq()<1e-8) dir.set(1,0,0);
+  dir.normalize();
+
+  let pt=minkDiff(dir);
+  if(pt.dot(dir)<0) return null;
+  simplex.push(pt);
+  dir.negate();
+
+  for(let iter=0;iter<48;iter++){
+    if(dir.lengthSq()<1e-10) return null;
+    dir.normalize();
+    pt=minkDiff(dir);
+    if(pt.dot(dir)<0) return null;
+    simplex.push(pt);
+    if(doSimplex(simplex,dir)){
+      // Ensure 4 points for EPA
+      while(simplex.length<4){
+        const extra=minkDiff(new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize());
+        simplex.push(extra);
+      }
+      return simplex;
+    }
+  }
+  return null;
+}
+
+// GJK simplex evolution — sets dir toward origin, returns true if origin inside
+// s is mutated in place (array of Vector3 Minkowski diff points, newest last)
+function doSimplex(s,dir){
+  switch(s.length){
+    case 2: return lineCase(s,dir);
+    case 3: return triangleCase(s,dir);
+    case 4: return tetrahedronCase(s,dir);
+  }
+  return false;
+}
+
+function lineCase(s,dir){
+  const a=s[s.length-1], b=s[0];
+  const ab=new THREE.Vector3().subVectors(b,a);
+  const ao=a.clone().negate();
+  if(ab.dot(ao)>0){
+    dir.crossVectors(ab,ao).cross(ab);
+  } else {
+    s.length=1; s[0]=a;
+    dir.copy(ao);
+  }
+  return false;
+}
+
+function triangleCase(s,dir){
+  const a=s[2], b=s[1], c=s[0];
+  const ab=new THREE.Vector3().subVectors(b,a);
+  const ac=new THREE.Vector3().subVectors(c,a);
+  const ao=a.clone().negate();
+  const abc=new THREE.Vector3().crossVectors(ab,ac);
+
+  if(new THREE.Vector3().crossVectors(abc,ac).dot(ao)>0){
+    if(ac.dot(ao)>0){
+      s.length=2; s[0]=c; s[1]=a;
+      dir.crossVectors(ac,ao).cross(ac);
+    } else {
+      s.length=2; s[0]=b; s[1]=a;
+      return lineCase(s,dir);
+    }
+  } else if(new THREE.Vector3().crossVectors(ab,abc).dot(ao)>0){
+    s.length=2; s[0]=b; s[1]=a;
+    return lineCase(s,dir);
+  } else if(abc.dot(ao)>0){
+    dir.copy(abc);
+  } else {
+    // flip winding
+    s[0]=b; s[1]=c; s[2]=a;
+    dir.copy(abc.negate());
+  }
+  return false;
+}
+
+function tetrahedronCase(s,dir){
+  const a=s[3], b=s[2], c=s[1], d=s[0];
+  const ab=new THREE.Vector3().subVectors(b,a);
+  const ac=new THREE.Vector3().subVectors(c,a);
+  const ad=new THREE.Vector3().subVectors(d,a);
+  const ao=a.clone().negate();
+  const abc=new THREE.Vector3().crossVectors(ab,ac);
+  const acd=new THREE.Vector3().crossVectors(ac,ad);
+  const adb=new THREE.Vector3().crossVectors(ad,ab);
+  if(abc.dot(ao)>0){ s.length=3; s[0]=c; s[1]=b; s[2]=a; return triangleCase(s,dir); }
+  if(acd.dot(ao)>0){ s.length=3; s[0]=d; s[1]=c; s[2]=a; return triangleCase(s,dir); }
+  if(adb.dot(ao)>0){ s.length=3; s[0]=b; s[1]=d; s[2]=a; return triangleCase(s,dir); }
+  return true;
+}
+
+// EPA — Expanding Polytope Algorithm
+// Returns {normal, depth} — the minimum penetration vector
+function epa(hullA,spA,rA,posA,qA,qAi, hullB,spB,rB,posB,qB,qBi, simplex){
+
+  function minkSup(d){
+    const nd=d.clone().negate();
+    return support(hullA,spA,rA,posA,qA,qAi,d).clone()
+      .sub(support(hullB,spB,rB,posB,qB,qBi,nd));
+  }
+
+  // polytope as flat vertex array + face index triples
+  const verts = simplex.slice(0,4).map(v=>v.clone());
+  // initial 4 faces of the tetrahedron (CCW winding outward)
+  let faces = [
+    [0,1,2],[0,3,1],[0,2,3],[1,3,2]
+  ];
+
+  function faceNormal(f){
+    const a=verts[f[0]], b=verts[f[1]], c=verts[f[2]];
+    const n=new THREE.Vector3()
+      .crossVectors(new THREE.Vector3().subVectors(b,a), new THREE.Vector3().subVectors(c,a))
+      .normalize();
+    // ensure outward
+    if(n.dot(a)<0) n.negate();
+    return {n, d:Math.abs(n.dot(a))};
+  }
+
+  for(let iter=0;iter<48;iter++){
+    // find closest face to origin
+    let minD=Infinity, minIdx=0;
+    const faceData=faces.map((f,i)=>{ const fd=faceNormal(f); if(fd.d<minD){minD=fd.d;minIdx=i;} return fd; });
+    const closest=faceData[minIdx];
+
+    // support point in that direction
+    const p=minkSup(closest.n);
+    const newD=p.dot(closest.n);
+
+    if(newD-closest.d < 5e-4){
+      // Converged
+      return {normal:closest.n.clone(), depth:closest.d};
+    }
+
+    // Add p to vertices
+    const pIdx=verts.length;
+    verts.push(p);
+
+    // Find all faces visible from p and collect their edges
+    const edges=[];
+    const newFaces=[];
+    for(const f of faces){
+      const {n}=faceNormal(f);
+      if(n.dot(new THREE.Vector3().subVectors(p,verts[f[0]]))>0){
+        // visible — record edges
+        for(let e=0;e<3;e++){
+          edges.push([f[e],f[(e+1)%3]]);
+        }
+      } else {
+        newFaces.push(f);
+      }
+    }
+
+    // Remove shared edges (appear in both directions)
+    const uniqueEdges=[];
+    outer: for(const [a,b] of edges){
+      for(let i=0;i<uniqueEdges.length;i++){
+        if(uniqueEdges[i][0]===b&&uniqueEdges[i][1]===a){
+          uniqueEdges.splice(i,1); continue outer;
+        }
+      }
+      uniqueEdges.push([a,b]);
+    }
+
+    for(const [a,b] of uniqueEdges) newFaces.push([a,b,pIdx]);
+    faces=newFaces;
+    if(faces.length===0) break;
+  }
+
+  // fallback: return the closest face normal
+  let minD=Infinity, best={n:new THREE.Vector3(0,1,0),d:0.01};
+  for(const f of faces){
+    const fd=faceNormal(f);
+    if(fd.d<minD){minD=fd.d;best=fd;}
+  }
+  return {normal:best.n.clone(), depth:best.d};
+}
+
+// ════════════════════════════════════════════════════════
+//  PHYSBODY — now carries convex hull + full rotation state
+// ════════════════════════════════════════════════════════
+class PhysBody {
+  constructor(mesh, hull, isSphere, radius, mass=1) {
+    this.mesh      = mesh;
+    this.hull      = hull;      // array of THREE.Vector3 local-space verts (null for sphere)
+    this.isSphere  = isSphere;
+    this.radius    = radius;    // bounding/sphere radius
+    this.mass      = mass;
+    this.invMass   = mass>0 ? 1/mass : 0;
+    // Inertia tensor (simplified: uniform sphere inertia for all shapes — good enough for gameplay)
+    const I = (2/5)*mass*radius*radius;
+    this.invInertia = mass>0 ? 1/Math.max(I,0.0001) : 0;
+    this.vel       = new THREE.Vector3();
+    this.angVel    = new THREE.Vector3();
+    this.quat      = new THREE.Quaternion();   // orientation quaternion
+    this.quatInv   = new THREE.Quaternion();
+    this.pinned    = false;
+    this.frozen    = false;
+    this.ragId     = -1;
+    this.trail     = null;
+    this.sleeping  = false;
+    this.sleepTimer= 0;
+    // Sync initial quat from mesh
+    this.quat.copy(mesh.quaternion);
+    this.quatInv.copy(this.quat).invert();
+  }
+  get pos(){ return this.mesh.position; }
+  // Sync mesh orientation from physics quat
+  syncMeshQuat(){
+    this.mesh.quaternion.copy(this.quat);
+  }
+}
+
+// Trail
+class Trail {
+  constructor(color){
+    this.pts=[]; this.max=24;
+    this.geo=new THREE.BufferGeometry();
+    this.mat=new THREE.LineBasicMaterial({color:new THREE.Color(color),transparent:true,opacity:.22});
+    this.line=new THREE.Line(this.geo,this.mat); scene.add(this.line);
+  }
+  update(p){
+    this.pts.push(p.clone());
+    if(this.pts.length>this.max) this.pts.shift();
+    const a=new Float32Array(this.pts.length*3);
+    this.pts.forEach((v,i)=>{a[i*3]=v.x;a[i*3+1]=v.y;a[i*3+2]=v.z;});
+    this.geo.setAttribute('position',new THREE.BufferAttribute(a,3));
+  }
+  dispose(){ scene.remove(this.line); this.geo.dispose(); this.mat.dispose(); }
+}
+
+let trailsEnabled = false;
+
+function removeBodyAt(idx){
+  const b=bodies[idx];
+  if(b.trail) b.trail.dispose();
+  b.mesh.geometry.dispose(); b.mesh.material.dispose(); scene.remove(b.mesh);
+  for(let i=userLinks.length-1;i>=0;i--){
+    if(userLinks[i].a===b||userLinks[i].b===b) removeUserLink(i);
+  }
+  bodies.splice(idx,1);
+}
+
+// ════════════════════════════════════════════════════════
+//  USER LINKS  — 6-DOF constraint system
+//
+//  Modes:
+//   weld   — locks all 6 DOF (position + orientation). True rigid weld.
+//   rod    — locks distance only (like ragdoll joint). Free rotation.
+//   spring — soft spring force. Stretchy.
+//   rope   — rod but pull-only (goes slack when compressed).
+//   hinge  — locks position + one rotation axis. Free to spin on one axis.
+//   ball   — locks position only (ball-and-socket). Free rotation.
+// ════════════════════════════════════════════════════════
+let linkA=null, linkColor='#ffcc44', linkK=120, linkD=8, linkRestOverride=0;
+let linkMode='weld';   // 'weld'|'rod'|'spring'|'rope'|'hinge'|'ball'
+let breakableMode=false, breakForce=50;
+let linkThickness=1.0;
+let weldIters=8;
+
+// ropeMode / rigidLinkMode kept as aliases for old code paths
+let ropeMode=false, rigidLinkMode=false;
+
+const LINKMODE_DESC={
+  weld:   'Full 6-DOF rigid weld. Objects move and rotate as one. No stretch, no rotation.',
+  rod:    'Fixed distance, free rotation (ball-and-socket). Objects can spin freely around the joint.',
+  spring: 'Soft spring. Stretches under load. Tune stiffness and damping.',
+  rope:   'Like a rope — pulls when taut, goes slack when compressed. Free rotation.',
+  hinge:  'Fixed distance + locks 2 rotation axes. Objects pivot on one shared axis.',
+  ball:   'Ball-and-socket. Locks position, free rotation on all axes.',
+};
+
+function updateLinkStatus(){
+  const cnt=userLinks.length;
+  document.getElementById('stat-links').textContent=cnt;
+  document.getElementById('stat-links2').textContent=cnt;
+  const el=document.getElementById('link-status');
+  if(activeTool==='link') el.textContent=linkA?'1st selected — click 2nd':'Click an object to start';
+  else if(activeTool==='cut') el.textContent='Click object to cut its links';
+  else el.textContent=cnt?`${cnt} link(s) active`:'No links';
+}
+
+function createUserLink(a,b){
+  const dist=a.pos.distanceTo(b.pos);
+  const rest=linkRestOverride>0?linkRestOverride:dist;
+
+  // For weld: record the relative transform at link creation time
+  // anchorA = attachment point in A's local space
+  // anchorB = attachment point in B's local space
+  // relQuat  = desired relative orientation  qB_inv * qA  (A relative to B)
+  const anchorWorld=new THREE.Vector3().addVectors(a.pos,b.pos).multiplyScalar(0.5);
+  const anchorA=anchorWorld.clone().sub(a.pos).applyQuaternion(a.quatInv);
+  const anchorB=anchorWorld.clone().sub(b.pos).applyQuaternion(b.quatInv);
+  // relQuat stores the desired relative orientation of B wrt A: qA_inv * qB
+  const relQuat=new THREE.Quaternion().copy(a.quatInv).multiply(b.quat);
+
+  // Hinge axis stored in A's local space
+  const hingeAxisLocal=new THREE.Vector3(0,1,0); // default Y axis
+
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
+  const mat=new THREE.LineBasicMaterial({color:new THREE.Color(linkColor),transparent:true,opacity:.9,linewidth:linkThickness});
+  const line=new THREE.Line(geo,mat); scene.add(line);
+
+  userLinks.push({
+    a, b, rest, mode:linkMode,
+    k:linkK, d:linkD,
+    breakable:breakableMode, breakForce,
+    anchorA, anchorB, relQuat, hingeAxisLocal,
+    geo, mat, line, color:linkColor,
+    // track stress for visual
+    stress:0
+  });
+  updateLinkStatus();
+}
+
+function removeUserLink(idx){
+  const lk=userLinks[idx];
+  scene.remove(lk.line); lk.geo.dispose(); lk.mat.dispose();
+  userLinks.splice(idx,1); updateLinkStatus();
+}
+
+function cutLinksOnBody(b){
+  for(let i=userLinks.length-1;i>=0;i--)
+    if(userLinks[i].a===b||userLinks[i].b===b) removeUserLink(i);
+}
+
+// ── WELD CONSTRAINT SOLVERS ──────────────────────────────
+
+// Solve a positional constraint between a point on body A and a point on body B.
+// rA, rB: attachment offsets in LOCAL space.
+// targetSep: desired world-space separation (zero for weld, rest for rod).
+// Returns the positional error magnitude (for break detection).
+function solvePositionalConstraint(a, b, rAlocal, rBlocal, targetSep, compliance=0){
+  if(a.pinned&&b.pinned) return 0;
+
+  // World-space attachment points
+  const rAw=rAlocal.clone().applyQuaternion(a.quat);
+  const rBw=rBlocal.clone().applyQuaternion(b.quat);
+  const pA=a.pos.clone().add(rAw);
+  const pB=b.pos.clone().add(rBw);
+
+  const diff=new THREE.Vector3().subVectors(pB,pA);
+  const dist=diff.length();
+  if(dist<1e-7) return 0;
+
+  let err=0;
+  let n, corr;
+
+  if(targetSep===0){
+    // Drive attachment points to coincide
+    err=dist;
+    n=diff.clone().divideScalar(dist);
+    corr=dist;
+  } else {
+    err=dist-targetSep;
+    if(Math.abs(err)<1e-6) return 0;
+    n=diff.clone().divideScalar(dist);
+    corr=err;
+  }
+
+  // Effective mass (translational + angular)
+  const rAxN=rAw.clone().cross(n);
+  const rBxN=rBw.clone().cross(n);
+  const wA=a.invMass + a.invInertia*rAxN.lengthSq();
+  const wB=b.invMass + b.invInertia*rBxN.lengthSq();
+  const wSum=wA+wB+compliance;
+  if(wSum<1e-10) return err;
+
+  const lambda=corr/wSum;
+
+  // Position correction
+  if(!a.pinned&&!a.frozen){
+    a.pos.addScaledVector(n, lambda*a.invMass);
+    const dq=new THREE.Quaternion(
+      a.invInertia*lambda*rAxN.x,
+      a.invInertia*lambda*rAxN.y,
+      a.invInertia*lambda*rAxN.z, 0
+    );
+    a.quat.x+=0.5*dq.x; a.quat.y+=0.5*dq.y; a.quat.z+=0.5*dq.z;
+    a.quat.normalize(); a.quatInv.copy(a.quat).invert();
+    a.syncMeshQuat();
+  }
+  if(!b.pinned&&!b.frozen){
+    b.pos.addScaledVector(n,-lambda*b.invMass);
+    const dq=new THREE.Quaternion(
+      -b.invInertia*lambda*rBxN.x,
+      -b.invInertia*lambda*rBxN.y,
+      -b.invInertia*lambda*rBxN.z, 0
+    );
+    b.quat.x+=0.5*dq.x; b.quat.y+=0.5*dq.y; b.quat.z+=0.5*dq.z;
+    b.quat.normalize(); b.quatInv.copy(b.quat).invert();
+    b.syncMeshQuat();
+  }
+
+  return Math.abs(err);
+}
+
+// Solve angular (orientation) constraint.
+// Drives the relative quaternion between a and b toward relQuat (stored at link creation).
+// omega: correction axis*angle vector.
+function solveAngularConstraint(a, b, relQuat){
+  if(a.pinned&&b.pinned) return;
+
+  // Current relative quat: qA_inv * qB
+  const curRel=new THREE.Quaternion().copy(a.quatInv).multiply(b.quat);
+
+  // Error quat: how much we need to rotate to reach relQuat
+  // errQ = relQuat * curRel_inv
+  const errQ=new THREE.Quaternion().copy(relQuat).multiply(curRel.clone().invert());
+
+  // Convert to axis-angle (small angle: just use xyz components of errQ)
+  // For stability, ensure w >= 0
+  if(errQ.w<0){ errQ.x=-errQ.x; errQ.y=-errQ.y; errQ.z=-errQ.z; errQ.w=-errQ.w; }
+  // Correction axis in world space (rotate errQ axis by qA)
+  const axisLocal=new THREE.Vector3(errQ.x,errQ.y,errQ.z);
+  if(axisLocal.lengthSq()<1e-12) return;
+  const axisWorld=axisLocal.clone().applyQuaternion(a.quat);
+  const angle=2*Math.atan2(axisLocal.length(),errQ.w);
+  if(Math.abs(angle)<1e-6) return;
+
+  const wA=a.pinned?0:a.invInertia;
+  const wB=b.pinned?0:b.invInertia;
+  const wSum=wA+wB;
+  if(wSum<1e-10) return;
+
+  const lambda=angle/wSum;
+  const correction=axisWorld.clone().multiplyScalar(lambda);
+
+  if(!a.pinned&&!a.frozen){
+    const dqA=new THREE.Quaternion(
+       correction.x*wA*0.5,
+       correction.y*wA*0.5,
+       correction.z*wA*0.5, 0
+    );
+    a.quat.x+=dqA.x; a.quat.y+=dqA.y; a.quat.z+=dqA.z;
+    a.quat.normalize(); a.quatInv.copy(a.quat).invert();
+    a.syncMeshQuat();
+  }
+  if(!b.pinned&&!b.frozen){
+    const dqB=new THREE.Quaternion(
+      -correction.x*wB*0.5,
+      -correction.y*wB*0.5,
+      -correction.z*wB*0.5, 0
+    );
+    b.quat.x+=dqB.x; b.quat.y+=dqB.y; b.quat.z+=dqB.z;
+    b.quat.normalize(); b.quatInv.copy(b.quat).invert();
+    b.syncMeshQuat();
+  }
+}
+
+// Solve hinge: lock all rotation except around one axis
+function solveHingeConstraint(a, b, hingeAxisLocal){
+  // The hinge axis in world space from body A
+  const axisA=hingeAxisLocal.clone().applyQuaternion(a.quat);
+  // The same axis expressed in B's frame at creation = hingeAxisLocal rotated by relQuat
+  // We want axisA == axisB_world, so find the swing error
+  const axisB=hingeAxisLocal.clone().applyQuaternion(b.quat);
+  // Swing correction: drive axisB toward axisA
+  const cross=new THREE.Vector3().crossVectors(axisB,axisA);
+  if(cross.lengthSq()<1e-12) return;
+  const wA=a.pinned?0:a.invInertia;
+  const wB=b.pinned?0:b.invInertia;
+  const wSum=wA+wB; if(wSum<1e-10) return;
+  const angle=Math.asin(Math.min(1,cross.length()));
+  const correction=cross.normalize().multiplyScalar(angle/wSum);
+  if(!a.pinned&&!a.frozen){
+    const dq=new THREE.Quaternion(correction.x*wA*.5,correction.y*wA*.5,correction.z*wA*.5,0);
+    a.quat.x+=dq.x; a.quat.y+=dq.y; a.quat.z+=dq.z; a.quat.normalize(); a.quatInv.copy(a.quat).invert(); a.syncMeshQuat();
+  }
+  if(!b.pinned&&!b.frozen){
+    const dq=new THREE.Quaternion(-correction.x*wB*.5,-correction.y*wB*.5,-correction.z*wB*.5,0);
+    b.quat.x+=dq.x; b.quat.y+=dq.y; b.quat.z+=dq.z; b.quat.normalize(); b.quatInv.copy(b.quat).invert(); b.syncMeshQuat();
+  }
+}
+
+// Velocity-level damping for all constrained links
+function dampConstraintVelocity(a, b, rAlocal, rBlocal, damping){
+  if(damping<0.001) return;
+  const rAw=rAlocal.clone().applyQuaternion(a.quat);
+  const rBw=rBlocal.clone().applyQuaternion(b.quat);
+  const vA=a.vel.clone().add(new THREE.Vector3().crossVectors(a.angVel,rAw));
+  const vB=b.vel.clone().add(new THREE.Vector3().crossVectors(b.angVel,rBw));
+  const relV=new THREE.Vector3().subVectors(vA,vB);
+  const impulse=relV.clone().multiplyScalar(-damping/(a.invMass+b.invMass+0.001));
+  if(!a.pinned&&!a.frozen) a.vel.addScaledVector(impulse, a.invMass);
+  if(!b.pinned&&!b.frozen) b.vel.addScaledVector(impulse,-b.invMass);
+}
+
+function updateLinkVisuals(){
+  userLinks.forEach(lk=>{
+    const pa=lk.a.pos, pb=lk.b.pos;
+    const arr=lk.geo.attributes.position.array;
+    arr[0]=pa.x;arr[1]=pa.y;arr[2]=pa.z;
+    arr[3]=pb.x;arr[4]=pb.y;arr[5]=pb.z;
+    lk.geo.attributes.position.needsUpdate=true;
+    // Color by stress
+    const t=Math.min(lk.stress/2,1);
+    const base=new THREE.Color(lk.color||'#ffcc44');
+    base.lerp(new THREE.Color('#ff2222'),t);
+    lk.mat.color.copy(base);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  PHYSICS STEP
+// ════════════════════════════════════════════════════════
+const _gravForce=new THREE.Vector3();
+
+function physicsStep(dt){
+  dt=Math.min(dt,.033)*timeScale;
+  simTime+=dt;
+  const sdt=dt/simSubSteps;
+
+  // chaos mode — randomly shift gravity direction
+  if(chaosMode){
+    chaosTimer+=dt;
+    if(chaosTimer>0.8){
+      chaosTimer=0;
+      gravDir.set((Math.random()-.5)*2,(Math.random()-.5)*2,(Math.random()-.5)*2).normalize();
+      updateCompassUI();
+    }
+  }
+
+  for(let sub=0;sub<simSubSteps;sub++){
+    // gravity vector
+    _gravForce.copy(gravDir).multiplyScalar(gravity*sdt);
+
+    for(const b of bodies){
+      if(b.pinned||b.frozen) continue;
+      if(b.sleeping) continue;
+
+      // gravity
+      b.vel.addScaledVector(gravDir, gravity*sdt);
+
+      // vortex
+      if(vortexOn){
+        const vp=new THREE.Vector3(b.pos.x,0,b.pos.z);
+        const vd=new THREE.Vector3(-vp.z,0,vp.x).normalize();
+        b.vel.addScaledVector(vd, vortexStrength*sdt);
+      }
+
+      // attractor
+      if(attractorOn){
+        const ad=new THREE.Vector3().subVectors(attractorPos,b.pos);
+        const adist=Math.max(ad.length(),.5);
+        b.vel.addScaledVector(ad.divideScalar(adist*adist), attractorStrength*sdt);
+      }
+
+      b.vel.multiplyScalar(1-airDrag);
+      b.angVel.multiplyScalar(.97);
+      b.pos.addScaledVector(b.vel,sdt);
+
+      // Integrate orientation via quaternion
+      if(b.angVel.lengthSq()>1e-8){
+        const angle=b.angVel.length()*sdt;
+        const axis=b.angVel.clone().normalize();
+        const dq=new THREE.Quaternion().setFromAxisAngle(axis,angle);
+        b.quat.premultiply(dq).normalize();
+        b.quatInv.copy(b.quat).invert();
+        b.syncMeshQuat();
+      }
+
+      // sleep check
+      if(sleepEnabled){
+        const spd=b.vel.lengthSq();
+        if(spd<0.01) { b.sleepTimer+=sdt; if(b.sleepTimer>2) b.sleeping=true; }
+        else { b.sleepTimer=0; }
+      }
+    }
+
+    // ragdoll constraints
+    for(const rag of ragdolls){
+      for(let it=0;it<rag.stiffIters;it++){
+        for(const c of rag.constraints) solveDistConstraint(c.a,c.b,c.rest,1.0);
+      }
+    }
+
+    // ── USER LINK CONSTRAINTS ──
+    for(let li=userLinks.length-1;li>=0;li--){
+      const lk=userLinks[li];
+      const a=lk.a, b=lk.b;
+
+      if(lk.mode==='spring'){
+        // Soft spring — velocity-based force
+        const diff=new THREE.Vector3().subVectors(b.pos,a.pos);
+        const dist=diff.length(); if(dist<.0001) continue;
+        const stretch=dist-lk.rest;
+        const dir=diff.divideScalar(dist);
+        const relV=new THREE.Vector3().subVectors(b.vel,a.vel).dot(dir);
+        const f=(lk.k*stretch+lk.d*relV)*sdt;
+        if(!a.pinned&&!a.frozen) a.vel.addScaledVector(dir, f/a.mass);
+        if(!b.pinned&&!b.frozen) b.vel.addScaledVector(dir,-f/b.mass);
+        lk.stress=Math.abs(stretch);
+        if(lk.breakable && lk.stress>lk.breakForce/Math.max(lk.k,1)){ removeUserLink(li); continue; }
+
+      } else if(lk.mode==='rope'){
+        // Pull-only distance constraint
+        const diff=new THREE.Vector3().subVectors(b.pos,a.pos);
+        const dist=diff.length();
+        if(dist<=lk.rest){ lk.stress=0; continue; }
+        const err=solvePositionalConstraint(a,b,lk.anchorA,lk.anchorB,lk.rest);
+        lk.stress=err;
+        if(lk.breakable && err>lk.breakForce){ removeUserLink(li); continue; }
+
+      } else if(lk.mode==='rod' || lk.mode==='ball'){
+        // Fixed distance, free rotation — solve position only
+        const err=solvePositionalConstraint(a,b,lk.anchorA,lk.anchorB,lk.rest);
+        lk.stress=err;
+        dampConstraintVelocity(a,b,lk.anchorA,lk.anchorB,lk.d*0.01);
+        if(lk.breakable && err>lk.breakForce){ removeUserLink(li); continue; }
+
+      } else if(lk.mode==='hinge'){
+        // Fixed distance + locked rotation except one axis
+        const err=solvePositionalConstraint(a,b,lk.anchorA,lk.anchorB,lk.rest);
+        solveHingeConstraint(a,b,lk.hingeAxisLocal);
+        lk.stress=err;
+        dampConstraintVelocity(a,b,lk.anchorA,lk.anchorB,lk.d*0.01);
+        if(lk.breakable && err>lk.breakForce){ removeUserLink(li); continue; }
+
+      } else {
+        // WELD — full 6-DOF: position + orientation
+        // Run multiple iterations for rigidity (controlled by weldIters)
+        let err=0;
+        for(let wi=0;wi<weldIters;wi++){
+          err=solvePositionalConstraint(a,b,lk.anchorA,lk.anchorB,0);
+          solveAngularConstraint(a,b,lk.relQuat);
+        }
+        lk.stress=err;
+        dampConstraintVelocity(a,b,lk.anchorA,lk.anchorB,lk.d*0.02);
+        if(lk.breakable && err>lk.breakForce){ removeUserLink(li); continue; }
+      }
+    }
+
+    // Floor / walls / ceiling collisions — convex-hull aware
+    const _down=new THREE.Vector3(0,-1,0);
+    const _up  =new THREE.Vector3(0,1,0);
+    for(let i=bodies.length-1;i>=0;i--){
+      const b=bodies[i]; if(b.pinned) continue;
+
+      // Find lowest world-space point via support function in -Y direction
+      const lowestPt = support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,_down);
+      const highestPt= support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,_up);
+
+      if(floorOn && lowestPt.y < FLOOR_Y){
+        const pen = FLOOR_Y - lowestPt.y;
+        b.pos.y += pen;
+        if(b.vel.y<0){
+          // Contact point relative to center of mass
+          const rContact=lowestPt.clone().sub(b.pos);
+          rContact.y += pen; // after correction
+          const vn=b.vel.y;
+          const angContrib=b.angVel.clone().cross(rContact).y;
+          const vRel=vn+angContrib;
+          if(vRel<0){
+            const impN=-(1+bounce)*vRel/(b.invMass + b.invInertia*(rContact.x*rContact.x+rContact.z*rContact.z));
+            b.vel.y+=impN*b.invMass;
+            b.angVel.x-=impN*b.invInertia*rContact.z;
+            b.angVel.z+=impN*b.invInertia*rContact.x;
+          }
+          b.vel.x*=friction; b.vel.z*=friction;
+          b.angVel.multiplyScalar(friction);
+          if(Math.abs(b.vel.y)<.1) b.vel.y=0;
+        }
+        if(b.sleeping) b.sleeping=false;
+      }
+
+      if(ceilOn && highestPt.y > CEIL_Y){
+        b.pos.y -= (highestPt.y - CEIL_Y);
+        if(b.vel.y>0){ b.vel.y*=-bounce; }
+      }
+
+      if(wallsOn){
+        const pxP=support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,new THREE.Vector3(1,0,0));
+        const pxN=support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,new THREE.Vector3(-1,0,0));
+        const pzP=support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,new THREE.Vector3(0,0,1));
+        const pzN=support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,new THREE.Vector3(0,0,-1));
+        if(pxN.x<-HALF){ b.pos.x+=(-HALF-pxN.x); if(b.vel.x<0){b.vel.x*=-bounce;} }
+        if(pxP.x> HALF){ b.pos.x-=(pxP.x-HALF);  if(b.vel.x>0){b.vel.x*=-bounce;} }
+        if(pzN.z<-HALF){ b.pos.z+=(-HALF-pzN.z);  if(b.vel.z<0){b.vel.z*=-bounce;} }
+        if(pzP.z> HALF){ b.pos.z-=(pzP.z-HALF);   if(b.vel.z>0){b.vel.z*=-bounce;} }
+      }
+
+      if(b.pos.y<FLOOR_Y-100||(wallsOn&&(Math.abs(b.pos.x)>HALF+5||Math.abs(b.pos.z)>HALF+5))){
+        removeBodyAt(i); updateStats(); continue;
+      }
+      if(b.trail) b.trail.update(b.pos);
+    }
+
+    // Body–body collisions — GJK + EPA convex hull
+    for(let i=0;i<bodies.length;i++){
+      for(let j=i+1;j<bodies.length;j++){
+        const a=bodies[i],b=bodies[j];
+        if(a.ragId>=0&&a.ragId===b.ragId) continue;
+        if(a.sleeping&&b.sleeping) continue;
+
+        // Broad phase: bounding sphere check
+        const d=new THREE.Vector3().subVectors(a.pos,b.pos);
+        const bdist=d.length();
+        if(bdist > a.radius+b.radius+0.01) continue;
+
+        // Narrow phase: GJK → EPA
+        let normal, depth;
+        if(a.isSphere && b.isSphere){
+          // Sphere-sphere fast path
+          if(bdist<1e-4){ normal=new THREE.Vector3(1,0,0); depth=a.radius+b.radius; }
+          else{ normal=d.clone().divideScalar(bdist); depth=a.radius+b.radius-bdist; }
+          if(depth<=0) continue;
+        } else {
+          // GJK test
+          const sim=gjk(
+            a.hull,a.isSphere,a.radius,a.pos,a.quat,a.quatInv,
+            b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv
+          );
+          if(!sim) continue;
+          // EPA to find penetration
+          const epaRes=epa(
+            a.hull,a.isSphere,a.radius,a.pos,a.quat,a.quatInv,
+            b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv,
+            sim
+          );
+          normal=epaRes.normal; depth=epaRes.depth;
+          if(depth<=0||isNaN(depth)) continue;
+          // normal should point from b to a
+          if(normal.dot(d)<0) normal.negate();
+        }
+
+        // Position correction (split by inverse mass)
+        const sumInv=a.invMass+b.invMass;
+        if(sumInv<1e-8) continue;
+        const corr=depth/sumInv;
+        if(!a.pinned&&!a.frozen) a.pos.addScaledVector(normal, corr*a.invMass);
+        if(!b.pinned&&!b.frozen) b.pos.addScaledVector(normal,-corr*b.invMass);
+
+        // Contact point (midpoint of overlap, approximate)
+        const contactA = support(a.hull,a.isSphere,a.radius,a.pos,a.quat,a.quatInv, normal.clone().negate());
+        const contactB = support(b.hull,b.isSphere,b.radius,b.pos,b.quat,b.quatInv, normal.clone());
+        const contact  = contactA.clone().add(contactB).multiplyScalar(0.5);
+
+        // Relative velocity at contact point (including angular)
+        const rA=contact.clone().sub(a.pos);
+        const rB=contact.clone().sub(b.pos);
+        const vA=a.vel.clone().add(new THREE.Vector3().crossVectors(a.angVel,rA));
+        const vB=b.vel.clone().add(new THREE.Vector3().crossVectors(b.angVel,rB));
+        const vRel=vA.sub(vB);
+        const vRelN=vRel.dot(normal);
+
+        if(vRelN>0) continue; // already separating
+
+        // Impulse with angular contribution
+        const rAxN=rA.clone().cross(normal);
+        const rBxN=rB.clone().cross(normal);
+        const angTermA=a.invInertia*(rAxN.clone().cross(rA).dot(normal));
+        const angTermB=b.invInertia*(rBxN.clone().cross(rB).dot(normal));
+        const denom=sumInv+angTermA+angTermB;
+        if(denom<1e-8) continue;
+        const impMag=-(1+bounce)*vRelN/denom;
+
+        const imp=normal.clone().multiplyScalar(impMag);
+        if(!a.pinned&&!a.frozen){
+          a.vel.addScaledVector(imp, a.invMass);
+          a.angVel.addScaledVector(rA.clone().cross(imp), a.invInertia);
+        }
+        if(!b.pinned&&!b.frozen){
+          b.vel.addScaledVector(imp,-b.invMass);
+          b.angVel.addScaledVector(rB.clone().cross(imp),-b.invInertia);
+        }
+
+        // Friction impulse (tangential)
+        const tangent=vRel.clone().addScaledVector(normal,-vRel.dot(normal)).normalize();
+        if(tangent.lengthSq()>1e-8){
+          const vRelT=vRel.dot(tangent);
+          const rAxT=rA.clone().cross(tangent);
+          const rBxT=rB.clone().cross(tangent);
+          const angTA=a.invInertia*rAxT.clone().cross(rA).dot(tangent);
+          const angTB=b.invInertia*rBxT.clone().cross(rB).dot(tangent);
+          const denomT=sumInv+angTA+angTB;
+          if(denomT>1e-8){
+            const frMax=(1-friction)*Math.abs(impMag);
+            const frImp=Math.max(-frMax,Math.min(frMax,-vRelT/denomT));
+            const fImp=tangent.clone().multiplyScalar(frImp);
+            if(!a.pinned&&!a.frozen){
+              a.vel.addScaledVector(fImp, a.invMass);
+              a.angVel.addScaledVector(rA.clone().cross(fImp), a.invInertia);
+            }
+            if(!b.pinned&&!b.frozen){
+              b.vel.addScaledVector(fImp,-b.invMass);
+              b.angVel.addScaledVector(rB.clone().cross(fImp),-b.invInertia);
+            }
+          }
+        }
+
+        if(a.sleeping) a.sleeping=false;
+        if(b.sleeping) b.sleeping=false;
+      }
+    }
+  }
+}
+
+function solveDistConstraint(a,b,rest,compliance=1.0){
+  if(a.pinned&&b.pinned) return;
+  const d=new THREE.Vector3().subVectors(b.pos,a.pos);
+  const dist=d.length(); if(dist<.0001) return;
+  const err=dist-rest;
+  const corr=err/(a.invMass+b.invMass)*compliance;
+  const n=d.divideScalar(dist);
+  if(!a.pinned&&!a.frozen) a.pos.addScaledVector(n, corr*a.invMass);
+  if(!b.pinned&&!b.frozen) b.pos.addScaledVector(n,-corr*b.invMass);
+  const dv=new THREE.Vector3().subVectors(b.vel,a.vel).dot(n);
+  if(!a.pinned&&!a.frozen) a.vel.addScaledVector(n, dv*.5*a.invMass);
+  if(!b.pinned&&!b.frozen) b.vel.addScaledVector(n,-dv*.5*b.invMass);
+}
+
+// ════════════════════════════════════════════════════════
+//  SPAWN OBJECTS
+// ════════════════════════════════════════════════════════
+let selectedShape='sphere', selectedColor='#55aaff', spawnScale=1, spawnMass=1;
+let spawnVelX=0, spawnVelY=0;
+let spawnMetal=0.45, spawnRough=0.40, spawnEmit=0.10, wireframe=false, ghostMode=false;
+
+const COLORS=[
+  '#55aaff','#ff5555','#ffcc44','#44cc88','#aa55ff',
+  '#ff8844','#ffffff','#88ddff','#ff44aa','#ccff44',
+  '#aaaaaa','#ff9900','#00ffcc','#ff0066','#4444ff'
+];
+
+function makeGeo(shape,s){
+  switch(shape){
+    case 'sphere':      return new THREE.SphereGeometry(.5*s,18,18);
+    case 'box':         return new THREE.BoxGeometry(.85*s,.85*s,.85*s);
+    case 'cone':        return new THREE.ConeGeometry(.48*s,.9*s,14);
+    case 'cyl':         return new THREE.CylinderGeometry(.37*s,.37*s,.85*s,16);
+    case 'torus':       return new THREE.TorusGeometry(.4*s,.18*s,12,24);
+    case 'icosa':       return new THREE.IcosahedronGeometry(.55*s,0);
+    case 'octahedron':  return new THREE.OctahedronGeometry(.55*s,0);
+    case 'tetrahedron': return new THREE.TetrahedronGeometry(.55*s,0);
+    case 'capsule':     return new THREE.SphereGeometry(.45*s,14,14);
+    default:            return new THREE.SphereGeometry(.5*s,14,14);
+  }
+}
+
+// Compute bounding sphere radius of geometry
+function geoBoundingRadius(geo){
+  geo.computeBoundingSphere();
+  return geo.boundingSphere ? geo.boundingSphere.radius : 0.5;
+}
+
+function spawnBody(pos,vel,shape,hexColor,scale=1,mass=1,opts={}){
+  const col=new THREE.Color(hexColor);
+  const mat=new THREE.MeshStandardMaterial({
+    color:col,
+    emissive:col,
+    emissiveIntensity:opts.emit??spawnEmit,
+    roughness:opts.rough??spawnRough,
+    metalness:opts.metal??spawnMetal,
+    wireframe:opts.wireframe??wireframe,
+    transparent:opts.ghost??ghostMode,
+    opacity:(opts.ghost??ghostMode)?0.4:1.0,
+    side:(opts.ghost??ghostMode)?THREE.DoubleSide:THREE.FrontSide
+  });
+  const geo = makeGeo(shape,scale);
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.castShadow=!wireframe; mesh.receiveShadow=true;
+  mesh.position.copy(pos);
+  // random initial rotation
+  const initQ=new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(Math.random()*Math.PI*2,Math.random()*Math.PI*2,Math.random()*Math.PI*2)
+  );
+  mesh.quaternion.copy(initQ);
+  scene.add(mesh);
+
+  const isSphere = (shape==='sphere'||shape==='capsule');
+  const hull = isSphere ? null : buildConvexHull(geo);
+  const radius = geoBoundingRadius(geo);
+
+  const b=new PhysBody(mesh, hull, isSphere, radius, mass);
+  b.quat.copy(initQ);
+  b.quatInv.copy(initQ).invert();
+  b.vel.copy(vel);
+  b.angVel.set((Math.random()-.5)*6,(Math.random()-.5)*6,(Math.random()-.5)*6);
+  if(trailsEnabled) b.trail=new Trail(hexColor);
+  bodies.push(b); updateStats(); return b;
+}
+
+// ════════════════════════════════════════════════════════
+//  RAGDOLL
+// ════════════════════════════════════════════════════════
+let ragIdCounter=0;
+let ragStiffIters=12;
+let ragDamping=0.88;
+let ragScale=1.0;
+
+const PP_SKIN ='#d4a882';
+const PP_SHIRT='#4466aa';
+const PP_PANTS='#333355';
+const PP_SHOE ='#221111';
+const PP_HAIR ='#2c1a0a';
+const PP_JOINT='#c0c0c0';
+
+function makeSegMesh(color){
+  const mat=new THREE.MeshStandardMaterial({color:new THREE.Color(color),roughness:.65,metalness:.08});
+  const geo=new THREE.CylinderGeometry(1,1,1,12);
+  const mesh=new THREE.Mesh(geo,mat); mesh.castShadow=true; return mesh;
+}
+function makeJointMesh(r,color=PP_JOINT){
+  const mat=new THREE.MeshStandardMaterial({color:new THREE.Color(color),roughness:.5,metalness:.2,
+    emissive:new THREE.Color(color),emissiveIntensity:.06});
+  const mesh=new THREE.Mesh(new THREE.SphereGeometry(r,10,10),mat);
+  mesh.castShadow=true; scene.add(mesh); return mesh;
+}
+const _boneUp=new THREE.Vector3(0,1,0);
+const _boneQ =new THREE.Quaternion();
+function updateBoneMesh(mesh,posA,posB,radius){
+  const mid=new THREE.Vector3().addVectors(posA,posB).multiplyScalar(.5);
+  mesh.position.copy(mid);
+  const dir=new THREE.Vector3().subVectors(posB,posA);
+  const len=dir.length();
+  mesh.scale.set(radius*2,len,radius*2);
+  _boneQ.setFromUnitVectors(_boneUp,dir.divideScalar(len));
+  mesh.quaternion.copy(_boneQ);
+}
+
+function spawnRagdoll(origin,opts={}){
+  const id=ragIdCounter++;
+  const sc=opts.scale??ragScale;
+  const ox=origin.x,oz=origin.z;
+  const oy=FLOOR_Y;
+
+  const nodes={
+    lAnkle: new THREE.Vector3(ox-.14*sc, oy+.10*sc, oz),
+    rAnkle: new THREE.Vector3(ox+.14*sc, oy+.10*sc, oz),
+    lKnee:  new THREE.Vector3(ox-.14*sc, oy+.80*sc, oz),
+    rKnee:  new THREE.Vector3(ox+.14*sc, oy+.80*sc, oz),
+    lHip:   new THREE.Vector3(ox-.12*sc, oy+1.52*sc, oz),
+    rHip:   new THREE.Vector3(ox+.12*sc, oy+1.52*sc, oz),
+    pelvis: new THREE.Vector3(ox,     oy+1.62*sc, oz),
+    spine1: new THREE.Vector3(ox,     oy+2.00*sc, oz),
+    spine2: new THREE.Vector3(ox,     oy+2.38*sc, oz),
+    lShldr: new THREE.Vector3(ox-.30*sc, oy+2.60*sc, oz),
+    rShldr: new THREE.Vector3(ox+.30*sc, oy+2.60*sc, oz),
+    lElbow: new THREE.Vector3(ox-.54*sc, oy+2.28*sc, oz),
+    rElbow: new THREE.Vector3(ox+.54*sc, oy+2.28*sc, oz),
+    lWrist: new THREE.Vector3(ox-.72*sc, oy+1.96*sc, oz),
+    rWrist: new THREE.Vector3(ox+.72*sc, oy+1.96*sc, oz),
+    neck:   new THREE.Vector3(ox,     oy+2.76*sc, oz),
+    head:   new THREE.Vector3(ox,     oy+3.20*sc, oz),
+  };
+
+  const nodeMass={lAnkle:.6,rAnkle:.6,lKnee:.9,rKnee:.9,lHip:1.2,rHip:1.2,pelvis:2.5,spine1:2.0,spine2:2.0,lShldr:1.0,rShldr:1.0,lElbow:.7,rElbow:.7,lWrist:.5,rWrist:.5,neck:.6,head:1.8};
+  const nodeRadius={lAnkle:.09,rAnkle:.09,lKnee:.10,rKnee:.10,lHip:.10,rHip:.10,pelvis:.14,spine1:.13,spine2:.13,lShldr:.10,rShldr:.10,lElbow:.08,rElbow:.08,lWrist:.07,rWrist:.07,neck:.08,head:.22};
+
+  const nb={};
+  for(const [name,pos] of Object.entries(nodes)){
+    const r=(nodeRadius[name]||.09)*sc;
+    const m=nodeMass[name]||1;
+    const geo=new THREE.SphereGeometry(r,6,6);
+    const mat=new THREE.MeshBasicMaterial({visible:false});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.position.copy(pos); scene.add(mesh);
+    const b=new PhysBody(mesh, null, true, r, m); // ragdoll nodes are spheres
+    b.ragId=id; b.isLimb=true;
+    bodies.push(b); nb[name]=b;
+  }
+
+  const boneDefs=[
+    ['lAnkle','lKnee',.075,PP_SKIN],['rAnkle','rKnee',.075,PP_SKIN],
+    ['lKnee','lHip',.085,PP_PANTS],['rKnee','rHip',.085,PP_PANTS],
+    ['lHip','pelvis',.08,PP_PANTS],['rHip','pelvis',.08,PP_PANTS],
+    ['pelvis','spine1',.095,PP_SHIRT],['spine1','spine2',.095,PP_SHIRT],
+    ['spine2','lShldr',.085,PP_SHIRT],['spine2','rShldr',.085,PP_SHIRT],
+    ['lShldr','lElbow',.07,PP_SHIRT],['rShldr','rElbow',.07,PP_SHIRT],
+    ['lElbow','lWrist',.055,PP_SKIN],['rElbow','rWrist',.055,PP_SKIN],
+    ['spine2','neck',.07,PP_SKIN],['neck','head',.075,PP_SKIN],
+  ];
+  const boneMeshes=[];
+  for(const [a,b,r,col] of boneDefs){
+    const mesh=makeSegMesh(col); scene.add(mesh);
+    boneMeshes.push({a,b,r:r*sc,mesh});
+  }
+
+  const jointSphereData=[
+    {name:'head',r:.22,col:PP_SKIN},{name:'neck',r:.085,col:PP_SKIN},
+    {name:'spine2',r:.10,col:PP_SHIRT},{name:'spine1',r:.095,col:PP_SHIRT},
+    {name:'pelvis',r:.11,col:PP_PANTS},{name:'lShldr',r:.095,col:PP_SHIRT},
+    {name:'rShldr',r:.095,col:PP_SHIRT},{name:'lElbow',r:.075,col:PP_SKIN},
+    {name:'rElbow',r:.075,col:PP_SKIN},{name:'lWrist',r:.065,col:PP_SKIN},
+    {name:'rWrist',r:.065,col:PP_SKIN},{name:'lHip',r:.085,col:PP_PANTS},
+    {name:'rHip',r:.085,col:PP_PANTS},{name:'lKnee',r:.085,col:PP_SKIN},
+    {name:'rKnee',r:.085,col:PP_SKIN},{name:'lAnkle',r:.075,col:PP_SHOE},
+    {name:'rAnkle',r:.075,col:PP_SHOE},
+  ];
+
+  const lFootMesh=new THREE.Mesh(new THREE.BoxGeometry(.14*sc,.08*sc,.24*sc),
+    new THREE.MeshStandardMaterial({color:new THREE.Color(PP_SHOE),roughness:.8}));
+  lFootMesh.castShadow=true; scene.add(lFootMesh);
+  const rFootMesh=new THREE.Mesh(new THREE.BoxGeometry(.14*sc,.08*sc,.24*sc),
+    new THREE.MeshStandardMaterial({color:new THREE.Color(PP_SHOE),roughness:.8}));
+  rFootMesh.castShadow=true; scene.add(rFootMesh);
+
+  const headGroup=new THREE.Group(); scene.add(headGroup);
+  const hairM=new THREE.Mesh(new THREE.SphereGeometry(.225*sc,12,7,0,Math.PI*2,0,Math.PI*.52),
+    new THREE.MeshStandardMaterial({color:new THREE.Color(PP_HAIR),roughness:.9}));
+  hairM.position.y=.02*sc; headGroup.add(hairM);
+  const eGeo=new THREE.SphereGeometry(.038*sc,6,6);
+  const eMat=new THREE.MeshStandardMaterial({color:0x111111});
+  const eL=new THREE.Mesh(eGeo,eMat); eL.position.set(-.08*sc,.05*sc,.2*sc); headGroup.add(eL);
+  const eR=new THREE.Mesh(eGeo,eMat); eR.position.set(.08*sc,.05*sc,.2*sc); headGroup.add(eR);
+  const mM=new THREE.Mesh(new THREE.BoxGeometry(.08*sc,.014*sc,.01),
+    new THREE.MeshStandardMaterial({color:0x881111}));
+  mM.position.set(0,-.065*sc,.21*sc); headGroup.add(mM);
+
+  const jointMeshes={};
+  for(const {name,r,col} of jointSphereData) jointMeshes[name]=makeJointMesh(r*sc,col);
+
+  const edgeDefs=[
+    ['lAnkle','lKnee'],['rAnkle','rKnee'],['lKnee','lHip'],['rKnee','rHip'],
+    ['lHip','pelvis'],['rHip','pelvis'],['lHip','rHip'],
+    ['pelvis','spine1'],['spine1','spine2'],
+    ['spine2','lShldr'],['spine2','rShldr'],['lShldr','rShldr'],
+    ['lShldr','lElbow'],['rShldr','rElbow'],['lElbow','lWrist'],['rElbow','rWrist'],
+    ['spine2','neck'],['neck','head'],
+    ['spine1','lShldr'],['spine1','rShldr'],['pelvis','spine2'],['spine2','head'],
+    ['lHip','spine1'],['rHip','spine1'],['lKnee','rKnee'],
+  ];
+  const constraints=[];
+  for(const [na,nb2] of edgeDefs){
+    const a2=nb[na],b2=nb[nb2]; if(!a2||!b2) continue;
+    constraints.push({a:a2,b:b2,rest:a2.pos.distanceTo(b2.pos)});
+  }
+
+  if(opts.falling){
+    const v=new THREE.Vector3((Math.random()-.5)*6,3+Math.random()*6,(Math.random()-.5)*6);
+    Object.values(nb).forEach(b2=>{ b2.vel.copy(v); b2.angVel.set((Math.random()-.5)*4,(Math.random()-.5)*4,(Math.random()-.5)*4); });
+  }
+
+  const rag={id,nb,boneMeshes,jointMeshes,lFootMesh,rFootMesh,headGroup,constraints,stiffIters:ragStiffIters};
+  ragdolls.push(rag); updateStats(); return rag;
+}
+
+function updateRagdollVisuals(rag){
+  const {nb,boneMeshes,jointMeshes,lFootMesh,rFootMesh,headGroup}=rag;
+  for(const {a,b,r,mesh} of boneMeshes) if(nb[a]&&nb[b]) updateBoneMesh(mesh,nb[a].pos,nb[b].pos,r);
+  for(const [name,mesh] of Object.entries(jointMeshes)) if(nb[name]) mesh.position.copy(nb[name].pos);
+  if(nb.lAnkle){ lFootMesh.position.copy(nb.lAnkle.pos); lFootMesh.position.y-=.04; lFootMesh.position.z+=.04; }
+  if(nb.rAnkle){ rFootMesh.position.copy(nb.rAnkle.pos); rFootMesh.position.y-=.04; rFootMesh.position.z+=.04; }
+  if(nb.head&&nb.neck){
+    headGroup.position.copy(nb.head.pos);
+    const dir=new THREE.Vector3().subVectors(nb.head.pos,nb.neck.pos).normalize();
+    headGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
+  }
+}
+
+function removeRagdoll(rag){
+  for(const {mesh} of rag.boneMeshes){ scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+  for(const mesh of Object.values(rag.jointMeshes)){ scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+  scene.remove(rag.lFootMesh); rag.lFootMesh.geometry.dispose(); rag.lFootMesh.material.dispose();
+  scene.remove(rag.rFootMesh); rag.rFootMesh.geometry.dispose(); rag.rFootMesh.material.dispose();
+  scene.remove(rag.headGroup);
+  for(let i=bodies.length-1;i>=0;i--) if(bodies[i].ragId===rag.id) removeBodyAt(i);
+  const ri=ragdolls.indexOf(rag); if(ri>=0) ragdolls.splice(ri,1);
+  updateStats();
+}
+function removeAllRagdolls(){ [...ragdolls].forEach(r=>removeRagdoll(r)); }
+
+// ════════════════════════════════════════════════════════
+//  CAMERA
+// ════════════════════════════════════════════════════════
+let camYaw=-0.15, camPitch=-0.2;
+const camPos=new THREE.Vector3(0,8,24);
+const keys={};
+const CAM_SPEED=16;
+
+function applyLook(){
+  const qY=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),camYaw);
+  const qX=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),camPitch);
+  camera.quaternion.copy(qY).multiply(qX);
+  camera.position.copy(camPos);
+}
+function processCam(dt){
+  const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  const rgt=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+  const up=new THREE.Vector3(0,1,0), s=CAM_SPEED*dt;
+  if(keys['KeyW']||keys['ArrowUp'])   camPos.addScaledVector(fwd, s);
+  if(keys['KeyS']||keys['ArrowDown']) camPos.addScaledVector(fwd,-s);
+  if(keys['KeyA']||keys['ArrowLeft']) camPos.addScaledVector(rgt,-s);
+  if(keys['KeyD']||keys['ArrowRight'])camPos.addScaledVector(rgt, s);
+  if(keys['KeyE']) camPos.addScaledVector(up, s);
+  if(keys['KeyQ']) camPos.addScaledVector(up,-s);
+  camera.position.copy(camPos);
+}
+document.addEventListener('keydown',e=>{ keys[e.code]=true; });
+document.addEventListener('keyup',  e=>{ keys[e.code]=false; });
+let rcDrag=false, rcLast={x:0,y:0};
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('mousedown',e=>{ if(e.button===2){rcDrag=true;rcLast={x:e.clientX,y:e.clientY};} });
+document.addEventListener('mousemove',e=>{
+  if(!rcDrag) return;
+  camYaw  -=(e.clientX-rcLast.x)*.004;
+  camPitch=Math.max(-1.45,Math.min(1.45,camPitch-(e.clientY-rcLast.y)*.004));
+  rcLast={x:e.clientX,y:e.clientY};
+  applyLook();
+});
+document.addEventListener('mouseup',e=>{ if(e.button===2) rcDrag=false; });
+canvas.addEventListener('wheel',e=>{
+  const d=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  camPos.addScaledVector(d,-e.deltaY*.04);
+  applyLook();
+},{passive:true});
+applyLook();
+
+// ════════════════════════════════════════════════════════
+//  RAYCASTER & INTERACTION
+// ════════════════════════════════════════════════════════
+const raycaster=new THREE.Raycaster();
+let activeTool='grab';
+let grabBody=null, grabPlane=new THREE.Plane(), grabVel=new THREE.Vector3();
+let mdPos={x:0,y:0}, mdTime=0, mdMoved=false, lastHitBody=null;
+
+function ndcOf(e){ return new THREE.Vector2((e.clientX/innerWidth)*2-1,-(e.clientY/innerHeight)*2+1); }
+function hitBody(e){
+  raycaster.setFromCamera(ndcOf(e),camera);
+  const hits=raycaster.intersectObjects(bodies.map(b=>b.mesh));
+  return hits.length?(bodies.find(b=>b.mesh===hits[0].object)||null):null;
+}
+function worldPosAt(e, y=FLOOR_Y+1){
+  raycaster.setFromCamera(ndcOf(e),camera);
+  const plane=new THREE.Plane(new THREE.Vector3(0,1,0),-y);
+  const pt=new THREE.Vector3();
+  raycaster.ray.intersectPlane(plane,pt);
+  return pt;
+}
+
+canvas.addEventListener('mousedown',e=>{
+  if(e.button!==0||e.target!==canvas) return;
+  mdPos={x:e.clientX,y:e.clientY}; mdTime=performance.now(); mdMoved=false;
+  const b=hitBody(e); if(!b) return;
+  lastHitBody=b;
+  if(activeTool==='grab'){
+    grabBody=b; b.vel.set(0,0,0); b.angVel.set(0,0,0); grabVel.set(0,0,0);
+    const cd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+    grabPlane.setFromNormalAndCoplanarPoint(cd,b.pos);
+    canvas.style.cursor='grabbing';
+    if(b.sleeping) b.sleeping=false;
+  } else if(activeTool==='push'){
+    const dir=new THREE.Vector3().subVectors(b.pos,camera.position).normalize();
+    b.vel.addScaledVector(dir,24);
+    if(b.sleeping) b.sleeping=false;
+  } else if(activeTool==='pull'){
+    const dir=new THREE.Vector3().subVectors(camera.position,b.pos).normalize();
+    b.vel.addScaledVector(dir,24);
+    if(b.sleeping) b.sleeping=false;
+  } else if(activeTool==='freeze'){
+    b.frozen=!b.frozen; b.vel.set(0,0,0);
+    b.mesh.material.emissiveIntensity=b.frozen?.4:.1;
+    toast(b.frozen?'❄️ Frozen':'🔥 Unfrozen'); return;
+  } else if(activeTool==='explode'){
+    bodies.forEach(ob=>{
+      const d=new THREE.Vector3().subVectors(ob.pos,b.pos);
+      const dist=Math.max(d.length(),.5);
+      if(dist<12){ ob.vel.addScaledVector(d.normalize(),36/(dist*dist)); ob.sleeping=false; }
+    });
+    toast('💥 BOOM!');
+  } else if(activeTool==='link'){
+    if(!linkA){ linkA=b; updateLinkStatus(); toast('🔗 First selected'); }
+    else if(b===linkA){ linkA=null; updateLinkStatus(); }
+    else { createUserLink(linkA,b); linkA=null; toast('🔗 Linked!'); }
+    return;
+  } else if(activeTool==='cut'){
+    cutLinksOnBody(b); updateLinkStatus(); toast('✂️ Links cut'); return;
+  }
+});
+
+document.addEventListener('mousemove',e=>{
+  if(Math.abs(e.clientX-mdPos.x)>4||Math.abs(e.clientY-mdPos.y)>4) mdMoved=true;
+  if(!grabBody){
+    if(e.target===canvas){
+      const b=hitBody(e);
+      canvas.style.cursor=b?(activeTool==='grab'?'grab':'pointer'):'crosshair';
+    }
+    return;
+  }
+  raycaster.setFromCamera(ndcOf(e),camera);
+  const pt=new THREE.Vector3();
+  if(raycaster.ray.intersectPlane(grabPlane,pt)){
+    const prev=grabBody.pos.clone();
+    grabBody.pos.copy(pt); grabBody.vel.set(0,0,0);
+    grabVel.lerp(pt.clone().sub(prev).multiplyScalar(60),.38);
+  }
+});
+
+document.addEventListener('mouseup',e=>{
+  if(e.button!==0) return;
+  if(grabBody){
+    grabBody.vel.copy(grabVel);
+    if(grabBody.vel.length()>60) grabBody.vel.setLength(60);
+    grabBody=null; canvas.style.cursor='crosshair'; return;
+  }
+  if(!mdMoved&&performance.now()-mdTime<260&&e.target===canvas){
+    raycaster.setFromCamera(ndcOf(e),camera);
+    const dir=raycaster.ray.direction.clone();
+    spawnBody(
+      camera.position.clone().addScaledVector(dir,2.5),
+      dir.clone().multiplyScalar(15).add(new THREE.Vector3(spawnVelX,spawnVelY,0)),
+      selectedShape,selectedColor,spawnScale,spawnMass
+    );
+  }
+});
+
+// ════════════════════════════════════════════════════════
+//  DRAG & DROP FROM MENU
+// ════════════════════════════════════════════════════════
+const dragGhost = document.getElementById('drag-ghost');
+const dropOverlay = document.getElementById('drop-overlay');
+let dragShape = null;
+
+document.querySelectorAll('.ibtn[data-shape]').forEach(btn=>{
+  btn.addEventListener('mousedown', e=>{
+    if(e.button!==0) return;
+    dragShape = btn.dataset.shape;
+    dragGhost.textContent = btn.querySelector('.ic')?.textContent || '●';
+    dragGhost.style.opacity = '1';
+    dragGhost.style.left = e.clientX+'px';
+    dragGhost.style.top = e.clientY+'px';
+    dropOverlay.classList.add('active');
+    e.preventDefault();
+  });
+});
+
+document.addEventListener('mousemove', e=>{
+  if(!dragShape) return;
+  dragGhost.style.left = e.clientX+'px';
+  dragGhost.style.top = e.clientY+'px';
+});
+
+document.addEventListener('mouseup', e=>{
+  if(!dragShape) return;
+  if(e.target===canvas){
+    // place at cursor on world plane
+    const pt = worldPosAt(e, FLOOR_Y+1);
+    if(pt){
+      pt.y = FLOOR_Y + spawnScale*1.2;
+      spawnBody(pt, new THREE.Vector3(spawnVelX,spawnVelY,0), dragShape, selectedColor, spawnScale, spawnMass);
+      toast(`Placed ${dragShape}`);
+    }
+  }
+  dragShape = null;
+  dragGhost.style.opacity = '0';
+  dropOverlay.classList.remove('active');
+});
+
+// ════════════════════════════════════════════════════════
+//  GRAVITY COMPASS UI
+// ════════════════════════════════════════════════════════
+const compassEl = document.getElementById('grav-compass');
+const gravLine   = document.getElementById('grav-line');
+const gravHead   = document.getElementById('grav-head');
+let compassDragging = false;
+
+function setGravDir(nx, ny){
+  // nx,ny are -1..1 on compass, mapping to X,Y gravity components
+  // compass Y axis maps to world Y (down = +Y gravity)
+  const len = Math.sqrt(nx*nx+ny*ny);
+  if(len<.01){ gravDir.set(0,-1,0); }
+  else { gravDir.set(nx/len, -ny/len, 0).normalize(); }
+  updateCompassUI();
+  updateStats();
+}
+
+function compassCoords(e){
+  const rect = compassEl.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top  + rect.height/2;
+  const r  = rect.width/2;
+  let nx = (e.clientX - cx)/r;
+  let ny = (e.clientY - cy)/r;
+  const len = Math.sqrt(nx*nx+ny*ny);
+  if(len>1){ nx/=len; ny/=len; }
+  return {nx,ny};
+}
+
+compassEl.addEventListener('mousedown',e=>{
+  compassDragging=true;
+  const {nx,ny}=compassCoords(e);
+  setGravDir(nx,-ny);
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!compassDragging) return;
+  const {nx,ny}=compassCoords(e);
+  setGravDir(nx,-ny);
+});
+document.addEventListener('mouseup',()=>compassDragging=false);
+
+function updateCompassUI(){
+  const cx=45,cy=45,r=28;
+  const ex=cx+gravDir.x*r;
+  const ey=cy-gravDir.y*r; // Y flipped in SVG
+  gravLine.setAttribute('x2',ex.toFixed(1));
+  gravLine.setAttribute('y2',ey.toFixed(1));
+  gravHead.setAttribute('points',`${ex.toFixed(1)},${ey.toFixed(1)} ${(ex-3).toFixed(1)},${(ey-6).toFixed(1)} ${(ex+3).toFixed(1)},${(ey-6).toFixed(1)}`);
+  const label=`${gravDir.x>=0?'+':''}${gravDir.x.toFixed(1)}x ${gravDir.y>=0?'+':''}${gravDir.y.toFixed(1)}y`;
+  const gStr = `(${label}) ${gravity.toFixed(1)}`;
+  document.getElementById('stat-g').textContent=gStr;
+  document.getElementById('stat-g2').textContent=gStr;
+}
+
+document.querySelectorAll('.gdir-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const d=btn.dataset.dir;
+    if(d==='down')    { gravDir.set(0,-1,0); gravity=parseFloat(document.getElementById('sl-gravity').value)||14; }
+    if(d==='up')      { gravDir.set(0,1,0); }
+    if(d==='left')    { gravDir.set(-1,0,0); }
+    if(d==='right')   { gravDir.set(1,0,0); }
+    if(d==='forward') { gravDir.set(0,-.5,-1).normalize(); }
+    if(d==='zero')    { gravity=0; document.getElementById('sl-gravity').value=0; document.getElementById('val-gravity').textContent='0'; }
+    updateCompassUI();
+    if(d!=='zero') toast(`Gravity: ${d}`);
+  });
+});
+
+// ════════════════════════════════════════════════════════
+//  UI WIRING
+// ════════════════════════════════════════════════════════
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  });
+});
+
+// Shape buttons
+document.querySelectorAll('.ibtn[data-shape]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.ibtn[data-shape]').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); selectedShape=b.dataset.shape;
+  });
+});
+
+// Colors
+const cr=document.getElementById('color-row');
+COLORS.forEach((hex,i)=>{
+  const d=document.createElement('div');
+  d.className='csw'+(i===0?' active':'');
+  d.style.background=hex;
+  d.title=hex;
+  d.addEventListener('click',()=>{
+    document.querySelectorAll('#color-row .csw').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active'); selectedColor=hex;
+  });
+  cr.appendChild(d);
+});
+
+// Link colors
+const LINK_COLORS=['#ffcc44','#55aaff','#ff5555','#ffffff','#ff8844','#44cc88','#aa55ff','#ff44aa'];
+const lcr=document.getElementById('link-color-row');
+LINK_COLORS.forEach((hex,i)=>{
+  const d=document.createElement('div');
+  d.className='csw link-palette'+(i===0?' active':'');
+  d.style.background=hex; d.style.width='100%'; d.style.height='16px'; d.style.borderRadius='2px';
+  d.addEventListener('click',()=>{
+    document.querySelectorAll('#link-color-row .csw').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active'); linkColor=hex;
+  });
+  lcr.appendChild(d);
+});
+
+// Slider helper
+function mks(id,vi,fn,fmt){
+  const sl=document.getElementById(id),vl=document.getElementById(vi);
+  if(!sl||!vl) return;
+  sl.addEventListener('input',()=>{ const v=parseFloat(sl.value); fn(v); vl.textContent=fmt?fmt(v):v; });
+}
+
+mks('sl-scale','val-scale',v=>spawnScale=v,v=>v.toFixed(1));
+mks('sl-mass','val-mass',v=>spawnMass=v,v=>v.toFixed(1));
+mks('sl-vx','val-vx',v=>spawnVelX=v,v=>Math.round(v));
+mks('sl-vy','val-vy',v=>spawnVelY=v,v=>Math.round(v));
+mks('sl-metal','val-metal',v=>spawnMetal=v,v=>v.toFixed(2));
+mks('sl-rough','val-rough',v=>spawnRough=v,v=>v.toFixed(2));
+mks('sl-emit','val-emit',v=>spawnEmit=v,v=>v.toFixed(2));
+mks('sl-gravity','val-gravity',v=>{ gravity=v; updateCompassUI(); },v=>v.toFixed(0));
+mks('sl-gx','val-gx',v=>{ gravDir.x=v; gravDir.normalize(); updateCompassUI(); },v=>v.toFixed(2));
+mks('sl-gz','val-gz',v=>{ gravDir.z=v; gravDir.normalize(); updateCompassUI(); },v=>v.toFixed(2));
+mks('sl-bounce','val-bounce',v=>bounce=v,v=>v.toFixed(2));
+mks('sl-friction','val-friction',v=>friction=v,v=>v.toFixed(2));
+mks('sl-drag','val-drag',v=>airDrag=v,v=>v.toFixed(3));
+mks('sl-timescale','val-timescale',v=>timeScale=v,v=>v.toFixed(2));
+mks('sl-substeps','val-substeps',v=>simSubSteps=Math.round(v),v=>Math.round(v));
+mks('sl-stiff','val-stiff',v=>{ ragStiffIters=Math.round(v); ragdolls.forEach(r=>r.stiffIters=Math.round(v)); },v=>Math.round(v));
+mks('sl-damp','val-damp',v=>ragDamping=v,v=>v.toFixed(2));
+mks('sl-ragscale','val-ragscale',v=>ragScale=v,v=>v.toFixed(1));
+mks('sl-link-k','val-link-k',v=>linkK=v,v=>Math.round(v));
+mks('sl-link-d','val-link-d',v=>linkD=v,v=>Math.round(v));
+mks('sl-link-rest','val-link-rest',v=>{ linkRestOverride=v; document.getElementById('val-link-rest').textContent=v===0?'Auto':v.toFixed(1); },null);
+mks('sl-link-thick','val-link-thick',v=>linkThickness=v,v=>v.toFixed(1));
+mks('sl-weld-iters','val-weld-iters',v=>weldIters=Math.round(v),v=>Math.round(v));
+mks('sl-break','val-break',v=>breakForce=v,v=>Math.round(v));
+mks('sl-vortex','val-vortex',v=>vortexStrength=v,v=>Math.round(v));
+mks('sl-attr','val-attr',v=>attractorStrength=v,v=>Math.round(v));
+
+document.getElementById('chk-wire').addEventListener('change',function(){ wireframe=this.checked; });
+document.getElementById('chk-ghost').addEventListener('change',function(){ ghostMode=this.checked; });
+document.getElementById('chk-link-break').addEventListener('change',function(){ breakableMode=this.checked; });
+document.getElementById('chk-trails').addEventListener('change',function(){ trailsEnabled=this.checked; });
+document.getElementById('chk-sleeping').addEventListener('change',function(){ sleepEnabled=this.checked; });
+document.getElementById('chk-vortex').addEventListener('change',function(){ vortexOn=this.checked; toast(vortexOn?'🌀 Vortex ON':'Vortex OFF'); });
+document.getElementById('chk-attractor').addEventListener('change',function(){
+  attractorOn=this.checked;
+  attraMesh.visible=attractorOn;
+  if(attractorOn){ attractorPos.set(0,FLOOR_Y+4,0); attraMesh.position.copy(attractorPos); }
+  toast(attractorOn?'🧲 Attractor ON':'Attractor OFF');
+});
+
+// Link mode buttons
+const LINKMODE_SHOW_SPRING=['row-link-k','row-link-d','row-link-rest'];
+document.querySelectorAll('.ibtn[data-linkmode]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ibtn[data-linkmode]').forEach(x=>x.classList.remove('sel'));
+    btn.classList.add('sel');
+    linkMode=btn.dataset.linkmode;
+    ropeMode=(linkMode==='rope');
+    rigidLinkMode=(linkMode==='rod'||linkMode==='weld'||linkMode==='hinge'||linkMode==='ball');
+    // Show/hide spring-only controls
+    const isSpring=(linkMode==='spring'||linkMode==='rope');
+    document.getElementById('row-link-k').style.display=isSpring?'':'none';
+    document.getElementById('row-link-rest').style.display=(linkMode==='spring'||linkMode==='rope'||linkMode==='rod')?'':'none';
+    document.getElementById('linkmode-desc').textContent=LINKMODE_DESC[linkMode]||'';
+  });
+});
+
+// Gravity presets
+document.getElementById('btn-zerog').addEventListener('click',()=>{
+  gravity=0; document.getElementById('sl-gravity').value=0; document.getElementById('val-gravity').textContent='0'; updateCompassUI(); toast('🌌 Zero-G!');
+});
+document.getElementById('btn-moong').addEventListener('click',()=>{
+  gravity=2.4; gravDir.set(0,-1,0); document.getElementById('sl-gravity').value=2.4; document.getElementById('val-gravity').textContent='2.4'; updateCompassUI(); toast('🌙 Moon gravity');
+});
+document.getElementById('btn-jupiterg').addEventListener('click',()=>{
+  gravity=24.8; gravDir.set(0,-1,0); document.getElementById('sl-gravity').value=24.8; document.getElementById('val-gravity').textContent='25'; updateCompassUI(); toast('🪐 Jupiter gravity!');
+});
+document.getElementById('btn-reverseg').addEventListener('click',()=>{
+  gravDir.set(0,1,0); document.getElementById('sl-gravity').value=14; gravity=14; document.getElementById('val-gravity').textContent='14'; updateCompassUI(); toast('↑ Reverse gravity!');
+});
+document.getElementById('btn-chaosG').addEventListener('click',()=>{
+  chaosMode=!chaosMode; toast(chaosMode?'🌀 Chaos mode ON!':'Chaos mode OFF');
+});
+
+// Floor/walls/ceiling
+let floorState=true, wallState=false, ceilState=false;
+document.getElementById('btn-floor-toggle').addEventListener('click',function(){
+  floorState=!floorState; floorOn=floorState;
+  floorMesh.visible=floorOn; grid.visible=floorOn;
+  this.textContent='Floor: '+(floorOn?'ON':'OFF');
+});
+document.getElementById('btn-walls-toggle').addEventListener('click',function(){
+  wallState=!wallState; wallsOn=wallState;
+  wallMeshes.forEach(w=>w.visible=wallsOn);
+  this.textContent='Walls: '+(wallsOn?'ON':'OFF');
+});
+document.getElementById('btn-ceiling-toggle').addEventListener('click',function(){
+  ceilState=!ceilState; ceilOn=ceilState;
+  ceilMesh.visible=ceilOn;
+  this.textContent='Ceiling: '+(ceilOn?'ON':'OFF');
+});
+document.getElementById('btn-nuke').addEventListener('click',()=>{
+  const c=new THREE.Vector3(0,FLOOR_Y+2,0);
+  bodies.forEach(b=>{ const d=new THREE.Vector3().subVectors(b.pos,c); b.vel.addScaledVector(d.normalize().divideScalar(Math.max(d.length(),.5)),50); b.sleeping=false; });
+  toast('☢️ NUKED');
+});
+
+// Spawn actions
+document.getElementById('btn-drop').addEventListener('click',()=>{
+  const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  const pos=camPos.clone().addScaledVector(fwd,6); pos.y=Math.max(pos.y,FLOOR_Y+3);
+  spawnBody(pos,new THREE.Vector3(spawnVelX,spawnVelY,0).addScaledVector(new THREE.Vector3((Math.random()-.5),0,(Math.random()-.5)),1),selectedShape,selectedColor,spawnScale,spawnMass);
+});
+
+let rainInt=null;
+document.getElementById('btn-rain').addEventListener('click',function(){
+  if(rainInt){ clearInterval(rainInt); rainInt=null; this.textContent='☂ Object Rain'; return; }
+  this.textContent='■ Stop Rain';
+  rainInt=setInterval(()=>{
+    if(bodies.length>180) return;
+    const shapes=['sphere','box','cone','cyl','torus','icosa','octahedron','tetrahedron'];
+    const pos=new THREE.Vector3((Math.random()-.5)*24,FLOOR_Y+26,(Math.random()-.5)*24);
+    spawnBody(pos,new THREE.Vector3((Math.random()-.5)*3,-2,(Math.random()-.5)*3),
+      shapes[Math.floor(Math.random()*shapes.length)],
+      COLORS[Math.floor(Math.random()*COLORS.length)],.5+Math.random()*1.5);
+  },100);
+});
+
+document.getElementById('btn-explosion-spawn').addEventListener('click',()=>{
+  for(let i=0;i<12;i++){
+    const a=Math.random()*Math.PI*2, el=Math.random()*Math.PI;
+    const dir=new THREE.Vector3(Math.cos(a)*Math.sin(el),Math.cos(el),Math.sin(a)*Math.sin(el));
+    const pos=camPos.clone().addScaledVector(dir,1.5+Math.random()*2);
+    spawnBody(pos,dir.clone().multiplyScalar(8+Math.random()*12),selectedShape,selectedColor,spawnScale*.7+Math.random()*.6,spawnMass);
+  }
+  toast('💥 Explosion spawn!');
+});
+
+document.getElementById('btn-clear-objects').addEventListener('click',()=>{
+  for(let i=userLinks.length-1;i>=0;i--) removeUserLink(i);
+  for(let i=bodies.length-1;i>=0;i--) if(bodies[i].ragId<0) removeBodyAt(i);
+  updateStats(); updateLinkStatus();
+});
+
+// Tool buttons
+function setTool(t){
+  if(linkA) linkA=null;
+  activeTool=t;
+  document.querySelectorAll('#tool-bar .tool-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('btn-'+t+'-tool'); if(el) el.classList.add('active');
+  updateLinkStatus();
+}
+document.getElementById('btn-grab-tool').addEventListener('click',()=>setTool('grab'));
+document.getElementById('btn-push-tool').addEventListener('click',()=>setTool('push'));
+document.getElementById('btn-pull-tool').addEventListener('click',()=>setTool('pull'));
+document.getElementById('btn-explode-tool').addEventListener('click',()=>setTool('explode'));
+document.getElementById('btn-freeze-tool').addEventListener('click',()=>setTool('freeze'));
+document.getElementById('btn-link-tool').addEventListener('click',()=>{ setTool('link'); document.querySelector('[data-tab="connect"]').click(); });
+document.getElementById('btn-cut-tool').addEventListener('click',()=>{ setTool('cut'); document.querySelector('[data-tab="connect"]').click(); });
+document.getElementById('btn-clear').addEventListener('click',clearAll);
+
+function clearAll(){
+  if(rainInt){ clearInterval(rainInt); rainInt=null; document.getElementById('btn-rain').textContent='☂ Object Rain'; }
+  linkA=null;
+  for(let i=userLinks.length-1;i>=0;i--) removeUserLink(i);
+  [...ragdolls].forEach(r=>removeRagdoll(r));
+  for(let i=bodies.length-1;i>=0;i--) removeBodyAt(i);
+  // Clear all label DOM elements
+  for(const [,entry] of labelElements) entry.el.remove();
+  labelElements.clear();
+  nameList.forEach(n=>n.assigned=null);
+  refreshNameList();
+  updateStats(); updateLinkStatus(); toast('Scene cleared');
+}
+
+// Pin & connect actions
+document.getElementById('btn-pin-toggle').addEventListener('click',()=>{
+  if(!lastHitBody){ toast('Click/grab a body first'); return; }
+  lastHitBody.pinned=!lastHitBody.pinned; lastHitBody.vel.set(0,0,0);
+  toast(lastHitBody.pinned?'📌 Pinned':'📌 Unpinned');
+});
+document.getElementById('btn-cut-all').addEventListener('click',()=>{
+  for(let i=userLinks.length-1;i>=0;i--) removeUserLink(i); toast('✂️ All links cut');
+});
+document.getElementById('btn-weld-all').addEventListener('click',()=>{
+  const nonRag=bodies.filter(b=>b.ragId<0);
+  if(nonRag.length<2){ toast('Need 2+ bodies'); return; }
+  const prev=linkMode; linkMode='weld';
+  const anchor=nonRag[0];
+  for(let i=1;i<nonRag.length;i++) createUserLink(anchor,nonRag[i]);
+  linkMode=prev;
+  toast(`🔩 Welded ${nonRag.length} bodies to first`);
+});
+document.getElementById('btn-chain').addEventListener('click',()=>{
+  // chain all selected objects in order they were added
+  if(bodies.length<2){ toast('Need 2+ bodies'); return; }
+  const nonRag=bodies.filter(b=>b.ragId<0).slice(-6);
+  for(let i=0;i<nonRag.length-1;i++) createUserLink(nonRag[i],nonRag[i+1]);
+  toast(`⛓️ Chained ${nonRag.length} bodies`);
+});
+
+// Human tab
+function getCamFront(d){ return camPos.clone().addScaledVector(new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion),d); }
+document.getElementById('btn-spawn-rag').addEventListener('click',()=>{
+  const p=getCamFront(6); p.y=FLOOR_Y;
+  spawnRagdoll(p); toast('👤 Human spawned! Grab limbs to drag.');
+});
+document.getElementById('btn-spawn-rag-fall').addEventListener('click',()=>{
+  const p=getCamFront(5); p.y=FLOOR_Y+14;
+  spawnRagdoll(p,{falling:true});
+});
+document.getElementById('btn-spawn-multi').addEventListener('click',()=>{
+  for(let i=0;i<5;i++){
+    const p=new THREE.Vector3((i-2)*2.5,FLOOR_Y,(Math.random()-.5)*4);
+    spawnRagdoll(p,{falling:false});
+  }
+  toast('👥 5 humans spawned!');
+});
+document.getElementById('btn-rm-rags').addEventListener('click',()=>{ removeAllRagdolls(); toast('Ragdolls removed'); });
+document.getElementById('btn-floppy').addEventListener('click',()=>{
+  ragStiffIters=2; ragdolls.forEach(r=>r.stiffIters=2);
+  document.getElementById('sl-stiff').value=2; document.getElementById('val-stiff').textContent='2'; toast('😵 Floppy!');
+});
+document.getElementById('btn-stiffen').addEventListener('click',()=>{
+  ragStiffIters=14; ragdolls.forEach(r=>r.stiffIters=14);
+  document.getElementById('sl-stiff').value=14; document.getElementById('val-stiff').textContent='14'; toast('🧍 Stiff!');
+});
+document.getElementById('btn-tpose').addEventListener('click',()=>{
+  ragdolls.forEach(r=>Object.values(r.nb).forEach(b=>{ b.vel.set(0,0,0); })); toast('🤸 T-Posed!');
+});
+document.getElementById('btn-explode-rag').addEventListener('click',()=>{
+  ragdolls.forEach(r=>Object.values(r.nb).forEach(b=>{
+    b.vel.set((Math.random()-.5)*24,8+Math.random()*16,(Math.random()-.5)*24);
+  })); toast('💥 Exploded!');
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); document.getElementById('btn-drop').click(); }
+  if(e.key==='c'||e.key==='C') clearAll();
+  if(e.key==='h'||e.key==='H') document.getElementById('btn-spawn-rag').click();
+  if(e.key==='g'||e.key==='G') document.getElementById('btn-zerog').click();
+  if(e.key==='r'||e.key==='R') document.getElementById('btn-rain').click();
+  if(e.key==='1') setTool('grab');
+  if(e.key==='2') setTool('push');
+  if(e.key==='3') setTool('pull');
+  if(e.key==='4') setTool('explode');
+  if(e.key==='5') setTool('freeze');
+  if(e.key==='6'){ setTool('link'); document.querySelector('[data-tab="connect"]').click(); }
+  if(e.key==='7'){ setTool('cut'); document.querySelector('[data-tab="connect"]').click(); }
+  if(e.key==='p'||e.key==='P'){ if(lastHitBody){ lastHitBody.pinned=!lastHitBody.pinned; lastHitBody.vel.set(0,0,0); toast(lastHitBody.pinned?'📌 Pinned':'📌 Unpinned'); }}
+  if(e.key==='f'||e.key==='F'){ if(lastHitBody){ lastHitBody.frozen=!lastHitBody.frozen; lastHitBody.vel.set(0,0,0); toast(lastHitBody.frozen?'❄️ Frozen':'🔥 Unfrozen'); }}
+  if(e.key==='v'||e.key==='V'){ gravDir.set(0,-1,0); gravity=14; document.getElementById('sl-gravity').value=14; document.getElementById('val-gravity').textContent='14'; updateCompassUI(); toast('↓ Normal gravity'); }
+});
+
+// ════════════════════════════════════════════════════════
+//  STATS / TOAST
+// ════════════════════════════════════════════════════════
+function updateStats(){
+  const bc=bodies.length;
+  document.getElementById('stat-obj').textContent=bc;
+  document.getElementById('stat-obj2').textContent=bc;
+  document.getElementById('stat-rags').textContent=ragdolls.length;
+  updateCompassUI();
+}
+let lastFpsT=performance.now(), fN=0;
+function upFPS(now){
+  fN++;
+  if(now-lastFpsT>600){
+    const fps=Math.round(fN*1000/(now-lastFpsT));
+    document.getElementById('stat-fps').textContent=fps;
+    document.getElementById('stat-fps2').textContent=fps;
+    fN=0; lastFpsT=now;
+  }
+}
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.opacity='1';
+  clearTimeout(toastT); toastT=setTimeout(()=>el.style.opacity='0',2200);
+}
+
+// ════════════════════════════════════════════════════════
+//  RENDER LOOP
+// ════════════════════════════════════════════════════════
+let lastT=performance.now();
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt=Math.min((now-lastT)/1000,.036); lastT=now;
+  processCam(dt);
+  physicsStep(dt);
+  if(grabBody) grabBody.vel.set(0,0,0);
+  ragdolls.forEach(r=>updateRagdollVisuals(r));
+  updateLinkVisuals();
+  updateLabels();
+  rimL.intensity=.2+.06*Math.sin(now*.0005);
+  upFPS(now);
+  renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+
+// ════════════════════════════════════════════════════════
+//  STL IMPORTER — pure JS, no external loader needed
+// ════════════════════════════════════════════════════════
+
+let stlLibrary = [];       // [{name, geometry, triCount, byteSize, previewUrl}]
+let selectedStlIdx = -1;
+let stlScale = 1.0;
+let stlMass  = 1.0;
+let stlProxyScale = 1.0;
+let stlAutoCenter = true;
+let stlSmooth = false;
+let stlWireOver = false;
+let stlRainInterval = null;
+
+// ── Pure-JS STL Parser (handles both binary and ASCII) ──
+function parseSTL(buffer) {
+  // Detect ASCII vs binary
+  const uint8 = new Uint8Array(buffer);
+  // ASCII STLs start with "solid"
+  const header = String.fromCharCode(...uint8.slice(0, 80)).trimStart();
+  const isAscii = header.startsWith('solid') && containsAsciiSTL(uint8);
+
+  if (isAscii) return parseSTLAscii(buffer);
+  return parseSTLBinary(buffer);
+}
+
+function containsAsciiSTL(uint8) {
+  // Binary STLs: bytes 80-83 = triangle count. If the file size matches, it's binary.
+  const triCount = new DataView(uint8.buffer).getUint32(80, true);
+  const expectedSize = 84 + triCount * 50;
+  // If sizes match it's binary; otherwise ASCII
+  return uint8.length !== expectedSize;
+}
+
+function parseSTLBinary(buffer) {
+  const view = new DataView(buffer);
+  const triCount = view.getUint32(80, true);
+  const verts = new Float32Array(triCount * 9);
+  const norms = new Float32Array(triCount * 9);
+  let offset = 84;
+  for (let i = 0; i < triCount; i++) {
+    const nx = view.getFloat32(offset,    true);
+    const ny = view.getFloat32(offset+4,  true);
+    const nz = view.getFloat32(offset+8,  true);
+    offset += 12;
+    for (let v = 0; v < 3; v++) {
+      const base = i*9 + v*3;
+      verts[base]   = view.getFloat32(offset,   true);
+      verts[base+1] = view.getFloat32(offset+4, true);
+      verts[base+2] = view.getFloat32(offset+8, true);
+      norms[base]   = nx; norms[base+1] = ny; norms[base+2] = nz;
+      offset += 12;
+    }
+    offset += 2; // attribute byte count
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.setAttribute('normal',   new THREE.BufferAttribute(norms, 3));
+  return { geo, triCount };
+}
+
+function parseSTLAscii(buffer) {
+  const text = new TextDecoder().decode(buffer);
+  const verts = [];
+  const vertRe = /vertex\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/g;
+  let m;
+  while ((m = vertRe.exec(text)) !== null) {
+    verts.push(parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3]));
+  }
+  const triCount = verts.length / 9;
+  const arr = new Float32Array(verts);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+  geo.computeVertexNormals();
+  return { geo, triCount };
+}
+
+// Compute bounding sphere radius from geometry
+function computeBoundingRadius(geo) {
+  geo.computeBoundingSphere();
+  return geo.boundingSphere.radius;
+}
+
+// Center geometry at origin
+function centerGeometry(geo) {
+  geo.computeBoundingBox();
+  const center = new THREE.Vector3();
+  geo.boundingBox.getCenter(center);
+  geo.translate(-center.x, -center.y, -center.z);
+}
+
+// Normalize geometry to fit in a ~1-unit sphere
+function normalizeGeometry(geo) {
+  const r = computeBoundingRadius(geo);
+  if (r > 0) geo.scale(1/r, 1/r, 1/r);
+}
+
+// ── Mini preview renderer for STL library thumbnails ──
+const prevCanvas = document.getElementById('stl-preview-canvas');
+const prevRenderer = new THREE.WebGLRenderer({canvas: prevCanvas, antialias:true, alpha:true});
+prevRenderer.setSize(prevCanvas.offsetWidth || 188, 80);
+prevRenderer.setClearColor(0x000000, 0);
+const prevScene = new THREE.Scene();
+const prevCam   = new THREE.PerspectiveCamera(50, (prevCanvas.offsetWidth||188)/80, 0.01, 100);
+prevCam.position.set(0, 1.2, 2.5);
+prevCam.lookAt(0,0,0);
+prevScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const prevSun = new THREE.DirectionalLight(0xffffff, 1.0);
+prevSun.position.set(2,4,3); prevScene.add(prevSun);
+let prevMesh = null;
+let prevAnimId = null;
+
+function renderPreview(geo) {
+  if(prevMesh){ prevScene.remove(prevMesh); prevMesh.geometry.dispose(); prevMesh.material.dispose(); }
+  const mat = new THREE.MeshStandardMaterial({color:0x4a9eff,roughness:.4,metalness:.4});
+  prevMesh = new THREE.Mesh(geo, mat);
+  prevScene.add(prevMesh);
+  document.getElementById('stl-preview-wrap').style.display='block';
+  if(prevAnimId) cancelAnimationFrame(prevAnimId);
+  let t=0;
+  function loop(){
+    prevAnimId=requestAnimationFrame(loop);
+    t+=0.012;
+    prevMesh.rotation.y=t;
+    prevMesh.rotation.x=Math.sin(t*.4)*.3;
+    prevRenderer.render(prevScene,prevCam);
+  }
+  loop();
+}
+
+// ── Library UI ──
+function refreshStlLibrary() {
+  const el = document.getElementById('stl-library');
+  const cnt = document.getElementById('stl-count');
+  cnt.textContent = `(${stlLibrary.length})`;
+  if (stlLibrary.length === 0) {
+    el.innerHTML = '<div class="stl-no-items">No STL files imported yet</div>';
+    return;
+  }
+  el.innerHTML = '';
+  stlLibrary.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'stl-item' + (i === selectedStlIdx ? ' sel' : '');
+    div.innerHTML = `
+      <span class="stl-item-icon">⬡</span>
+      <div class="stl-item-info">
+        <div class="stl-item-name" title="${item.name}">${item.name}</div>
+        <div class="stl-item-meta">${item.triCount.toLocaleString()} tris · ${formatBytes(item.byteSize)}</div>
+      </div>
+      <span class="stl-item-del" data-idx="${i}" title="Remove">✕</span>
+    `;
+    div.addEventListener('click', (e) => {
+      if(e.target.dataset.idx !== undefined) return;
+      selectedStlIdx = i;
+      refreshStlLibrary();
+      renderPreview(item.geometry.clone());
+      toast(`Selected: ${item.name}`);
+    });
+    // Drag to canvas
+    div.setAttribute('draggable', false); // we use mousedown approach
+    div.addEventListener('mousedown', e => {
+      if(e.target.dataset.idx !== undefined) return;
+      if(e.button !== 0) return;
+      selectedStlIdx = i;
+      dragShape = '__stl__';
+      dragGhost.textContent = '⬡';
+      dragGhost.style.opacity = '1';
+      dragGhost.style.left = e.clientX+'px';
+      dragGhost.style.top  = e.clientY+'px';
+      dropOverlay.classList.add('active');
+      e.preventDefault();
+    });
+    div.querySelector('.stl-item-del').addEventListener('click', e => {
+      const idx = parseInt(e.target.dataset.idx);
+      stlLibrary[idx].geometry.dispose();
+      stlLibrary.splice(idx, 1);
+      if(selectedStlIdx >= stlLibrary.length) selectedStlIdx = stlLibrary.length - 1;
+      refreshStlLibrary();
+      if(stlLibrary.length===0){ document.getElementById('stl-preview-wrap').style.display='none'; if(prevAnimId) cancelAnimationFrame(prevAnimId); }
+    });
+    el.appendChild(div);
+  });
+}
+
+function formatBytes(b) {
+  if(b < 1024) return b+'B';
+  if(b < 1048576) return (b/1024).toFixed(1)+'KB';
+  return (b/1048576).toFixed(1)+'MB';
+}
+
+function setStlStatus(msg, isErr=false) {
+  const el = document.getElementById('stl-status');
+  el.textContent = msg;
+  el.style.color = isErr ? 'var(--red)' : 'var(--dim)';
+}
+
+function processSTLFile(file) {
+  if (!file || !file.name.toLowerCase().endsWith('.stl')) {
+    setStlStatus('⚠ Only .stl files supported', true); return;
+  }
+  const prog = document.getElementById('stl-progress');
+  const progBar = document.getElementById('stl-progress-bar');
+  prog.style.display = 'block'; progBar.style.width = '0%';
+  setStlStatus('Reading file...');
+
+  const reader = new FileReader();
+  reader.onprogress = e => { if(e.lengthComputable) progBar.style.width=(e.loaded/e.total*60)+'%'; };
+  reader.onload = e => {
+    progBar.style.width = '70%';
+    setStlStatus('Parsing STL...');
+    try {
+      const { geo, triCount } = parseSTL(e.target.result);
+      progBar.style.width = '85%';
+
+      if (stlAutoCenter) centerGeometry(geo);
+      normalizeGeometry(geo); // normalize to unit sphere, scale applied at spawn
+      if (stlSmooth) geo.computeVertexNormals();
+
+      // Pre-build convex hull for collision (cached once, reused per spawn)
+      const hull = buildConvexHull(geo);
+
+      progBar.style.width = '100%';
+      const name = file.name.replace(/\.stl$/i,'');
+      stlLibrary.push({ name, geometry: geo, hull, triCount, byteSize: e.target.result.byteLength });
+      selectedStlIdx = stlLibrary.length - 1;
+      refreshStlLibrary();
+      renderPreview(geo.clone());
+      setStlStatus(`✓ Loaded: ${triCount.toLocaleString()} triangles`);
+      toast(`📦 Imported: ${name}`);
+      setTimeout(()=>{ prog.style.display='none'; },800);
+    } catch(err) {
+      prog.style.display='none';
+      setStlStatus('⚠ Parse error: '+err.message, true);
+    }
+  };
+  reader.onerror = () => setStlStatus('⚠ File read error', true);
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Spawn an STL body ──
+function spawnStlBody(pos, vel, itemIdx) {
+  const item = stlLibrary[itemIdx < 0 ? selectedStlIdx : itemIdx];
+  if (!item) { toast('⚠ No STL selected'); return null; }
+  const sc = stlScale;
+  const geoClone = item.geometry.clone();
+  geoClone.scale(sc, sc, sc);
+  const col = new THREE.Color(selectedColor);
+  const mat = new THREE.MeshStandardMaterial({
+    color: col, emissive: col, emissiveIntensity: spawnEmit,
+    roughness: spawnRough, metalness: spawnMetal,
+    wireframe: false,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geoClone, mat);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.position.copy(pos);
+  const initQ=new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(Math.random()*Math.PI*2,Math.random()*Math.PI*2,Math.random()*Math.PI*2)
+  );
+  mesh.quaternion.copy(initQ);
+  scene.add(mesh);
+
+  // Wireframe overlay
+  if (stlWireOver) {
+    const wireMat = new THREE.MeshBasicMaterial({color:0x444444,wireframe:true,transparent:true,opacity:.25});
+    const wireMesh = new THREE.Mesh(geoClone, wireMat);
+    mesh.add(wireMesh);
+  }
+
+  // Build convex hull from the scaled geometry
+  const hull = buildConvexHull(geoClone);
+  const rawRadius = geoBoundingRadius(geoClone);
+  const radius = Math.max(rawRadius, 0.05) * stlProxyScale;
+
+  const b = new PhysBody(mesh, hull, false, radius, stlMass);
+  b.quat.copy(initQ);
+  b.quatInv.copy(initQ).invert();
+  b.vel.copy(vel);
+  b.angVel.set((Math.random()-.5)*5,(Math.random()-.5)*5,(Math.random()-.5)*5);
+  b.isStl = true;
+  b.stlIdx = itemIdx < 0 ? selectedStlIdx : itemIdx;
+  if (trailsEnabled) b.trail = new Trail(selectedColor);
+  bodies.push(b); updateStats(); return b;
+}
+
+// ── UI wiring for import tab ──
+const stlDropZone = document.getElementById('stl-drop-zone');
+const stlFileInput = document.getElementById('stl-file-input');
+
+stlDropZone.addEventListener('click', () => stlFileInput.click());
+stlFileInput.addEventListener('change', e => { if(e.target.files[0]) processSTLFile(e.target.files[0]); });
+
+stlDropZone.addEventListener('dragover', e => { e.preventDefault(); stlDropZone.classList.add('dragover'); });
+stlDropZone.addEventListener('dragleave', () => stlDropZone.classList.remove('dragover'));
+stlDropZone.addEventListener('drop', e => {
+  e.preventDefault(); stlDropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processSTLFile(file);
+});
+
+// Also support dropping STL files directly onto the main canvas
+canvas.addEventListener('dragover', e => e.preventDefault());
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.toLowerCase().endsWith('.stl')) {
+    processSTLFile(file);
+    toast('📦 STL file detected — importing...');
+  }
+});
+
+// Import tab sliders
+mks('sl-stl-scale', 'val-stl-scale', v => stlScale=v, v=>v.toFixed(2));
+mks('sl-stl-mass',  'val-stl-mass',  v => stlMass=v,  v=>v.toFixed(1));
+mks('sl-stl-proxy', 'val-stl-proxy', v => stlProxyScale=v, v=>v.toFixed(2));
+
+document.getElementById('chk-stl-center').addEventListener('change', function(){ stlAutoCenter=this.checked; });
+document.getElementById('chk-stl-smooth').addEventListener('change', function(){ stlSmooth=this.checked; });
+document.getElementById('chk-stl-wire').addEventListener('change',   function(){ stlWireOver=this.checked; });
+
+document.getElementById('btn-stl-spawn').addEventListener('click', () => {
+  if(selectedStlIdx < 0){ toast('⚠ No STL selected in library'); return; }
+  const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  const pos=camPos.clone().addScaledVector(fwd,6); pos.y=Math.max(pos.y,FLOOR_Y+3);
+  spawnStlBody(pos, new THREE.Vector3((Math.random()-.5)*2,1,(Math.random()-.5)*2), -1);
+});
+
+document.getElementById('btn-stl-rain').addEventListener('click', function(){
+  if(stlLibrary.length===0){ toast('⚠ Import an STL first'); return; }
+  if(stlRainInterval){ clearInterval(stlRainInterval); stlRainInterval=null; this.textContent='☂ STL Rain'; return; }
+  this.textContent='■ Stop Rain';
+  stlRainInterval=setInterval(()=>{
+    if(bodies.length>180) return;
+    const idx=Math.floor(Math.random()*stlLibrary.length);
+    const pos=new THREE.Vector3((Math.random()-.5)*22,FLOOR_Y+24,(Math.random()-.5)*22);
+    spawnStlBody(pos, new THREE.Vector3((Math.random()-.5)*3,-2,(Math.random()-.5)*3), idx);
+  },200);
+});
+
+document.getElementById('btn-stl-clear-lib').addEventListener('click', ()=>{
+  if(stlRainInterval){ clearInterval(stlRainInterval); stlRainInterval=null; document.getElementById('btn-stl-rain').textContent='☂ STL Rain'; }
+  stlLibrary.forEach(item=>item.geometry.dispose());
+  stlLibrary=[]; selectedStlIdx=-1;
+  document.getElementById('stl-preview-wrap').style.display='none';
+  if(prevAnimId) cancelAnimationFrame(prevAnimId);
+  refreshStlLibrary(); setStlStatus('Library cleared');
+});
+
+// Patch the drag-drop mouseup handler to support STL items
+const _origMouseUp = document.onmouseup;
+document.addEventListener('mouseup', e => {
+  if(dragShape !== '__stl__') return;
+  if(e.target===canvas && selectedStlIdx >= 0){
+    const pt = worldPosAt(e, FLOOR_Y+1);
+    if(pt){
+      pt.y = FLOOR_Y + stlScale * 1.5;
+      spawnStlBody(pt, new THREE.Vector3(spawnVelX,spawnVelY,0), -1);
+      toast(`Placed ${stlLibrary[selectedStlIdx]?.name || 'STL'}`);
+    }
+  }
+  // dragShape cleared by the existing mouseup handler
+}, true); // capture so it fires before the existing handler resets dragShape
+
+// ════════════════════════════════════════════════════════
+//  LABEL SYSTEM
+//  - Names loaded from .txt / .json
+//  - Each PhysBody can have a label (div overlay projected to screen)
+//  - Assign mode: clicking a body assigns the selected name
+// ════════════════════════════════════════════════════════
+
+const labelOverlay = document.getElementById('label-canvas-overlay');
+
+let nameList      = [];   // [{name, color, assigned: bodyRef|null}]
+let selectedNameIdx = -1;
+let assignModeOn  = false;
+let lblAutoAdvance= true;
+let lblFontSize   = 11;
+let lblLineHeight = 18;
+let lblOpacity    = 1.0;
+let lblYOffset    = 0.6;
+let lblShowBg     = true;
+let lblShowLine   = false;
+let lblFaceCamera = true;
+let lblTextColor  = '#ffffff';
+let lblBgColor    = 'rgba(0,0,0,0.55)';
+
+// DOM label elements, keyed by body reference
+const labelElements = new Map(); // body -> {el, lineEl}
+
+// ── Parse file content into [{name, color?}] ──────────────
+function parseNameFile(content, filename){
+  const ext = filename.split('.').pop().toLowerCase();
+  try {
+    if(ext === 'json'){
+      const data = JSON.parse(content);
+      if(!Array.isArray(data)) throw new Error('Expected JSON array');
+      return data.map(item=>{
+        if(typeof item === 'string') return {name:item, color:null};
+        if(item && typeof item.name === 'string') return {name:item.name, color:item.color||null};
+        return null;
+      }).filter(Boolean);
+    } else {
+      // .txt — one name per line, ignore blanks and #comments
+      return content.split('\n')
+        .map(l=>l.trim())
+        .filter(l=>l && !l.startsWith('#'))
+        .map(name=>({name, color:null}));
+    }
+  } catch(e){
+    toast('⚠ Parse error: '+e.message);
+    return [];
+  }
+}
+
+function loadNames(parsed){
+  // Keep existing assigned state if name matches
+  const existingMap = new Map(nameList.map(n=>[n.name, n]));
+  nameList = parsed.map(p=>({
+    name: p.name,
+    color: p.color || null,
+    assigned: existingMap.get(p.name)?.assigned || null
+  }));
+  if(selectedNameIdx >= nameList.length) selectedNameIdx = nameList.length > 0 ? 0 : -1;
+  refreshNameList();
+  toast(`🏷️ Loaded ${nameList.length} names`);
+}
+
+// ── Name list UI ──────────────────────────────────────────
+function refreshNameList(){
+  const el = document.getElementById('name-list');
+  const cnt = document.getElementById('lbl-count');
+  cnt.textContent = `(${nameList.length})`;
+  if(nameList.length === 0){
+    el.innerHTML = '<div class="stl-no-items">No names loaded</div>';
+    return;
+  }
+  el.innerHTML = '';
+  nameList.forEach((item, i)=>{
+    const div = document.createElement('div');
+    const isSel = i === selectedNameIdx;
+    const isAssigned = !!item.assigned;
+    div.className = 'name-item' + (isAssigned?' assigned':'') + (isSel?' selected':'');
+    div.innerHTML = `
+      <span class="ni-idx">${i+1}</span>
+      <span class="ni-name" title="${item.name}">${item.name}</span>
+      <span class="ni-body">${item.assigned ? '●' : ''}</span>
+      <span class="ni-del" data-i="${i}" title="Remove">✕</span>
+    `;
+    if(item.color) div.style.borderLeftColor = item.color;
+
+    div.addEventListener('click', e=>{
+      if(e.target.dataset.i !== undefined) return;
+      selectedNameIdx = i;
+      refreshNameList();
+    });
+    div.querySelector('.ni-del').addEventListener('click', e=>{
+      e.stopPropagation();
+      const idx = parseInt(e.target.dataset.i);
+      // Remove label from assigned body
+      if(nameList[idx].assigned){
+        removeBodyLabel(nameList[idx].assigned);
+        nameList[idx].assigned = null;
+      }
+      nameList.splice(idx, 1);
+      if(selectedNameIdx >= nameList.length) selectedNameIdx = nameList.length-1;
+      refreshNameList();
+    });
+    el.appendChild(div);
+  });
+
+  // Scroll selected into view
+  const selEl = el.children[selectedNameIdx];
+  if(selEl) selEl.scrollIntoView({block:'nearest'});
+}
+
+// ── DOM Label creation / removal ──────────────────────────
+function createBodyLabel(body, name, color){
+  // Remove existing label if any
+  removeBodyLabel(body);
+
+  const el = document.createElement('div');
+  el.className = 'body-label';
+
+  const inner = document.createElement('div');
+  inner.className = 'lbl-inner';
+  inner.textContent = name;
+  applyLabelStyle(inner, color);
+  el.appendChild(inner);
+
+  const lineEl = document.createElement('div');
+  lineEl.className = 'lbl-line';
+  el.appendChild(lineEl);
+
+  labelOverlay.appendChild(el);
+  labelElements.set(body, {el, inner, lineEl, name, color});
+  body._labelName = name;
+}
+
+function removeBodyLabel(body){
+  const entry = labelElements.get(body);
+  if(entry){ entry.el.remove(); labelElements.delete(body); }
+  delete body._labelName;
+}
+
+function applyLabelStyle(inner, overrideColor){
+  inner.style.fontSize = lblFontSize + 'px';
+  inner.style.color = overrideColor || lblTextColor;
+  inner.style.background = lblShowBg ? lblBgColor : 'transparent';
+  inner.style.border = lblShowBg ? '1px solid rgba(255,255,255,.18)' : 'none';
+}
+
+function refreshAllLabelStyles(){
+  for(const [body, entry] of labelElements){
+    applyLabelStyle(entry.inner, entry.color);
+  }
+}
+
+// ── Project 3D position to screen ────────────────────────
+const _labelVec = new THREE.Vector3();
+const _labelVec2 = new THREE.Vector3();
+
+function updateLabelPositions(){
+  for(const [body, entry] of labelElements){
+    const {el, inner, lineEl} = entry;
+
+    // World position above body
+    _labelVec.copy(body.pos);
+    _labelVec.y += body.radius + lblYOffset;
+
+    // Frustum cull — if behind camera, hide
+    _labelVec2.copy(_labelVec).project(camera);
+    if(_labelVec2.z > 1){ el.style.opacity='0'; continue; }
+
+    const sx = ( _labelVec2.x * 0.5 + 0.5) * innerWidth;
+    const sy = (-_labelVec2.y * 0.5 + 0.5) * innerHeight;
+
+    el.style.left = sx + 'px';
+    el.style.top  = sy + 'px';
+    el.style.opacity = lblOpacity.toString();
+    inner.style.fontSize = lblFontSize + 'px';
+
+    // Connector line — from label bottom to body center projected
+    if(lblShowLine){
+      _labelVec2.copy(body.pos).project(camera);
+      const bx = ( _labelVec2.x * 0.5 + 0.5) * innerWidth;
+      const by = (-_labelVec2.y * 0.5 + 0.5) * innerHeight;
+      const dx = bx - sx, dy = by - sy;
+      const len = Math.sqrt(dx*dx+dy*dy);
+      const angle = Math.atan2(dy,dx) * 180/Math.PI - 90;
+      lineEl.style.display='block';
+      lineEl.style.height = len + 'px';
+      lineEl.style.transform = `rotate(${angle}deg)`;
+    } else {
+      lineEl.style.display='none';
+    }
+  }
+}
+
+// ── Assign mode ───────────────────────────────────────────
+function toggleAssignMode(){
+  assignModeOn = !assignModeOn;
+  const btn = document.getElementById('lbl-assign-mode-btn');
+  btn.textContent = `🏷️ Click-to-Assign: ${assignModeOn?'ON':'OFF'}`;
+  btn.classList.toggle('active', assignModeOn);
+  toast(assignModeOn ? '🏷️ Click a body to assign name' : 'Assign mode off');
+}
+
+function assignNameToBody(body){
+  if(selectedNameIdx < 0 || selectedNameIdx >= nameList.length){
+    toast('⚠ No name selected in list'); return;
+  }
+  const item = nameList[selectedNameIdx];
+
+  // Unassign old body if this name was already assigned
+  if(item.assigned && item.assigned !== body){
+    removeBodyLabel(item.assigned);
+  }
+  // Unassign old name from this body if it had one
+  for(const n of nameList){
+    if(n.assigned === body && n !== item){
+      n.assigned = null;
+    }
+  }
+
+  item.assigned = body;
+  createBodyLabel(body, item.name, item.color);
+
+  if(lblAutoAdvance){
+    // Advance to next unassigned name, or wrap
+    let next = -1;
+    for(let i=selectedNameIdx+1; i<nameList.length; i++){
+      if(!nameList[i].assigned){ next=i; break; }
+    }
+    if(next < 0){
+      for(let i=0; i<selectedNameIdx; i++){
+        if(!nameList[i].assigned){ next=i; break; }
+      }
+    }
+    if(next >= 0) selectedNameIdx = next;
+  }
+
+  refreshNameList();
+  toast(`🏷️ "${item.name}" assigned`);
+}
+
+// Hook into the existing mousedown to intercept assign-mode clicks
+// (Runs in capture phase so it fires before the grab/tool handler)
+canvas.addEventListener('mousedown', e=>{
+  if(!assignModeOn || e.button !== 0) return;
+  const b = hitBody(e);
+  if(b){ assignNameToBody(b); e.stopPropagation(); }
+}, true);
+
+// Remove label when body is removed — patch removeBodyAt
+const _origRemoveBodyAt = window.removeBodyAt; // won't exist yet, patched below
+
+// ── File loading ──────────────────────────────────────────
+const lblFileInput = document.getElementById('lbl-file-input');
+const lblDropZone  = document.getElementById('lbl-drop-zone');
+
+function readLabelFile(file){
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext !== 'txt' && ext !== 'json'){ toast('⚠ Use .txt or .json'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const parsed = parseNameFile(e.target.result, file.name);
+    if(parsed.length) loadNames(parsed);
+    else toast('⚠ No valid names found');
+  };
+  reader.readAsText(file);
+}
+
+lblDropZone.addEventListener('click', ()=>lblFileInput.click());
+lblFileInput.addEventListener('change', e=>readLabelFile(e.target.files[0]));
+lblDropZone.addEventListener('dragover', e=>{ e.preventDefault(); lblDropZone.classList.add('dragover'); });
+lblDropZone.addEventListener('dragleave', ()=>lblDropZone.classList.remove('dragover'));
+lblDropZone.addEventListener('drop', e=>{
+  e.preventDefault(); lblDropZone.classList.remove('dragover');
+  readLabelFile(e.dataTransfer.files[0]);
+});
+
+// ── Paste / type area ─────────────────────────────────────
+document.getElementById('btn-lbl-paste').addEventListener('click',()=>{
+  const area = document.getElementById('lbl-paste-area');
+  const confirmBtn = document.getElementById('btn-lbl-paste-confirm');
+  const shown = area.style.display !== 'none';
+  area.style.display = shown ? 'none' : 'block';
+  confirmBtn.style.display = shown ? 'none' : 'block';
+  if(!shown) area.focus();
+});
+document.getElementById('btn-lbl-paste-confirm').addEventListener('click',()=>{
+  const area = document.getElementById('lbl-paste-area');
+  const text = area.value.trim();
+  if(!text){ toast('⚠ Nothing to import'); return; }
+  const parsed = parseNameFile(text, 'paste.txt');
+  if(parsed.length){ loadNames(parsed); area.style.display='none'; document.getElementById('btn-lbl-paste-confirm').style.display='none'; area.value=''; }
+  else toast('⚠ No valid names found');
+});
+
+// ── Style controls ────────────────────────────────────────
+function mksL(id,vi,fn,fmt){
+  const sl=document.getElementById(id),vl=document.getElementById(vi);
+  if(!sl||!vl) return;
+  sl.addEventListener('input',()=>{ const v=parseFloat(sl.value); fn(v); vl.textContent=fmt?fmt(v):v; refreshAllLabelStyles(); });
+}
+mksL('sl-lbl-size','val-lbl-size',v=>lblFontSize=v,v=>Math.round(v));
+mksL('sl-lbl-line','val-lbl-line',v=>lblLineHeight=v,v=>Math.round(v));
+mksL('sl-lbl-opacity','val-lbl-opacity',v=>lblOpacity=v,v=>v.toFixed(2));
+mksL('sl-lbl-yoff','val-lbl-yoff',v=>lblYOffset=v,v=>v.toFixed(1));
+document.getElementById('chk-lbl-advance').addEventListener('change',function(){ lblAutoAdvance=this.checked; });
+document.getElementById('chk-lbl-bg').addEventListener('change',function(){ lblShowBg=this.checked; refreshAllLabelStyles(); });
+document.getElementById('chk-lbl-line').addEventListener('change',function(){ lblShowLine=this.checked; });
+document.getElementById('chk-lbl-face').addEventListener('change',function(){ lblFaceCamera=this.checked; });
+
+// Label text colors
+const LBL_COLORS=['#ffffff','#ffcc44','#55aaff','#ff5555','#44cc88','#ff8844','#aa55ff','#ff44aa','#ccff44','#aaaaaa'];
+const LBL_BKGS=[
+  'rgba(0,0,0,0.55)','rgba(30,50,80,0.75)','rgba(80,20,20,0.75)',
+  'rgba(10,40,20,0.75)','rgba(50,10,50,0.75)','rgba(255,255,255,0.15)',
+  'rgba(20,20,20,0.9)','transparent'
+];
+const lcrEl = document.getElementById('lbl-color-row');
+LBL_COLORS.forEach((hex,i)=>{
+  const d=document.createElement('div');
+  d.className='lbl-swatch'+(i===0?' active':'');
+  d.style.background=hex; d.style.border='2px solid transparent';
+  d.addEventListener('click',()=>{
+    document.querySelectorAll('#lbl-color-row .lbl-swatch').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active'); lblTextColor=hex; refreshAllLabelStyles();
+  });
+  lcrEl.appendChild(d);
+});
+const lbgEl = document.getElementById('lbl-bg-row');
+LBL_BKGS.forEach((bg,i)=>{
+  const d=document.createElement('div');
+  d.className='lbl-swatch'+(i===0?' active':'');
+  d.style.background=bg; d.style.border='1px solid var(--border2)';
+  d.addEventListener('click',()=>{
+    document.querySelectorAll('#lbl-bg-row .lbl-swatch').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active'); lblBgColor=bg; refreshAllLabelStyles();
+  });
+  lbgEl.appendChild(d);
+});
+
+// ── Action buttons ────────────────────────────────────────
+document.getElementById('lbl-assign-mode-btn').addEventListener('click', toggleAssignMode);
+
+document.getElementById('btn-lbl-assign-all').addEventListener('click',()=>{
+  const available = bodies.filter(b=>b.ragId<0&&!b._labelName);
+  let count=0;
+  for(let i=0; i<nameList.length && count<available.length; i++){
+    if(!nameList[i].assigned){
+      nameList[i].assigned = available[count];
+      createBodyLabel(available[count], nameList[i].name, nameList[i].color);
+      count++;
+    }
+  }
+  refreshNameList();
+  toast(`🏷️ Auto-assigned ${count} labels`);
+});
+
+document.getElementById('btn-lbl-unassign-all').addEventListener('click',()=>{
+  for(const [body] of labelElements) removeBodyLabel(body);
+  nameList.forEach(n=>n.assigned=null);
+  refreshNameList();
+  toast('Labels cleared from all bodies');
+});
+
+document.getElementById('btn-lbl-export').addEventListener('click',()=>{
+  const assignments = nameList
+    .filter(n=>n.assigned)
+    .map(n=>({
+      name: n.name,
+      position: {
+        x: +n.assigned.pos.x.toFixed(3),
+        y: +n.assigned.pos.y.toFixed(3),
+        z: +n.assigned.pos.z.toFixed(3)
+      },
+      color: n.color
+    }));
+  const json = JSON.stringify(assignments, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gravitas-labels.json';
+  a.click();
+  toast(`💾 Exported ${assignments.length} assignments`);
+});
+
+document.getElementById('btn-lbl-clear').addEventListener('click',()=>{
+  for(const [body] of labelElements) removeBodyLabel(body);
+  nameList.forEach(n=>n.assigned=null);
+  nameList=[]; selectedNameIdx=-1;
+  refreshNameList();
+  toast('Name list cleared');
+});
+
+// ── Hook removeBodyAt to clean up labels ──────────────────
+// Wrap the existing removeBodyAt function to also remove label
+const _realRemoveBodyAt = removeBodyAt;
+function removeBodyAt(idx){
+  const b = bodies[idx];
+  if(b){
+    // Clear assignment from nameList
+    for(const n of nameList){ if(n.assigned===b) n.assigned=null; }
+    removeBodyLabel(b);
+  }
+  _realRemoveBodyAt(idx);
+}
+
+// ── Label update in animate loop — called each frame ──────
+function updateLabels(){
+  if(labelElements.size === 0) return;
+  updateLabelPositions();
+}
+
+// ════════════════════════════════════════════════════════
+//  VERSION LOADER
+//  Reads version.json from the same directory as this HTML.
+//  To update the displayed version: edit version.json only.
+//  Falls back gracefully if the file is missing or fetch fails
+//  (e.g. when opened directly from disk without a local server).
+// ════════════════════════════════════════════════════════
+(async function loadVersion(){
+  const badge = document.getElementById('version-badge');
+  try {
+    // Attempt to load version.json sitting next to this HTML file
+    const res = await fetch('./version.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Display version + name in the badge
+    const label = [data.version, data.name].filter(Boolean).join(' · ');
+    badge.textContent = label;
+    badge.title = data.notes || '';
+
+    // Also update the page title
+    if(data.version) document.title = `GRAVITAS ${data.version} — Physics Sandbox`;
+
+    console.log(`[GRAVITAS] Version loaded from version.json:`, data);
+  } catch(e) {
+    // version.json not found or invalid — show nothing, run fine
+    badge.textContent = '';
+    console.info('[GRAVITAS] version.json not found or unreadable — running without version info.', e.message);
+  }
+})();
+
+// ── Seed ──
+setTimeout(()=>{
+  ['sphere','box','icosa','torus','cone','octahedron'].forEach((sh,i)=>{
+    spawnBody(new THREE.Vector3((i-2.5)*3.5,FLOOR_Y+12,(Math.random()-.5)*5),
+      new THREE.Vector3((Math.random()-.5)*4,4+Math.random()*4,(Math.random()-.5)*2),
+      sh, COLORS[i], 1, 1);
+  });
+  spawnRagdoll(new THREE.Vector3(0,FLOOR_Y,0));
+  updateCompassUI();
+  toast('Drag objects from menu panel · H=Human · 1-7=Tools · G=Zero-G');
+},350);
+</script>
+</body>
+</html>
