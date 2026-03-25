@@ -145,20 +145,62 @@ function rewriteHTML(html, baseUrl) {
   // 6. Inject navigation interceptor + URL reporter
   const injected = `<script>
 (function() {
-  function interceptClicks(e) {
+  var BASE = '${baseUrl}';
+
+  function sendNav(url) {
+    try {
+      var abs = new URL(url, BASE).href;
+      if (abs.startsWith('http')) {
+        window.top.postMessage({ type: 'proxy-navigate', url: abs }, '*');
+        return true;
+      }
+    } catch(ex) {}
+    return false;
+  }
+
+  // Intercept anchor clicks
+  document.addEventListener('click', function(e) {
     var el = e.target && e.target.closest ? e.target.closest('a[href]') : null;
     if (!el) return;
     var href = el.getAttribute('href');
     if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
     e.preventDefault();
     e.stopPropagation();
+    sendNav(href);
+  }, true);
+
+  // Intercept form submissions (catches search bars)
+  document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (!form || !form.action) return;
+    e.preventDefault();
+    e.stopPropagation();
     try {
-      var abs = new URL(href, '${baseUrl}').href;
-      window.top.postMessage({ type: 'proxy-navigate', url: abs }, '*');
+      var action = new URL(form.action, BASE).href;
+      var data = new URLSearchParams(new FormData(form)).toString();
+      var url = action.split('?')[0] + (data ? '?' + data : '');
+      sendNav(url);
     } catch(ex) {}
+  }, true);
+
+  // Intercept history.pushState / replaceState (JS-driven SPAs)
+  function wrapHistory(method) {
+    var orig = history[method];
+    history[method] = function(state, title, url) {
+      orig.apply(this, arguments);
+      if (url) {
+        try {
+          var abs = new URL(url, BASE).href;
+          window.top.postMessage({ type: 'proxy-url', url: abs }, '*');
+          BASE = abs;
+        } catch(ex) {}
+      }
+    };
   }
-  document.addEventListener('click', interceptClicks, true);
-  try { window.top.postMessage({ type: 'proxy-url', url: '${baseUrl}' }, '*'); } catch(ex) {}
+  try { wrapHistory('pushState'); wrapHistory('replaceState'); } catch(ex) {}
+
+  // Report current URL to parent
+  try { window.top.postMessage({ type: 'proxy-url', url: BASE }, '*'); } catch(ex) {}
 })();
 </script>`;
 
