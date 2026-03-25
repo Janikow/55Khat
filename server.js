@@ -16,29 +16,159 @@ const io = new Server(server, {
 
 app.use(express.static("public"));
 
-// ─── Auto Ping ────────────────────────────────────────────────────────────
+// ─── Proxy ────────────────────────────────────────────────────────────────────
+
+// Use built-in fetch (Node 18+) or install node-fetch for older versions
+let fetchFn;
+try {
+  fetchFn = fetch;
+} catch {
+  fetchFn = require("node-fetch");
+}
+
+const PROXY_CONFIG = {
+  blockedDomains: [
+    "localhost", "127.0.0.1", "0.0.0.0",
+    "169.254.", "10.", "192.168.", "172.16.",
+  ],
+  maxResponseSize: 10 * 1024 * 1024, // 10MB
+  timeout: 15000,
+};
+
+function isBlockedDomain(url) {
+  try {
+    const { hostname } = new URL(url);
+    return PROXY_CONFIG.blockedDomains.some((b) => hostname.includes(b));
+  } catch {
+    return true;
+  }
+}
+
+function resolveRelativeUrls(html, baseUrl) {
+  try {
+    const base = new URL(baseUrl);
+    return html
+      .replace(
+        /(href|src|action)=["'](https?:\/\/[^"']+)["']/gi,
+        (_, attr, url) => `${attr}="/proxy/fetch?url=${encodeURIComponent(url)}"`
+      )
+      .replace(
+        /(href|src|action)=["'](\/[^"']+)["']/gi,
+        (_, attr, p) => `${attr}="/proxy/fetch?url=${encodeURIComponent(base.origin + p)}"`
+      )
+      .replace(
+        /<head([^>]*)>/i,
+        `<head$1><base href="${baseUrl}"><script>
+          document.addEventListener('click', function(e) {
+            const a = e.target.closest('a');
+            if (a && a.href && !a.href.startsWith('/proxy/')) {
+              e.preventDefault();
+              window.top.postMessage({ type: 'proxy-navigate', url: a.href }, '*');
+            }
+          });
+        <\/script>`
+      );
+  } catch {
+    return html;
+  }
+}
+
+app.get("/proxy/fetch", async (req, res) => {
+  const { url } = req.query;
+
+  if (!url) return res.status(400).json({ error: "Missing ?url= parameter" });
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+    if (!["http:", "https:"].includes(parsedUrl.protocol))
+      return res.status(400).json({ error: "Only http/https URLs are allowed" });
+  } catch {
+    return res.status(400).json({ error: "Invalid URL" });
+  }
+
+  if (isBlockedDomain(url))
+    return res.status(403).json({ error: "This domain is not allowed" });
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), PROXY_CONFIG.timeout);
+
+    const response = await fetchFn(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; WebProxy/1.0)",
+        Accept: req.headers.accept || "*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate",
+      },
+      redirect: "follow",
+    });
+
+    clearTimeout(timeout);
+
+    const contentType = response.headers.get("content-type") || "";
+    const contentLength = parseInt(response.headers.get("content-length") || "0");
+
+    if (contentLength > PROXY_CONFIG.maxResponseSize)
+      return res.status(413).json({ error: "Response too large" });
+
+    ["content-type", "cache-control", "last-modified", "etag"].forEach((h) => {
+      const val = response.headers.get(h);
+      if (val) res.setHeader(h, val);
+    });
+
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("Content-Security-Policy", "");
+
+    if (contentType.includes("text/html")) {
+      let html = await response.text();
+      html = resolveRelativeUrls(html, url);
+      html = html.replace(
+        "</body>",
+        `<script>
+          try { window.top.postMessage({ type: 'proxy-url', url: '${url}' }, '*'); } catch(e) {}
+        <\/script></body>`
+      );
+      return res.send(html);
+    }
+
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength > PROXY_CONFIG.maxResponseSize)
+      return res.status(413).json({ error: "Response too large" });
+    return res.send(Buffer.from(buffer));
+
+  } catch (err) {
+    if (err.name === "AbortError")
+      return res.status(504).json({ error: "Request timed out" });
+    console.error("[Proxy error]", err.message);
+    return res.status(502).json({ error: "Failed to fetch URL", detail: err.message });
+  }
+});
+
+// Serve the proxy UI at /proxy
+app.get("/proxy", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "proxy.html"));
+});
+
+// ─── Auto Ping ────────────────────────────────────────────────────────────────
 
 const https = require("https");
-
-const URL = "https://clevereducation.online/";
+const URL_PING = "https://clevereducation.online/";
 
 function ping() {
-  https.get(URL, (res) => {
+  https.get(URL_PING, (res) => {
     console.log(`Pinged! Status: ${res.statusCode}`);
   }).on("error", (err) => {
     console.log("Error:", err.message);
   });
 }
 
-// Run every 5 minutes
 setInterval(ping, 300000);
-
-// Run immediately once
 ping();
 
+// ─── Persistence ─────────────────────────────────────────────────────────────
 
-
-// ─── Persistence ────────────────────────────────────────────────────────────
 const bansFile = path.join(__dirname, "bans.json");
 const usersFile = path.join(__dirname, "users.json");
 
@@ -56,21 +186,17 @@ function saveUsers() {
   fs.writeFileSync(usersFile, JSON.stringify(registeredUsers, null, 2));
 }
 
-// ─── In-memory state ─────────────────────────────────────────────────────────
-// socket.id → { name, ip, socket, port, profilePic, color }
-const users = {};
+// ─── In-memory state ──────────────────────────────────────────────────────────
 
-// socket.id → { count, windowStart }  (rate limiting)
+const users = {};
 const rateLimitMap = {};
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function hashPassword(password) {
-  // Use a fixed salt stored per-user for real security; SHA-256 is fine for
-  // a local chat app but PBKDF2/bcrypt would be better in production.
   return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-/** Timing-safe string compare to prevent timing attacks on passwords. */
 function safeEqual(a, b) {
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
@@ -78,29 +204,25 @@ function safeEqual(a, b) {
 
 function getClientIP(socket) {
   const forwarded = socket.handshake.headers["x-forwarded-for"];
-  return forwarded
-    ? forwarded.split(",")[0].trim()
-    : socket.handshake.address;
+  return forwarded ? forwarded.split(",")[0].trim() : socket.handshake.address;
 }
 
-/** Validate CSS rgb() color string – prevents style injection. */
 function isValidColor(color) {
-  return typeof color === "string" &&
-    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/.test(color);
+  return (
+    typeof color === "string" &&
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/.test(color)
+  );
 }
 
-/** Validate username: 2–18 printable non-whitespace ASCII chars. */
 function isValidUsername(name) {
-  return typeof name === "string" &&
+  return (
+    typeof name === "string" &&
     name.length >= 2 &&
     name.length <= 18 &&
-    /^[\x21-\x7E]+$/.test(name);
+    /^[\x21-\x7E]+$/.test(name)
+  );
 }
 
-/**
- * Rate limit: max 8 messages per 5 seconds per socket.
- * Returns true if the message should be blocked.
- */
 function isRateLimited(socketId) {
   const now = Date.now();
   const WINDOW_MS = 5000;
@@ -128,7 +250,6 @@ function getRoomUsers(port) {
     .map((u) => ({ name: u.name, profilePic: u.profilePic, color: u.color }));
 }
 
-/** Safe event-handler wrapper – logs errors without crashing the server. */
 function safe(fn) {
   return (...args) => {
     try {
@@ -148,9 +269,7 @@ const profanityWords = [
   "dumb-ass", "horseshit",
 ];
 
-const slurWords = [
-  "fag", "faggot", "nigga", "nigra",
-];
+const slurWords = ["fag", "faggot", "nigga", "nigra"];
 
 const sexualWords = [
   "childfucker", "child-fucker", "cock", "cocksucker", "cunt",
@@ -158,7 +277,6 @@ const sexualWords = [
   "fucking", "motherfucker", "mother fucker", "mother-fucker",
 ];
 
-// Pre-process word lists: strip non-alpha once at startup
 const normalize = (w) => w.toLowerCase().replace(/[^a-z]/g, "");
 
 const profanitySet = profanityWords.map(normalize);
@@ -168,14 +286,8 @@ const sexualSet = sexualWords.map(normalize);
 // ─── Normalisation ────────────────────────────────────────────────────────────
 
 const LEET_MAP = {
-  "4": "a", "@": "a",
-  "8": "b",
-  "3": "e",
-  "6": "g",
-  "1": "i", "!": "i",
-  "0": "o",
-  "5": "s", "$": "s",
-  "7": "t",
+  "4": "a", "@": "a", "8": "b", "3": "e", "6": "g",
+  "1": "i", "!": "i", "0": "o", "5": "s", "$": "s", "7": "t",
 };
 
 function normalizeForFilter(text) {
@@ -183,32 +295,21 @@ function normalizeForFilter(text) {
   let s = text.toLowerCase();
   s = s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
   s = s.replace(/[4836!105$7@]/g, (c) => LEET_MAP[c] || c);
-  // Remove spaces/punctuation/numbers so "f u c k" → "fuck"
   s = s.replace(/[^a-z]/g, "");
   return s;
 }
 
-/**
- * Word-boundary-aware filter.
- *
- * Problem with the original: normalizeChat("Essex") → "essex" which contains
- * "sex", causing a false positive.  We solve this by also checking the RAW
- * lowercased input using whole-word regex BEFORE falling back to the stripped
- * version for obfuscated variants.
- */
 function filterMessage(text) {
   if (!text || typeof text !== "string") return { allowed: true };
 
   const raw = text.toLowerCase();
   const stripped = normalizeForFilter(text);
 
-  // Helper: whole-word match in raw text
   const wordMatch = (word) => {
     const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return new RegExp(`(?<![a-z])${escaped}(?![a-z])`).test(raw);
   };
 
-  // Helper: substring match in stripped text (catches obfuscated variants)
   const obfuscatedMatch = (word) => stripped.includes(normalize(word));
 
   for (const w of profanityWords) {
@@ -237,11 +338,9 @@ io.on("connection", (socket) => {
     return socket.disconnect(true);
   }
 
-  // ── Login ──────────────────────────────────────────────────────────────────
   socket.on(
     "login",
     safe(({ name, password, port, profilePic, color }) => {
-      // Input validation
       if (!isValidUsername(name))
         return socket.emit("loginResult", {
           success: false,
@@ -258,29 +357,23 @@ io.on("connection", (socket) => {
           message: "Server port is required.",
         });
 
-      const safeColor =
-        isValidColor(color) ? color : "rgb(255,255,255)";
+      const safeColor = isValidColor(color) ? color : "rgb(255,255,255)";
       const hashed = hashPassword(password);
 
       if (registeredUsers[name]) {
-        // Existing user – verify password
         if (!safeEqual(registeredUsers[name].password, hashed))
           return socket.emit("loginResult", {
             success: false,
             message: "Incorrect password.",
           });
-        // Update profile pic if provided
         if (profilePic && typeof profilePic === "string")
           registeredUsers[name].profilePic = profilePic;
-        // Persist color
         registeredUsers[name].color = safeColor;
         saveUsers();
       } else {
-        // New registration
         registeredUsers[name] = {
           password: hashed,
-          profilePic:
-            typeof profilePic === "string" ? profilePic : "",
+          profilePic: typeof profilePic === "string" ? profilePic : "",
           color: safeColor,
         };
         saveUsers();
@@ -297,24 +390,20 @@ io.on("connection", (socket) => {
       };
 
       socket.join(port.trim());
-
       io.to(port.trim()).emit("user list", getRoomUsers(port.trim()));
       socket.emit("loginResult", { success: true });
       console.log(`${name} joined room ${port.trim()} from ${ip}`);
     })
   );
 
-  // ── Chat message ───────────────────────────────────────────────────────────
   socket.on(
     "chat message",
     safe((msg) => {
       const sender = users[socket.id];
       if (!sender) return;
 
-      // Block oversized images
       if (msg.image && msg.image.length > 2_000_000) return;
 
-      // Rate limiting
       if (isRateLimited(socket.id)) {
         socket.emit("chatBlocked", {
           reason: "Slow down — you're sending messages too fast.",
@@ -322,7 +411,6 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Text validation
       if (msg.text !== undefined && msg.text !== null) {
         if (typeof msg.text !== "string") return;
         if (msg.text.length > 600) {
@@ -353,7 +441,6 @@ io.on("connection", (socket) => {
     })
   );
 
-  // ── Typing indicator ───────────────────────────────────────────────────────
   socket.on(
     "typing",
     safe((isTyping) => {
@@ -366,7 +453,6 @@ io.on("connection", (socket) => {
     })
   );
 
-  // ── Color change ───────────────────────────────────────────────────────────
   socket.on(
     "colorChange",
     safe((newColor) => {
@@ -380,15 +466,11 @@ io.on("connection", (socket) => {
         saveUsers();
       }
 
-      io.to(user.port).emit("colorChange", {
-        user: user.name,
-        color: newColor,
-      });
+      io.to(user.port).emit("colorChange", { user: user.name, color: newColor });
       io.to(user.port).emit("user list", getRoomUsers(user.port));
     })
   );
 
-  // ── Disconnect ─────────────────────────────────────────────────────────────
   socket.on(
     "disconnect",
     safe(() => {
@@ -405,5 +487,6 @@ io.on("connection", (socket) => {
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
