@@ -148,7 +148,7 @@ app.get("/proxy/fetch", async (req, res) => {
 
 // Serve the proxy UI at /proxy
 app.get("/proxy", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "proxy.html"));
+  res.sendFile(path.join(__dirname, "public", "websurf.html"));
 });
 
 // ─── Auto Ping ────────────────────────────────────────────────────────────────
