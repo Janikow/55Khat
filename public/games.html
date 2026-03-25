@@ -1,174 +1,537 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="../styles.css">
-  <link 
   <meta charset="UTF-8">
-  <title>Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Games — Clever Education</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* ── Games page extensions ── */
+    html, body {
+      overflow: hidden auto;
+    }
+
+    .games-container {
+      min-height: 100vh;
+      padding: 32px 28px 48px;
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Page header ── */
+    .games-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--c-border);
+      position: relative;
+    }
+
+    .games-header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--c-accent), transparent);
+      box-shadow: var(--glow-sm);
+    }
+
+    .games-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--c-accent);
+      text-shadow: var(--glow-md);
+    }
+
+    .games-title span {
+      color: var(--c-text-dim);
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 2px;
+      margin-left: 12px;
+    }
+
+    .games-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .game-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--c-text-dim);
+      letter-spacing: 2px;
+    }
+
+    .game-count strong {
+      color: var(--c-accent2);
+      text-shadow: 0 0 8px var(--c-accent2);
+    }
+
+    /* ── Search bar ── */
+    .search-wrap {
+      position: relative;
+      width: 240px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-accent-dim);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    #gameSearch {
+      width: 100%;
+      background: rgba(0, 210, 255, 0.04);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      color: var(--c-text);
+      padding: 8px 10px 8px 30px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+      transition: var(--t-fast);
+      caret-color: var(--c-accent);
+      letter-spacing: 1px;
+    }
+
+    #gameSearch::placeholder { color: var(--c-text-dim); }
+
+    #gameSearch:focus {
+      border-color: var(--c-accent);
+      background: rgba(0, 210, 255, 0.07);
+      box-shadow: var(--glow-sm);
+    }
+
+    /* ── Category filters ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 5px 14px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid var(--c-border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--c-text-dim);
+      cursor: pointer;
+      transition: var(--t-fast);
+    }
+
+    .filter-chip:hover,
+    .filter-chip.active {
+      border-color: var(--c-accent);
+      color: var(--c-accent);
+      background: rgba(0,210,255,0.06);
+      box-shadow: var(--glow-sm);
+    }
+
+    /* ── Game grid ── */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .game-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 10px;
+      background: var(--c-panel);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      color: var(--c-text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--t-fast);
+      overflow: hidden;
+      min-height: 54px;
+      line-height: 1.3;
+      word-break: break-word;
+      hyphens: auto;
+      backdrop-filter: blur(4px);
+      animation: fadeUp var(--t-slow) both;
+    }
+
+    /* Staggered animation for grid items */
+    .game-button:nth-child(1)  { animation-delay: 0.00s; }
+    .game-button:nth-child(2)  { animation-delay: 0.02s; }
+    .game-button:nth-child(3)  { animation-delay: 0.04s; }
+    .game-button:nth-child(4)  { animation-delay: 0.06s; }
+    .game-button:nth-child(5)  { animation-delay: 0.08s; }
+    .game-button:nth-child(6)  { animation-delay: 0.10s; }
+    .game-button:nth-child(7)  { animation-delay: 0.12s; }
+    .game-button:nth-child(8)  { animation-delay: 0.14s; }
+    .game-button:nth-child(9)  { animation-delay: 0.16s; }
+    .game-button:nth-child(10) { animation-delay: 0.18s; }
+    .game-button:nth-child(n+11) { animation-delay: 0.20s; }
+
+    /* Corner decorations on hover */
+    .game-button::before,
+    .game-button::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      opacity: 0;
+      transition: var(--t-fast);
+    }
+
+    .game-button::before {
+      top: 4px; left: 4px;
+      border-top: 1.5px solid var(--c-accent);
+      border-left: 1.5px solid var(--c-accent);
+    }
+
+    .game-button::after {
+      bottom: 4px; right: 4px;
+      border-bottom: 1.5px solid var(--c-accent);
+      border-right: 1.5px solid var(--c-accent);
+    }
+
+    .game-button:hover {
+      border-color: var(--c-accent-dim);
+      background: rgba(0, 210, 255, 0.07);
+      color: var(--c-accent);
+      text-shadow: var(--glow-sm);
+      transform: translateY(-2px);
+      box-shadow: var(--glow-sm), 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .game-button:hover::before,
+    .game-button:hover::after {
+      opacity: 1;
+    }
+
+    .game-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* ── Empty state ── */
+    .no-results {
+      display: none;
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--c-text-dim);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    .no-results::before {
+      content: '[ NO RESULTS ]';
+      display: block;
+      font-family: var(--font-display);
+      font-size: 16px;
+      color: var(--c-accent-dim);
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+    }
+
+    .no-results.visible { display: block; }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--c-text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: var(--t-fast);
+      margin-bottom: 20px;
+    }
+
+    .back-link::before {
+      content: '←';
+      color: var(--c-accent);
+    }
+
+    .back-link:hover {
+      color: var(--c-accent);
+    }
+
+    @media (max-width: 600px) {
+      .games-container { padding: 20px 14px 40px; }
+      .games-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .search-wrap { width: 100%; }
+      .game-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1 class="typey">Games</h1>
-  </div>
+  <div class="games-container">
 
-  <div class="game-grid">
+    <!-- Back nav -->
+    <a class="back-link" href="/">Return to Hub</a>
 
-    <button class="game-button" data-link="/55Khat/games/1v1lol">1v1 Lol</button>
-    <button class="game-button" data-link="/55Khat/games/2048">2048</button>
-    <button class="game-button" data-link="/55Khat/games/adarkroom">A Dark Room</button>
-    <button class="game-button" data-link="/55Khat/games/asciispace">Ascii Space</button>
-    <button class="game-button" data-link="/55Khat/games/assessmentexamination">Assessment Examination</button>
-    <button class="game-button" data-link="/55Khat/games/asteroids">Asteroids</button>
-    <button class="game-button" data-link="/55Khat/games/astray">Astray</button>
-    <button class="game-button" data-link="/55Khat/games/backcountry">Back Country</button>
-    <button class="game-button" data-link="/55Khat/games/baldisbasics">Baldi's Basics</button>
-    <button class="game-button" data-link="/55Khat/games/basketballlegends">Basketball Legends</button>
-    <button class="game-button" data-link="/55Khat/games/basketballstars">Basketball Stars</button>
-    <button class="game-button" data-link="/55Khat/games/basketbrosio">Basket Bros IO</button>
-    <button class="game-button" data-link="/55Khat/games/basketrandom">Basket Random</button>
-    <button class="game-button" data-link="/55Khat/games/bitlife">Bit Life</button>
-    <button class="game-button" data-link="/55Khat/games/blackholesquare">Black Hole Square</button>
-    <button class="game-button" data-link="/55Khat/games/bounceback">Bounce Back</button>
-    <button class="game-button" data-link="/55Khat/games/boxingrandom">Boxing Random</button>
-    <button class="game-button" data-link="/55Khat/games/breaklock">Break Lock</button>
-    <button class="game-button" data-link="/55Khat/games/breakout">Breakout</button>
-    <button class="game-button" data-link="/55Khat/games/btd4">BTD 4</button>
-    <button class="game-button" data-link="/55Khat/games/captaincallisto">Captain Callisto</button>
-    <button class="game-button" data-link="/55Khat/games/chess">Chess</button>
-    <button class="game-button" data-link="/55Khat/games/chromaincident">Chroma Incident</button>
-    <button class="game-button" data-link="/55Khat/games/chromedino">Chrome Dino</button>
-    <button class="game-button" data-link="/55Khat/games/clickerheroes">Clicker Heroes</button>
-    <button class="game-button" data-link="/55Khat/games/clusterrush">Cluster Rush</button>
-    <button class="game-button" data-link="/55Khat/games/connect3">Connect 3</button>
-    <button class="game-button" data-link="/55Khat/games/cookieclicker">Cookie Clicker</button>
-    <button class="game-button" data-link="/55Khat/games/crossyroad">Crossy Road</button>
-    <button class="game-button" data-link="/55Khat/games/csgoclicker">CSGO Clicker</button>
-    <button class="game-button" data-link="/55Khat/games/cubefield">Cube Field</button>
-    <button class="game-button" data-link="/55Khat/games/cubitomayhem">Cubito Mayhem</button>
-    <button class="game-button" data-link="/55Khat/games/cuttherope">Cut the Rope</button>
-    <button class="game-button" data-link="/55Khat/games/cuttheropeholiday">Cut the Rope Holiday</button>
-    <button class="game-button" data-link="/55Khat/games/cuttheropetimetravel">Cut the Rope Time Travel</button>
-    <button class="game-button" data-link="/55Khat/games/deathrun3d">Death Run 3D</button>
-    <button class="game-button" data-link="/55Khat/games/deepestsword">Deepest Sword</button>
-    <button class="game-button" data-link="/55Khat/games/doodlejump">Doodle Jump</button>
-    <button class="game-button" data-link="/55Khat/games/doom">Doom</button>
-    <button class="game-button" data-link="/55Khat/games/drawthehill">Draw the Hill</button>
-    <button class="game-button" data-link="/55Khat/games/drift">Drift</button>
-    <button class="game-button" data-link="/55Khat/games/drifthunters">Drift Hunters</button>
-    <button class="game-button" data-link="/55Khat/games/drivemad">Drive Mad</button>
-    <button class="game-button" data-link="/55Khat/games/ducklife">Duck Life</button>
-    <button class="game-button" data-link="/55Khat/games/ducklife2">Duck Life 2</button>
-    <button class="game-button" data-link="/55Khat/games/ducklife3">Duck Life 3</button>
-    <button class="game-button" data-link="/55Khat/games/ducklife4">Duck Life 4</button>
-    <button class="game-button" data-link="/55Khat/games/ducklife5">Duck Life 5</button>
-    <button class="game-button" data-link="/55Khat/games/earntodie">Earn to Die</button>
-    <button class="game-button" data-link="/55Khat/games/edgenotfound">Edge Not Found</button>
-    <button class="game-button" data-link="/55Khat/games/eggycar">Eggy Car</button>
-    <button class="game-button" data-link="/55Khat/games/evilglitch">Evil Glitch</button>
-    <button class="game-button" data-link="/55Khat/games/factoryballsforever">Factory Balls Forever</button>
-    <button class="game-button" data-link="/55Khat/games/fireboyandwatergirlforesttemple">Fireboy and Watergirl Forest Temple</button>
-    <button class="game-button" data-link="/55Khat/games/flappy2048">Flappy 2048</button>
-    <button class="game-button" data-link="/55Khat/games/flappybird">Flappy Bird</button>
-    <button class="game-button" data-link="/55Khat/games/flappyplane">Flappy Plane</button>
-    <button class="game-button" data-link="/55Khat/games/flightsimulator">Flight Simulator</button>
-    <button class="game-button" data-link="/55Khat/games/fridaynightfunkin">Friday Night Funkin</button>
-    <button class="game-button" data-link="/55Khat/games/friendlyfire">Friendly Fire</button>
-    <button class="game-button" data-link="/55Khat/games/fruitninja">Fruit Ninja</button>
-    <button class="game-button" data-link="/55Khat/games/geometrydash">Geometry Dash</button>
-    <button class="game-button" data-link="/55Khat/games/getawayshootoutnew">Getaway Shootout New</button>
-    <button class="game-button" data-link="/55Khat/games/gladihoppers">Gladi Hoppers</button>
-    <button class="game-button" data-link="/55Khat/games/googlesnake">Google Snake</button>
-    <button class="game-button" data-link="/55Khat/games/gopherkart">Gopher Kart</button>
-    <button class="game-button" data-link="/55Khat/games/grindcraft">Grind Craft</button>
-    <button class="game-button" data-link="/55Khat/games/hexgl">Hex GL</button>
-    <button class="game-button" data-link="/55Khat/games/hextris">Hex Tris</button>
-    <button class="game-button" data-link="/55Khat/games/highwaytraffic">Highway Traffic</button>
-    <button class="game-button" data-link="/55Khat/games/konnekt">Konnekt</button>
-    <button class="game-button" data-link="/55Khat/games/learntofly">Learn to Fly</button>
-    <button class="game-button" data-link="/55Khat/games/letssurf">Let's Surf</button>
-    <button class="game-button" data-link="/55Khat/games/littlealchemy">Little Alchemy</button>
-    <button class="game-button" data-link="/55Khat/games/mergeroundracers">Merge Round Racers</button>
-    <button class="game-button" data-link="/55Khat/games/monkeymart">Monkey Mart</button>
-    <button class="game-button" data-link="/55Khat/games/motoroadrash3d">Moto Road Rash 3D</button>
-    <button class="game-button" data-link="/55Khat/games/motox3m">Moto X3M</button>
-    <button class="game-button" data-link="/55Khat/games/ninjavsevilcorp">Ninja vs Evil Corp</button>
-    <button class="game-button" data-link="/55Khat/games/omnombounce">Om Nom Bounce</button>
-    <button class="game-button" data-link="/55Khat/games/ovo">Ovo</button>
-    <button class="game-button" data-link="/55Khat/games/ovo2">Ovo 2</button>
-    <button class="game-button" data-link="/55Khat/games/packabunchas">Pack a Bunch As</button>
-    <button class="game-button" data-link="/55Khat/games/pacman">Pacman</button>
-    <button class="game-button" data-link="/55Khat/games/paperio">Paper IO</button>
-    <button class="game-button" data-link="/55Khat/games/particleclicker">Particle Clicker</button>
-    <button class="game-button" data-link="/55Khat/games/pushback">Push Back</button>
-    <button class="game-button" data-link="/55Khat/games/q1k3">Q1K3</button>
-    <button class="game-button" data-link="/55Khat/games/r3">R3</button>
-    <button class="game-button" data-link="/55Khat/games/racer">Racer</button>
-    <button class="game-button" data-link="/55Khat/games/radiusraid">Radius Raid</button>
-    <button class="game-button" data-link="/55Khat/games/redball4">Red Ball 4</button>
-    <button class="game-button" data-link="/55Khat/games/retrobowl">Retro Bowl</button>
-    <button class="game-button" data-link="/55Khat/games/retrohaunt">Retro Haunt</button>
-    <button class="game-button" data-link="/55Khat/games/riddleschool2">Riddle School 2</button>
-    <button class="game-button" data-link="/55Khat/games/ritz">Ritz</button>
-    <button class="game-button" data-link="/55Khat/games/roadblocks">Road Blocks</button>
-    <button class="game-button" data-link="/55Khat/games/rooftopsnipers">Rooftop Snipers</button>
-    <button class="game-button" data-link="/55Khat/games/run3">Run 3</button>
-    <button class="game-button" data-link="/55Khat/games/scrapmetal3">Scrap Metal 3</button>
-    <button class="game-button" data-link="/55Khat/games/shuttledeck">Shuttle Deck</button>
-    <button class="game-button" data-link="/55Khat/games/sketchbook04">Sketchbook 04</button>
-    <button class="game-button" data-link="/55Khat/games/sleepingbeauty">Sleeping Beauty</button>
-    <button class="game-button" data-link="/55Khat/games/slitherio">Slither IO</button>
-    <button class="game-button" data-link="/55Khat/games/slope">Slope</button>
-    <button class="game-button" data-link="/55Khat/games/slope2">Slope 2</button>
-    <button class="game-button" data-link="/55Khat/games/snake">Snake</button>
-    <button class="game-button" data-link="/55Khat/games/snowbattle">Snow Battle</button>
-    <button class="game-button" data-link="/55Khat/games/soccerrandom">Soccer Random</button>
-    <button class="game-button" data-link="/55Khat/games/solitaire">Solitaire</button>
-    <button class="game-button" data-link="/55Khat/games/spacecompany">Space Company</button>
-    <button class="game-button" data-link="/55Khat/games/spacegarden">Space Garden</button>
-    <button class="game-button" data-link="/55Khat/games/spacehuggers">Space Huggers</button>
-    <button class="game-button" data-link="/55Khat/games/spaceinvaders">Space Invaders</button>
-    <button class="game-button" data-link="/55Khat/games/stack">Stack</button>
-    <button class="game-button" data-link="/55Khat/games/stackball">Stack Ball</button>
-    <button class="game-button" data-link="/55Khat/games/stickman-hook">Stickman Hook</button>
-    <button class="game-button" data-link="/55Khat/games/stickmanboost">Stickman Boost</button>
-    <button class="game-button" data-link="/55Khat/games/stickmanclimb">Stickman Climb</button>
-    <button class="game-button" data-link="/55Khat/games/stickmangolf">Stickman Golf</button>
-    <button class="game-button" data-link="/55Khat/games/stickmanhook">Stickman Hook</button>
-    <button class="game-button" data-link="/55Khat/games/stickmansurvival">Stickman Survival</button>
-    <button class="game-button" data-link="/55Khat/games/subwaysurfers">Subway Surfers</button>
-    <button class="game-button" data-link="/55Khat/games/subwaysurfersny">Subway Surfers NY</button>
-    <button class="game-button" data-link="/55Khat/games/subwaysurferssingapore">Subway Surfers Singapore</button>
-    <button class="game-button" data-link="/55Khat/games/tanukisunset">Tanuki Sunset</button>
-    <button class="game-button" data-link="/55Khat/games/tetris">Tetris</button>
-    <button class="game-button" data-link="/55Khat/games/themazeofspacegoblins">The Maze of Space Goblins</button>
-    <button class="game-button" data-link="/55Khat/games/timeshooter">Time Shooter</button>
-    <button class="game-button" data-link="/55Khat/games/timeshooter2">Time Shooter 2</button>
-    <button class="game-button" data-link="/55Khat/games/timeshooter3">Time Shooter 3</button>
-    <button class="game-button" data-link="/55Khat/games/tinyfishing">Tiny Fishing</button>
-    <button class="game-button" data-link="/55Khat/games/tombofthemask">Tomb of the Mask</button>
-    <button class="game-button" data-link="/55Khat/games/topspeedracing3d">Top Speed Racing 3D</button>
-    <button class="game-button" data-link="/55Khat/games/towermaster">Tower Master</button>
-    <button class="game-button" data-link="/55Khat/games/trimps">Trimps</button>
-    <button class="game-button" data-link="/55Khat/games/tunnelrush">Tunnel Rush</button>
-    <button class="game-button" data-link="/55Khat/games/vex3">Vex 3</button>
-    <button class="game-button" data-link="/55Khat/games/vex4">Vex 4</button>
-    <button class="game-button" data-link="/55Khat/games/vex5">Vex 5</button>
-    <button class="game-button" data-link="/55Khat/games/vex6">Vex 6</button>
-    <button class="game-button" data-link="/55Khat/games/webecomewhatwebehold">We Become What We Behold</button>
-    <button class="game-button" data-link="/55Khat/games/worldshardestgame2">World's Hardest Game 2</button>
-    <button class="game-button" data-link="/55Khat/games/xx142b2exe">XX142B2 Exe</button>
-    <button class="game-button" data-link="/55Khat/games/zombsroyale">Zombs Royale</button>
+    <!-- Header -->
+    <div class="games-header">
+      <div class="games-title">
+        Games
+        <span>// ARCADE</span>
+      </div>
+      <div class="games-meta">
+        <span class="game-count">
+          <strong id="visibleCount">150</strong> titles online
+        </span>
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="gameSearch" placeholder="SEARCH_GAMES" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+    </div>
 
+    <!-- Filter chips -->
+    <div class="filter-bar">
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="action">Action</button>
+      <button class="filter-chip" data-filter="sports">Sports</button>
+      <button class="filter-chip" data-filter="puzzle">Puzzle</button>
+      <button class="filter-chip" data-filter="racing">Racing</button>
+      <button class="filter-chip" data-filter="classic">Classic</button>
+      <button class="filter-chip" data-filter="idle">Idle</button>
+    </div>
 
+    <!-- Game grid -->
+    <div class="game-grid" id="gameGrid">
+      <button class="game-button" data-link="/55Khat/games/1v1lol" data-tags="action">1v1 Lol</button>
+      <button class="game-button" data-link="/55Khat/games/2048" data-tags="puzzle classic">2048</button>
+      <button class="game-button" data-link="/55Khat/games/adarkroom" data-tags="idle">A Dark Room</button>
+      <button class="game-button" data-link="/55Khat/games/asciispace" data-tags="action">Ascii Space</button>
+      <button class="game-button" data-link="/55Khat/games/assessmentexamination" data-tags="puzzle">Assessment Examination</button>
+      <button class="game-button" data-link="/55Khat/games/asteroids" data-tags="action classic">Asteroids</button>
+      <button class="game-button" data-link="/55Khat/games/astray" data-tags="puzzle">Astray</button>
+      <button class="game-button" data-link="/55Khat/games/backcountry" data-tags="racing">Back Country</button>
+      <button class="game-button" data-link="/55Khat/games/baldisbasics" data-tags="action">Baldi's Basics</button>
+      <button class="game-button" data-link="/55Khat/games/basketballlegends" data-tags="sports">Basketball Legends</button>
+      <button class="game-button" data-link="/55Khat/games/basketballstars" data-tags="sports">Basketball Stars</button>
+      <button class="game-button" data-link="/55Khat/games/basketbrosio" data-tags="sports">Basket Bros IO</button>
+      <button class="game-button" data-link="/55Khat/games/basketrandom" data-tags="sports">Basket Random</button>
+      <button class="game-button" data-link="/55Khat/games/bitlife" data-tags="idle">Bit Life</button>
+      <button class="game-button" data-link="/55Khat/games/blackholesquare" data-tags="puzzle">Black Hole Square</button>
+      <button class="game-button" data-link="/55Khat/games/bounceback" data-tags="action">Bounce Back</button>
+      <button class="game-button" data-link="/55Khat/games/boxingrandom" data-tags="sports">Boxing Random</button>
+      <button class="game-button" data-link="/55Khat/games/breaklock" data-tags="puzzle">Break Lock</button>
+      <button class="game-button" data-link="/55Khat/games/breakout" data-tags="classic">Breakout</button>
+      <button class="game-button" data-link="/55Khat/games/btd4" data-tags="action">BTD 4</button>
+      <button class="game-button" data-link="/55Khat/games/captaincallisto" data-tags="action">Captain Callisto</button>
+      <button class="game-button" data-link="/55Khat/games/chess" data-tags="puzzle classic">Chess</button>
+      <button class="game-button" data-link="/55Khat/games/chromaincident" data-tags="action">Chroma Incident</button>
+      <button class="game-button" data-link="/55Khat/games/chromedino" data-tags="classic">Chrome Dino</button>
+      <button class="game-button" data-link="/55Khat/games/clickerheroes" data-tags="idle">Clicker Heroes</button>
+      <button class="game-button" data-link="/55Khat/games/clusterrush" data-tags="action">Cluster Rush</button>
+      <button class="game-button" data-link="/55Khat/games/connect3" data-tags="puzzle">Connect 3</button>
+      <button class="game-button" data-link="/55Khat/games/cookieclicker" data-tags="idle">Cookie Clicker</button>
+      <button class="game-button" data-link="/55Khat/games/crossyroad" data-tags="action">Crossy Road</button>
+      <button class="game-button" data-link="/55Khat/games/csgoclicker" data-tags="idle">CSGO Clicker</button>
+      <button class="game-button" data-link="/55Khat/games/cubefield" data-tags="action">Cube Field</button>
+      <button class="game-button" data-link="/55Khat/games/cubitomayhem" data-tags="action">Cubito Mayhem</button>
+      <button class="game-button" data-link="/55Khat/games/cuttherope" data-tags="puzzle">Cut the Rope</button>
+      <button class="game-button" data-link="/55Khat/games/cuttheropeholiday" data-tags="puzzle">Cut the Rope Holiday</button>
+      <button class="game-button" data-link="/55Khat/games/cuttheropetimetravel" data-tags="puzzle">Cut the Rope Time Travel</button>
+      <button class="game-button" data-link="/55Khat/games/deathrun3d" data-tags="action">Death Run 3D</button>
+      <button class="game-button" data-link="/55Khat/games/deepestsword" data-tags="action">Deepest Sword</button>
+      <button class="game-button" data-link="/55Khat/games/doodlejump" data-tags="action classic">Doodle Jump</button>
+      <button class="game-button" data-link="/55Khat/games/doom" data-tags="action classic">Doom</button>
+      <button class="game-button" data-link="/55Khat/games/drawthehill" data-tags="puzzle">Draw the Hill</button>
+      <button class="game-button" data-link="/55Khat/games/drift" data-tags="racing">Drift</button>
+      <button class="game-button" data-link="/55Khat/games/drifthunters" data-tags="racing">Drift Hunters</button>
+      <button class="game-button" data-link="/55Khat/games/drivemad" data-tags="racing">Drive Mad</button>
+      <button class="game-button" data-link="/55Khat/games/ducklife" data-tags="sports">Duck Life</button>
+      <button class="game-button" data-link="/55Khat/games/ducklife2" data-tags="sports">Duck Life 2</button>
+      <button class="game-button" data-link="/55Khat/games/ducklife3" data-tags="sports">Duck Life 3</button>
+      <button class="game-button" data-link="/55Khat/games/ducklife4" data-tags="sports">Duck Life 4</button>
+      <button class="game-button" data-link="/55Khat/games/ducklife5" data-tags="sports">Duck Life 5</button>
+      <button class="game-button" data-link="/55Khat/games/earntodie" data-tags="racing action">Earn to Die</button>
+      <button class="game-button" data-link="/55Khat/games/edgenotfound" data-tags="action">Edge Not Found</button>
+      <button class="game-button" data-link="/55Khat/games/eggycar" data-tags="racing">Eggy Car</button>
+      <button class="game-button" data-link="/55Khat/games/evilglitch" data-tags="action">Evil Glitch</button>
+      <button class="game-button" data-link="/55Khat/games/factoryballsforever" data-tags="puzzle">Factory Balls Forever</button>
+      <button class="game-button" data-link="/55Khat/games/fireboyandwatergirlforesttemple" data-tags="puzzle action">Fireboy and Watergirl</button>
+      <button class="game-button" data-link="/55Khat/games/flappy2048" data-tags="action puzzle">Flappy 2048</button>
+      <button class="game-button" data-link="/55Khat/games/flappybird" data-tags="action classic">Flappy Bird</button>
+      <button class="game-button" data-link="/55Khat/games/flappyplane" data-tags="action">Flappy Plane</button>
+      <button class="game-button" data-link="/55Khat/games/flightsimulator" data-tags="racing">Flight Simulator</button>
+      <button class="game-button" data-link="/55Khat/games/fridaynightfunkin" data-tags="action">Friday Night Funkin</button>
+      <button class="game-button" data-link="/55Khat/games/friendlyfire" data-tags="action">Friendly Fire</button>
+      <button class="game-button" data-link="/55Khat/games/fruitninja" data-tags="action classic">Fruit Ninja</button>
+      <button class="game-button" data-link="/55Khat/games/geometrydash" data-tags="action">Geometry Dash</button>
+      <button class="game-button" data-link="/55Khat/games/getawayshootoutnew" data-tags="action">Getaway Shootout</button>
+      <button class="game-button" data-link="/55Khat/games/gladihoppers" data-tags="action sports">Gladi Hoppers</button>
+      <button class="game-button" data-link="/55Khat/games/googlesnake" data-tags="classic">Google Snake</button>
+      <button class="game-button" data-link="/55Khat/games/gopherkart" data-tags="racing">Gopher Kart</button>
+      <button class="game-button" data-link="/55Khat/games/grindcraft" data-tags="idle">Grind Craft</button>
+      <button class="game-button" data-link="/55Khat/games/hexgl" data-tags="racing">Hex GL</button>
+      <button class="game-button" data-link="/55Khat/games/hextris" data-tags="puzzle classic">Hex Tris</button>
+      <button class="game-button" data-link="/55Khat/games/highwaytraffic" data-tags="racing">Highway Traffic</button>
+      <button class="game-button" data-link="/55Khat/games/konnekt" data-tags="puzzle">Konnekt</button>
+      <button class="game-button" data-link="/55Khat/games/learntofly" data-tags="action">Learn to Fly</button>
+      <button class="game-button" data-link="/55Khat/games/letssurf" data-tags="sports">Let's Surf</button>
+      <button class="game-button" data-link="/55Khat/games/littlealchemy" data-tags="puzzle idle">Little Alchemy</button>
+      <button class="game-button" data-link="/55Khat/games/mergeroundracers" data-tags="racing puzzle">Merge Round Racers</button>
+      <button class="game-button" data-link="/55Khat/games/monkeymart" data-tags="idle">Monkey Mart</button>
+      <button class="game-button" data-link="/55Khat/games/motoroadrash3d" data-tags="racing">Moto Road Rash 3D</button>
+      <button class="game-button" data-link="/55Khat/games/motox3m" data-tags="racing">Moto X3M</button>
+      <button class="game-button" data-link="/55Khat/games/ninjavsevilcorp" data-tags="action">Ninja vs Evil Corp</button>
+      <button class="game-button" data-link="/55Khat/games/omnombounce" data-tags="puzzle action">Om Nom Bounce</button>
+      <button class="game-button" data-link="/55Khat/games/ovo" data-tags="action">Ovo</button>
+      <button class="game-button" data-link="/55Khat/games/ovo2" data-tags="action">Ovo 2</button>
+      <button class="game-button" data-link="/55Khat/games/packabunchas" data-tags="puzzle">Pack a Bunch As</button>
+      <button class="game-button" data-link="/55Khat/games/pacman" data-tags="classic action">Pacman</button>
+      <button class="game-button" data-link="/55Khat/games/paperio" data-tags="action">Paper IO</button>
+      <button class="game-button" data-link="/55Khat/games/particleclicker" data-tags="idle">Particle Clicker</button>
+      <button class="game-button" data-link="/55Khat/games/pushback" data-tags="action">Push Back</button>
+      <button class="game-button" data-link="/55Khat/games/q1k3" data-tags="action">Q1K3</button>
+      <button class="game-button" data-link="/55Khat/games/r3" data-tags="action">R3</button>
+      <button class="game-button" data-link="/55Khat/games/racer" data-tags="racing">Racer</button>
+      <button class="game-button" data-link="/55Khat/games/radiusraid" data-tags="action">Radius Raid</button>
+      <button class="game-button" data-link="/55Khat/games/redball4" data-tags="action">Red Ball 4</button>
+      <button class="game-button" data-link="/55Khat/games/retrobowl" data-tags="sports">Retro Bowl</button>
+      <button class="game-button" data-link="/55Khat/games/retrohaunt" data-tags="action">Retro Haunt</button>
+      <button class="game-button" data-link="/55Khat/games/riddleschool2" data-tags="puzzle">Riddle School 2</button>
+      <button class="game-button" data-link="/55Khat/games/ritz" data-tags="action">Ritz</button>
+      <button class="game-button" data-link="/55Khat/games/roadblocks" data-tags="puzzle">Road Blocks</button>
+      <button class="game-button" data-link="/55Khat/games/rooftopsnipers" data-tags="action sports">Rooftop Snipers</button>
+      <button class="game-button" data-link="/55Khat/games/run3" data-tags="action">Run 3</button>
+      <button class="game-button" data-link="/55Khat/games/scrapmetal3" data-tags="racing">Scrap Metal 3</button>
+      <button class="game-button" data-link="/55Khat/games/shuttledeck" data-tags="puzzle">Shuttle Deck</button>
+      <button class="game-button" data-link="/55Khat/games/sketchbook04" data-tags="idle">Sketchbook 04</button>
+      <button class="game-button" data-link="/55Khat/games/sleepingbeauty" data-tags="puzzle">Sleeping Beauty</button>
+      <button class="game-button" data-link="/55Khat/games/slitherio" data-tags="action classic">Slither IO</button>
+      <button class="game-button" data-link="/55Khat/games/slope" data-tags="action">Slope</button>
+      <button class="game-button" data-link="/55Khat/games/slope2" data-tags="action">Slope 2</button>
+      <button class="game-button" data-link="/55Khat/games/snake" data-tags="classic">Snake</button>
+      <button class="game-button" data-link="/55Khat/games/snowbattle" data-tags="action">Snow Battle</button>
+      <button class="game-button" data-link="/55Khat/games/soccerrandom" data-tags="sports">Soccer Random</button>
+      <button class="game-button" data-link="/55Khat/games/solitaire" data-tags="puzzle classic">Solitaire</button>
+      <button class="game-button" data-link="/55Khat/games/spacecompany" data-tags="idle">Space Company</button>
+      <button class="game-button" data-link="/55Khat/games/spacegarden" data-tags="idle">Space Garden</button>
+      <button class="game-button" data-link="/55Khat/games/spacehuggers" data-tags="action">Space Huggers</button>
+      <button class="game-button" data-link="/55Khat/games/spaceinvaders" data-tags="classic action">Space Invaders</button>
+      <button class="game-button" data-link="/55Khat/games/stack" data-tags="puzzle">Stack</button>
+      <button class="game-button" data-link="/55Khat/games/stackball" data-tags="action">Stack Ball</button>
+      <button class="game-button" data-link="/55Khat/games/stickman-hook" data-tags="action">Stickman Hook</button>
+      <button class="game-button" data-link="/55Khat/games/stickmanboost" data-tags="action">Stickman Boost</button>
+      <button class="game-button" data-link="/55Khat/games/stickmanclimb" data-tags="action">Stickman Climb</button>
+      <button class="game-button" data-link="/55Khat/games/stickmangolf" data-tags="sports">Stickman Golf</button>
+      <button class="game-button" data-link="/55Khat/games/stickmansurvival" data-tags="action">Stickman Survival</button>
+      <button class="game-button" data-link="/55Khat/games/subwaysurfers" data-tags="action">Subway Surfers</button>
+      <button class="game-button" data-link="/55Khat/games/subwaysurfersny" data-tags="action">Subway Surfers NY</button>
+      <button class="game-button" data-link="/55Khat/games/subwaysurferssingapore" data-tags="action">Subway Surfers Singapore</button>
+      <button class="game-button" data-link="/55Khat/games/tanukisunset" data-tags="racing">Tanuki Sunset</button>
+      <button class="game-button" data-link="/55Khat/games/tetris" data-tags="classic puzzle">Tetris</button>
+      <button class="game-button" data-link="/55Khat/games/themazeofspacegoblins" data-tags="puzzle action">Maze of Space Goblins</button>
+      <button class="game-button" data-link="/55Khat/games/timeshooter" data-tags="action">Time Shooter</button>
+      <button class="game-button" data-link="/55Khat/games/timeshooter2" data-tags="action">Time Shooter 2</button>
+      <button class="game-button" data-link="/55Khat/games/timeshooter3" data-tags="action">Time Shooter 3</button>
+      <button class="game-button" data-link="/55Khat/games/tinyfishing" data-tags="idle">Tiny Fishing</button>
+      <button class="game-button" data-link="/55Khat/games/tombofthemask" data-tags="action classic">Tomb of the Mask</button>
+      <button class="game-button" data-link="/55Khat/games/topspeedracing3d" data-tags="racing">Top Speed Racing 3D</button>
+      <button class="game-button" data-link="/55Khat/games/towermaster" data-tags="puzzle">Tower Master</button>
+      <button class="game-button" data-link="/55Khat/games/trimps" data-tags="idle">Trimps</button>
+      <button class="game-button" data-link="/55Khat/games/tunnelrush" data-tags="action">Tunnel Rush</button>
+      <button class="game-button" data-link="/55Khat/games/vex3" data-tags="action">Vex 3</button>
+      <button class="game-button" data-link="/55Khat/games/vex4" data-tags="action">Vex 4</button>
+      <button class="game-button" data-link="/55Khat/games/vex5" data-tags="action">Vex 5</button>
+      <button class="game-button" data-link="/55Khat/games/vex6" data-tags="action">Vex 6</button>
+      <button class="game-button" data-link="/55Khat/games/webecomewhatwebehold" data-tags="idle puzzle">We Become What We Behold</button>
+      <button class="game-button" data-link="/55Khat/games/worldshardestgame2" data-tags="action">World's Hardest Game 2</button>
+      <button class="game-button" data-link="/55Khat/games/xx142b2exe" data-tags="action">XX142B2 Exe</button>
+      <button class="game-button" data-link="/55Khat/games/zombsroyale" data-tags="action">Zombs Royale</button>
 
-
-    <!-- Keep repeating the same pattern for the rest -->
-    <!-- <a href="games/NAME"><div class="game-button">NAME</div></a> -->
+      <div class="no-results" id="noResults">Try a different search term</div>
+    </div>
 
   </div>
 
   <script src="../script.js"></script>
+  <script>
+    const buttons = document.querySelectorAll('.game-button[data-link]');
+    const searchInput = document.getElementById('gameSearch');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const noResults = document.getElementById('noResults');
+    const visibleCount = document.getElementById('visibleCount');
 
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    // Navigate on click (using existing script.js data-link pattern)
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const link = btn.getAttribute('data-link');
+        if (link) window.location.href = link;
+      });
+    });
+
+    function applyFilters() {
+      let shown = 0;
+
+      buttons.forEach(btn => {
+        const name = btn.textContent.toLowerCase();
+        const tags = (btn.getAttribute('data-tags') || '').toLowerCase();
+
+        const matchesSearch = !currentSearch || name.includes(currentSearch);
+        const matchesFilter = currentFilter === 'all' || tags.includes(currentFilter);
+
+        if (matchesSearch && matchesFilter) {
+          btn.style.display = '';
+          shown++;
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+
+      visibleCount.textContent = shown;
+      noResults.classList.toggle('visible', shown === 0);
+    }
+
+    searchInput.addEventListener('input', () => {
+      currentSearch = searchInput.value.trim().toLowerCase();
+      applyFilters();
+    });
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilter = chip.getAttribute('data-filter');
+        applyFilters();
+      });
+    });
+
+    // Init count
+    visibleCount.textContent = buttons.length;
+  </script>
 </body>
 </html>
