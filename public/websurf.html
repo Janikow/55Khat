@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Proxy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #16161a;
+      --surface2: #1e1e24;
+      --border: #2a2a35;
+      --accent: #7fff6e;
+      --accent2: #4fd1c5;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --danger: #ff6b6b;
+      --radius: 10px;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 18px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .logo span { color: var(--muted); }
+
+    /* ── Address Bar ── */
+    .bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 12px;
+      transition: border-color 0.2s;
+    }
+
+    .bar:focus-within { border-color: var(--accent); }
+
+    .bar-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: 0.45;
+    }
+
+    .bar input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      padding: 11px 0;
+      min-width: 0;
+    }
+
+    .bar input::placeholder { color: var(--muted); }
+
+    .go-btn {
+      background: var(--accent);
+      color: #0d0d0f;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 14px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: opacity 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .go-btn:hover { opacity: 0.85; }
+    .go-btn:active { transform: scale(0.96); }
+
+    /* ── Nav controls ── */
+    .nav-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .nav-btn:hover { background: var(--border); border-color: var(--muted); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .nav-btn svg { width: 15px; height: 15px; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      padding: 6px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .status-dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .status-dot.loading { background: var(--accent2); animation: pulse 1s infinite; }
+    .status-dot.error { background: var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+
+    /* ── Main area ── */
+    .viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .loading-overlay.visible { opacity: 1; pointer-events: all; }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Empty state */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 48px;
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      opacity: 0.12;
+    }
+
+    .empty-title {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .suggestion-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .suggestion-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Iframe */
+    #proxy-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+      display: none;
+      background: #fff;
+    }
+
+    #proxy-frame.visible { display: block; }
+
+    /* Error state */
+    .error-state {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px;
+      text-align: center;
+    }
+
+    .error-state.visible { display: flex; }
+
+    .error-code {
+      font-family: var(--mono);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--danger);
+      opacity: 0.5;
+    }
+
+    .error-msg {
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 380px;
+    }
+
+    .retry-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 9px 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .retry-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .header { padding: 12px 14px; gap: 10px; }
+      .logo { display: none; }
+      .status-bar { padding: 6px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Address Bar ── -->
+<header class="header">
+  <div class="logo">PROXY<span>/v1</span></div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" id="btn-back" title="Back" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="nav-btn" id="btn-forward" title="Forward" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+    <button class="nav-btn" id="btn-reload" title="Reload" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="bar">
+    <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+    <input type="text" id="url-input" placeholder="Enter a URL... e.g. https://example.com" spellcheck="false" autocomplete="off" />
+    <button class="go-btn" id="go-btn">GO →</button>
+  </div>
+</header>
+
+<!-- ── Status Bar ── -->
+<div class="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span id="status-text">Enter a URL above to begin browsing</span>
+</div>
+
+<!-- ── Viewport ── -->
+<main class="viewport">
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Fetching page...</div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state">
+    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+    <p class="empty-title">Nothing loaded yet</p>
+    <div class="suggestions">
+      <button class="suggestion-chip" data-url="https://example.com">example.com</button>
+      <button class="suggestion-chip" data-url="https://news.ycombinator.com">Hacker News</button>
+      <button class="suggestion-chip" data-url="https://wikipedia.org">Wikipedia</button>
+      <button class="suggestion-chip" data-url="https://github.com">GitHub</button>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" id="error-state">
+    <div class="error-code" id="error-code">502</div>
+    <p class="error-msg" id="error-msg">Could not load the page.</p>
+    <button class="retry-btn" id="retry-btn">↺ Try again</button>
+  </div>
+
+  <!-- The proxied page renders here -->
+  <iframe id="proxy-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" title="Proxied page"></iframe>
+</main>
+
+<script>
+  const urlInput = document.getElementById('url-input');
+  const goBtn = document.getElementById('go-btn');
+  const frame = document.getElementById('proxy-frame');
+  const loading = document.getElementById('loading');
+  const emptyState = document.getElementById('empty-state');
+  const errorState = document.getElementById('error-state');
+  const errorCode = document.getElementById('error-code');
+  const errorMsg = document.getElementById('error-msg');
+  const retryBtn = document.getElementById('retry-btn');
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const btnBack = document.getElementById('btn-back');
+  const btnForward = document.getElementById('btn-forward');
+  const btnReload = document.getElementById('btn-reload');
+
+  let history = [];
+  let historyIndex = -1;
+  let currentUrl = '';
+
+  // ── Helpers ──
+
+  function setStatus(type, text) {
+    statusDot.className = 'status-dot' + (type ? ` ${type}` : '');
+    statusText.textContent = text;
+  }
+
+  function normalizeUrl(raw) {
+    raw = raw.trim();
+    if (!raw) return null;
+    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+    try { new URL(raw); return raw; } catch { return null; }
+  }
+
+  function showState(state) {
+    emptyState.style.display  = state === 'empty'   ? 'flex' : 'none';
+    errorState.className      = 'error-state' + (state === 'error' ? ' visible' : '');
+    frame.className           = 'proxy-frame' + (state === 'frame' ? ' visible' : '');
+    frame.style.display       = state === 'frame' ? 'block' : 'none';
+    loading.className         = 'loading-overlay' + (state === 'loading' ? ' visible' : '');
+  }
+
+  function updateNavButtons() {
+    btnBack.disabled    = historyIndex <= 0;
+    btnForward.disabled = historyIndex >= history.length - 1;
+    btnReload.disabled  = !currentUrl;
+  }
+
+  // ── Navigate ──
+
+  function navigate(url, pushHistory = true) {
+    const normalized = normalizeUrl(url);
+    if (!normalized) {
+      setStatus('error', 'Invalid URL');
+      return;
+    }
+
+    currentUrl = normalized;
+    urlInput.value = normalized;
+
+    if (pushHistory) {
+      history = history.slice(0, historyIndex + 1);
+      history.push(normalized);
+      historyIndex = history.length - 1;
+    }
+
+    updateNavButtons();
+    showState('loading');
+    setStatus('loading', `Loading ${normalized}…`);
+
+    const proxyUrl = '/proxy/fetch?url=' + encodeURIComponent(normalized);
+    frame.src = proxyUrl;
+  }
+
+  // ── Frame events ──
+
+  frame.addEventListener('load', () => {
+    if (!currentUrl) return;
+    showState('frame');
+    setStatus('ok', currentUrl);
+    btnReload.disabled = false;
+  });
+
+  frame.addEventListener('error', () => {
+    showState('error');
+    errorCode.textContent = '502';
+    errorMsg.textContent  = 'Could not load the page. The site may be blocking proxies.';
+    setStatus('error', 'Failed to load page');
+  });
+
+  // ── Listen for in-page navigation messages ──
+
+  window.addEventListener('message', (e) => {
+    if (!e.data) return;
+    if (e.data.type === 'proxy-navigate' && e.data.url) {
+      navigate(e.data.url);
+    }
+    if (e.data.type === 'proxy-url' && e.data.url) {
+      urlInput.value = e.data.url;
+      currentUrl = e.data.url;
+    }
+  });
+
+  // ── Controls ──
+
+  goBtn.addEventListener('click', () => navigate(urlInput.value));
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') navigate(urlInput.value);
+  });
+
+  btnBack.addEventListener('click', () => {
+    if (historyIndex > 0) {
+      historyIndex--;
+      navigate(history[historyIndex], false);
+    }
+  });
+
+  btnForward.addEventListener('click', () => {
+    if (historyIndex < history.length - 1) {
+      historyIndex++;
+      navigate(history[historyIndex], false);
+    }
+  });
+
+  btnReload.addEventListener('click', () => {
+    if (currentUrl) navigate(currentUrl, false);
+  });
+
+  retryBtn.addEventListener('click', () => {
+    if (currentUrl) navigate(currentUrl, false);
+  });
+
+  document.querySelectorAll('.suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => navigate(chip.dataset.url));
+  });
+
+  // Init
+  showState('empty');
+  updateNavButtons();
+</script>
+</body>
+</html>
