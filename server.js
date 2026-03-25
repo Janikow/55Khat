@@ -16,6 +16,28 @@ const io = new Server(server, {
 
 app.use(express.static("public"));
 
+// ─── Auto Ping ────────────────────────────────────────────────────────────
+
+const https = require("https");
+
+const URL = "https://clevereducation.online/";
+
+function ping() {
+  https.get(URL, (res) => {
+    console.log(`Pinged! Status: ${res.statusCode}`);
+  }).on("error", (err) => {
+    console.log("Error:", err.message);
+  });
+}
+
+// Run every 5 minutes
+setInterval(ping, 300000);
+
+// Run immediately once
+ping();
+
+
+
 // ─── Persistence ────────────────────────────────────────────────────────────
 const bansFile = path.join(__dirname, "bans.json");
 const usersFile = path.join(__dirname, "users.json");
