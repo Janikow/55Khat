@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Tem",
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",
