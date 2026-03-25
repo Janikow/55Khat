@@ -141,8 +141,8 @@ app.get("/proxy/fetch", async (req, res) => {
   } catch (err) {
     if (err.name === "AbortError")
       return res.status(504).json({ error: "Request timed out" });
-    console.error("[Proxy error]", err.message);
-    return res.status(502).json({ error: "Failed to fetch URL", detail: err.message });
+    console.error("[Proxy full error]", err);
+    return res.status(502).json({ error: "Failed to fetch URL", detail: err.cause?.message || err.message });
   }
 });
 
