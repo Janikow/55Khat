@@ -10,9 +10,10 @@
   "author": "Tem",
   "license": "ISC",
   "dependencies": {
-  "express": "^5.1.0",
-  "node-fetch": "^3.3.2",
-  "socket.io": "^4.8.1",
-  "ws": "^8.18.2"
-}
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.0",
+    "node-fetch": "^3.3.2",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.2"
+  }
 }
