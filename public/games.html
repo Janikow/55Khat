@@ -194,6 +194,13 @@
 
     let activeFilter = 'all';
 
+    // ✅ FIX: Navigate to the game page when a button is clicked
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.location.href = '/' + btn.dataset.link + '/';
+      });
+    });
+
     function applyFilters() {
       const query = searchInput.value.trim().toLowerCase();
       let shown = 0;
