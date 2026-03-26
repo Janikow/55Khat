@@ -3,11 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clever Education</title>
+  <title>Clever Education · Games</title>
   <link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── NAV BAR ───────────────────────────────────────── */
+    .topnav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: rgba(13,13,15,0.92);
+      border-bottom: 1px solid var(--c-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 9999;
+    }
+    .topnav-brand {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--c-accent);
+      text-shadow: 0 0 8px rgba(127,255,110,0.3);
+      margin-right: 32px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .topnav-brand img {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .topnav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+    }
+    .topnav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--c-text-dim);
+      text-decoration: none;
+      border-radius: 5px;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .topnav-link:hover { color: var(--c-accent); background: rgba(127,255,110,0.06); }
+    .topnav-link.active { color: var(--c-accent); background: rgba(127,255,110,0.08); }
+    .topnav-link .nav-icon { font-size: 13px; }
+    .topnav-right {
+      display: flex; align-items: center; gap: 12px; margin-left: auto;
+    }
+    .topnav-version {
+      font-family: var(--font-mono); font-size: 10px;
+      color: rgba(127,255,110,0.2); letter-spacing: 1px;
+    }
+    .topnav-status {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font-mono); font-size: 10px; color: var(--c-text-dim);
+    }
+    .topnav-status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--c-accent2); box-shadow: 0 0 6px var(--c-accent2);
+      animation: navblink 2.5s ease-in-out infinite;
+    }
+    @keyframes navblink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Offset for nav */
+    body:has(.game-grid) { padding-top: 48px; }
+    .container { padding-top: 24px !important; }
+
+    @media (max-width: 600px) {
+      .topnav-links .topnav-link span { display: none; }
+    }
+  </style>
 </head>
 <body>
+
+  <!-- ════ NAV BAR ════ -->
+  <nav class="topnav">
+    <a class="topnav-brand" href="index.html">
+      <img src="/images/55khatl.png" alt="Logo">
+      CLEVER EDU
+    </a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+      <a class="topnav-link" href="chat.html"><span class="nav-icon">💬</span><span>Chat</span></a>
+      <a class="topnav-link" href="engine.html"><span class="nav-icon">⚙</span><span>Engine</span></a>
+      <a class="topnav-link active" href="games.html"><span class="nav-icon">🎮</span><span>Games</span></a>
+      <a class="topnav-link" href="websurf.html"><span class="nav-icon">🌐</span><span>Web Surf</span></a>
+    </div>
+    <div class="topnav-right">
+      <div class="topnav-status">
+        <span class="topnav-status-dot"></span>
+        <span>Online</span>
+      </div>
+      <span class="topnav-version">v0.5.1</span>
+    </div>
+  </nav>
 
   <div class="container">
     <h1 class="typey">Games</h1>
@@ -180,21 +287,19 @@
     <button class="game-button" data-link="games/zombsroyale" data-tags="action">Zombs Royale</button>
 
     <div class="no-results hidden" id="noResults">NO RESULTS FOUND</div>
-
   </div>
 
   <script src="./script.js"></script>
   <script>
-    const buttons      = document.querySelectorAll('.game-button[data-link]');
-    const searchInput  = document.getElementById('gameSearch');
-    const searchClear  = document.getElementById('searchClear');
-    const filterChips  = document.querySelectorAll('.filter-chip');
-    const noResults    = document.getElementById('noResults');
-    const countEl      = document.getElementById('visibleCount');
+    const buttons     = document.querySelectorAll('.game-button[data-link]');
+    const searchInput = document.getElementById('gameSearch');
+    const searchClear = document.getElementById('searchClear');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const noResults   = document.getElementById('noResults');
+    const countEl     = document.getElementById('visibleCount');
 
     let activeFilter = 'all';
 
-    // ✅ FIX: Navigate to the game page when a button is clicked
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         window.location.href = '/' + btn.dataset.link + '/';
@@ -204,31 +309,26 @@
     function applyFilters() {
       const query = searchInput.value.trim().toLowerCase();
       let shown = 0;
-
       buttons.forEach(btn => {
         const name = btn.textContent.trim().toLowerCase();
         const tags = (btn.dataset.tags || '').toLowerCase();
         const matchSearch = !query || name.includes(query);
         const matchFilter = activeFilter === 'all' || tags.split(' ').includes(activeFilter);
-
         const visible = matchSearch && matchFilter;
         btn.style.display = visible ? '' : 'none';
         if (visible) shown++;
       });
-
       countEl.textContent = shown;
       noResults.classList.toggle('hidden', shown > 0);
       searchClear.classList.toggle('hidden', !query);
     }
 
     searchInput.addEventListener('input', applyFilters);
-
     searchClear.addEventListener('click', () => {
       searchInput.value = '';
       searchInput.focus();
       applyFilters();
     });
-
     filterChips.forEach(chip => {
       chip.addEventListener('click', () => {
         filterChips.forEach(c => c.classList.remove('active'));
@@ -238,7 +338,6 @@
       });
     });
 
-    // Init count
     countEl.textContent = buttons.length;
   </script>
 
