@@ -4,7 +4,6 @@ const { Server } = require("socket.io");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { createProxyMiddleware } = require("http-proxy-middleware"); // npm i http-proxy-middleware
 
 const app = express();
 const server = http.createServer(app);
@@ -33,19 +32,20 @@ const PROXY_CONFIG = {
     "localhost", "127.0.0.1", "0.0.0.0",
     "169.254.", "10.", "192.168.", "172.16.",
   ],
-  maxResponseSize: 50 * 1024 * 1024, // 50MB for videos/games
+  maxResponseSize: 100 * 1024 * 1024, // 100MB
   timeout: 30000,
 };
 
 const STREAM_CONTENT_TYPES = [
-  "video/", "audio/", "application/x-mpegURL", "application/vnd.apple.mpegurl",
-  "application/dash+xml", "application/octet-stream",
+  "video/", "audio/", "application/x-mpegurl", "application/vnd.apple.mpegurl",
+  "application/dash+xml",
 ];
 
 const PASSTHROUGH_CONTENT_TYPES = [
   "image/", "font/", "application/font", "application/x-font",
-  "application/wasm", // WebAssembly for games
+  "application/wasm",
   "application/zip", "application/x-zip",
+  "application/octet-stream",
 ];
 
 function isBlockedDomain(url) {
@@ -114,23 +114,14 @@ function rewriteCSS(css, baseUrl) {
 function rewriteJS(js, baseUrl) {
   if (!js || typeof js !== "string") return js;
 
-  const origin = (() => { try { return new URL(baseUrl).origin; } catch { return ""; } })();
-  if (!origin) return js;
-
-  // Rewrite fetch() calls pointing to same origin or absolute URLs
+  // Rewrite absolute http(s) URLs in string literals (single, double, template)
   js = js.replace(
-    /\bfetch\s*\(\s*(["'`])(https?:\/\/[^"'`\s]+)\1/g,
+    /(["'`])(https?:\/\/[^"'`\s]{4,})\1/g,
     (match, q, url) => {
-      const proxied = proxyUrl(url);
-      return `fetch(${q}${proxied}${q}`;
-    }
-  );
-
-  // Rewrite XMLHttpRequest.open with absolute URLs
-  js = js.replace(
-    /(\.open\s*\(\s*["'`][A-Z]+["'`]\s*,\s*)(["'`])(https?:\/\/[^"'`\s]+)\2/g,
-    (match, prefix, q, url) => {
-      return `${prefix}${q}${proxyUrl(url)}${q}`;
+      // Skip data URIs or already-proxied URLs
+      if (url.includes("/proxy/fetch")) return match;
+      try { new URL(url); } catch { return match; }
+      return `${q}${proxyUrl(url)}${q}`;
     }
   );
 
@@ -143,6 +134,22 @@ function rewriteJS(js, baseUrl) {
     }
   );
 
+  // Rewrite dynamic import() with absolute URLs
+  js = js.replace(
+    /\bimport\s*\(\s*(["'`])(https?:\/\/[^"'`\s]+)\1\s*\)/g,
+    (match, q, url) => {
+      return `import(${q}${proxyUrl(url)}${q})`;
+    }
+  );
+
+  // Rewrite new Worker() with absolute URLs
+  js = js.replace(
+    /new\s+Worker\s*\(\s*(["'`])(https?:\/\/[^"'`\s]+)\1/g,
+    (match, q, url) => {
+      return `new Worker(${q}${proxyUrl(url)}${q}`;
+    }
+  );
+
   return js;
 }
 
@@ -150,8 +157,6 @@ function rewriteJS(js, baseUrl) {
 
 function rewriteHTML(html, baseUrl) {
   if (!html || typeof html !== "string") return html;
-
-  const parsedBase = (() => { try { return new URL(baseUrl); } catch { return null; } })();
 
   // 1. Rewrite <base href> and capture it
   let effectiveBase = baseUrl;
@@ -196,7 +201,7 @@ function rewriteHTML(html, baseUrl) {
     return `<source${attrs}>`;
   });
 
-  // 5. Rewrite <track> tags (subtitles/captions)
+  // 5. Rewrite <track> tags
   html = html.replace(/<track([^>]*?)>/gi, (match, attrs) => {
     attrs = attrs.replace(/\ssrc\s*=\s*(["'])(.*?)\1/gi, (m, q, val) => {
       const abs = toAbsolute(val, effectiveBase);
@@ -216,20 +221,18 @@ function rewriteHTML(html, baseUrl) {
     return `<${tag}${attrs}>`;
   });
 
-  // 7. Rewrite <iframe> src
+  // 7. Rewrite <iframe> src — remove sandbox restrictions
   html = html.replace(/<iframe([^>]*?)>/gi, (match, attrs) => {
     attrs = attrs.replace(/\ssrc\s*=\s*(["'])(.*?)\1/gi, (m, q, val) => {
       const abs = toAbsolute(val, effectiveBase);
       if (!abs || !abs.startsWith("http")) return m;
       return ` src=${q}${proxyUrl(abs)}${q}`;
     });
-    // Remove sandbox restrictions that break functionality
     attrs = attrs.replace(/\ssandbox\s*=\s*(["'])[^"']*\1/gi, '');
     return `<iframe${attrs} allow="autoplay; fullscreen; encrypted-media; gamepad">`;
   });
 
-  // 8. Rewrite <script type="application/json"> / JSON-LD with URLs (skip execution)
-  // Rewrite inline style attributes
+  // 8. Rewrite inline style attributes
   html = html.replace(
     /(\sstyle\s*=\s*)(["'])(.*?)\2/gi,
     (match, attr, quote, style) => `${attr}${quote}${rewriteCSS(style, effectiveBase)}${quote}`
@@ -241,11 +244,11 @@ function rewriteHTML(html, baseUrl) {
     (match, open, css, close) => `${open}${rewriteCSS(css, effectiveBase)}${close}`
   );
 
-  // 10. Rewrite inline <script> blocks (best-effort)
+  // 10. Rewrite inline <script> blocks
   html = html.replace(
     /(<script(?:[^>]*?(?!src\s*=)[^>]*)?>)([\s\S]*?)(<\/script>)/gi,
     (match, open, js, close) => {
-      if (open.includes("src=")) return match; // external script, skip
+      if (open.includes("src=")) return match;
       if (open.includes('type="application/json"') || open.includes("type='application/json'")) return match;
       return `${open}${rewriteJS(js, effectiveBase)}${close}`;
     }
@@ -266,14 +269,15 @@ function rewriteHTML(html, baseUrl) {
     }
   );
 
-  // 13. Inject comprehensive navigation interceptor + media/game support
+  // 13. Inject comprehensive interceptor
+  // NOTE: We set COOP/COEP headers on the proxy page itself (not stripped from inner pages)
+  // so SharedArrayBuffer works for game engines that need it.
   const injected = `
 <script>
 (function() {
   var BASE = ${JSON.stringify(baseUrl)};
   var PROXY = '/proxy/fetch?url=';
 
-  // ── Navigation helpers ────────────────────────────────────────────────────
   function toAbs(url) {
     try { return new URL(url, BASE).href; } catch(e) { return null; }
   }
@@ -286,7 +290,7 @@ function rewriteHTML(html, baseUrl) {
     return false;
   }
 
-  // ── Intercept anchor clicks ───────────────────────────────────────────────
+  // Intercept anchor clicks
   document.addEventListener('click', function(e) {
     var el = e.target && e.target.closest ? e.target.closest('a[href]') : null;
     if (!el) return;
@@ -297,7 +301,7 @@ function rewriteHTML(html, baseUrl) {
     sendNav(href);
   }, true);
 
-  // ── Intercept form submissions ────────────────────────────────────────────
+  // Intercept form submissions
   document.addEventListener('submit', function(e) {
     var form = e.target;
     if (!form || !form.action) return;
@@ -309,13 +313,12 @@ function rewriteHTML(html, baseUrl) {
       if (method === 'get') {
         sendNav(action.split('?')[0] + (data ? '?' + data : ''));
       } else {
-        // POST forms: navigate to action with query for now
         sendNav(action);
       }
     } catch(ex) {}
   }, true);
 
-  // ── Intercept history API ─────────────────────────────────────────────────
+  // Intercept history API
   function wrapHistory(method) {
     var orig = history[method];
     history[method] = function(state, title, url) {
@@ -331,12 +334,12 @@ function rewriteHTML(html, baseUrl) {
   }
   try { wrapHistory('pushState'); wrapHistory('replaceState'); } catch(ex) {}
 
-  // ── Patch fetch to proxy unknown URLs ────────────────────────────────────
+  // Patch fetch to proxy unknown URLs
   var _fetch = window.fetch;
   window.fetch = function(input, init) {
     try {
       var url = typeof input === 'string' ? input : (input && input.url);
-      if (url && url.startsWith('http') && !url.includes(location.hostname)) {
+      if (url && url.startsWith('http') && !url.startsWith(location.origin)) {
         var proxied = PROXY + encodeURIComponent(url);
         input = typeof input === 'string' ? proxied : new Request(proxied, input);
       }
@@ -344,18 +347,18 @@ function rewriteHTML(html, baseUrl) {
     return _fetch.apply(this, arguments);
   };
 
-  // ── Patch XMLHttpRequest ──────────────────────────────────────────────────
+  // Patch XMLHttpRequest
   var _open = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
     try {
-      if (url && url.startsWith('http') && !url.includes(location.hostname)) {
+      if (url && url.startsWith('http') && !url.startsWith(location.origin)) {
         url = PROXY + encodeURIComponent(url);
       }
     } catch(e) {}
     return _open.call(this, method, url, async !== false, user, pass);
   };
 
-  // ── WebSocket proxy shim ──────────────────────────────────────────────────
+  // WebSocket proxy shim
   var _WS = window.WebSocket;
   window.WebSocket = function(url, protocols) {
     try {
@@ -372,7 +375,18 @@ function rewriteHTML(html, baseUrl) {
   window.WebSocket.CLOSING = _WS.CLOSING;
   window.WebSocket.CLOSED = _WS.CLOSED;
 
-  // ── Fullscreen support for games/videos ───────────────────────────────────
+  // Patch Worker to proxy external scripts
+  var _Worker = window.Worker;
+  window.Worker = function(url, opts) {
+    try {
+      if (url && url.startsWith('http') && !url.startsWith(location.origin)) {
+        url = PROXY + encodeURIComponent(url);
+      }
+    } catch(e) {}
+    return new _Worker(url, opts);
+  };
+
+  // Fullscreen support (F11)
   document.addEventListener('keydown', function(e) {
     if (e.key === 'F11') {
       e.preventDefault();
@@ -385,14 +399,10 @@ function rewriteHTML(html, baseUrl) {
     }
   });
 
-  // ── Report current URL to parent ──────────────────────────────────────────
+  // Report current URL to parent
   try { window.top.postMessage({ type: 'proxy-url', url: BASE }, '*'); } catch(ex) {}
 
-  // ── Gamepad API pass-through (needed for game controllers) ────────────────
-  // No patching needed — gamepad API works natively in iframes
-
-  // ── Canvas / WebGL override for cross-origin game assets ─────────────────
-  // Allow cross-origin images on canvas (avoids taint)
+  // Allow cross-origin images on canvas
   var _createEl = document.createElement.bind(document);
   document.createElement = function(tag) {
     var el = _createEl(tag);
@@ -401,6 +411,27 @@ function rewriteHTML(html, baseUrl) {
     }
     return el;
   };
+
+  // Patch HTMLMediaElement src setter to proxy video/audio src set via JS
+  try {
+    var mediaTags = ['HTMLVideoElement', 'HTMLAudioElement', 'HTMLSourceElement'];
+    mediaTags.forEach(function(tagName) {
+      var proto = window[tagName] && window[tagName].prototype;
+      if (!proto) return;
+      var orig = Object.getOwnPropertyDescriptor(proto, 'src');
+      if (!orig) return;
+      Object.defineProperty(proto, 'src', {
+        set: function(val) {
+          if (val && val.startsWith('http') && !val.startsWith(location.origin)) {
+            val = PROXY + encodeURIComponent(val);
+          }
+          orig.set.call(this, val);
+        },
+        get: function() { return orig.get.call(this); },
+        configurable: true,
+      });
+    });
+  } catch(e) {}
 
 })();
 </script>`;
@@ -421,15 +452,13 @@ function rewriteHTML(html, baseUrl) {
 function rewriteM3U8(text, baseUrl) {
   return text.split("\n").map(line => {
     line = line.trim();
-    if (!line || line.startsWith("#EXT") && !line.includes("URI=")) return line;
-    // Rewrite URI= values in tags like #EXT-X-KEY, #EXT-X-MAP
+    if (!line || (line.startsWith("#EXT") && !line.includes("URI="))) return line;
     if (line.startsWith("#") && line.includes('URI="')) {
       return line.replace(/URI="([^"]+)"/g, (m, uri) => {
         const abs = toAbsolute(uri, baseUrl);
         return `URI="${proxyUrl(abs)}"`;
       });
     }
-    // Rewrite segment URLs
     if (!line.startsWith("#")) {
       const abs = toAbsolute(line, baseUrl);
       return proxyUrl(abs);
@@ -439,16 +468,25 @@ function rewriteM3U8(text, baseUrl) {
 }
 
 function rewriteMPD(xml, baseUrl) {
-  // DASH manifests: rewrite BaseURL and initialization/media templates
-  return xml.replace(/<BaseURL>(.*?)<\/BaseURL>/g, (match, url) => {
-    const abs = toAbsolute(url.trim(), baseUrl);
-    return `<BaseURL>${proxyUrl(abs)}</BaseURL>`;
-  });
+  return xml
+    .replace(/<BaseURL>(.*?)<\/BaseURL>/g, (match, url) => {
+      const abs = toAbsolute(url.trim(), baseUrl);
+      return `<BaseURL>${proxyUrl(abs)}</BaseURL>`;
+    })
+    // Also rewrite initialization and media template attributes
+    .replace(/(initialization|media)="([^"]+)"/g, (match, attr, val) => {
+      if (val.startsWith("http")) {
+        return `${attr}="${proxyUrl(val)}"`;
+      }
+      const abs = toAbsolute(val, baseUrl);
+      if (!abs || !abs.startsWith("http")) return match;
+      return `${attr}="${proxyUrl(abs)}"`;
+    });
 }
 
 // ─── Common response headers ──────────────────────────────────────────────────
 
-function setPermissiveHeaders(res) {
+function setPermissiveHeaders(res, enableSharedArrayBuffer = false) {
   res.removeHeader("X-Frame-Options");
   res.removeHeader("Content-Security-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");
@@ -458,6 +496,60 @@ function setPermissiveHeaders(res) {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD");
   res.setHeader("Access-Control-Allow-Headers", "*");
   res.setHeader("Access-Control-Expose-Headers", "*");
+
+  // For game pages that need SharedArrayBuffer (Unity, Emscripten with threads)
+  // Only set these on HTML responses — they allow Atomics / SharedArrayBuffer
+  if (enableSharedArrayBuffer) {
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  }
+}
+
+// ─── Stream pipe helper ───────────────────────────────────────────────────────
+// Robustly pipes a fetch Response body to an Express response,
+// handling both Web Streams API (Node 18+) and node-fetch streams.
+
+async function pipeResponseBody(fetchResponse, res) {
+  const body = fetchResponse.body;
+  if (!body) {
+    res.end();
+    return;
+  }
+
+  // Web Streams API (native fetch in Node 18+)
+  if (typeof body.getReader === "function") {
+    const reader = body.getReader();
+    const cleanup = () => { try { reader.cancel(); } catch {} };
+    res.on("close", cleanup);
+    res.on("error", cleanup);
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!res.writable) break;
+        const ok = res.write(Buffer.from(value));
+        if (!ok) {
+          // Backpressure — wait for drain
+          await new Promise(resolve => res.once("drain", resolve));
+        }
+      }
+    } finally {
+      cleanup();
+      if (res.writable) res.end();
+    }
+    return;
+  }
+
+  // node-fetch / Node.js readable stream
+  if (typeof body.pipe === "function") {
+    body.pipe(res);
+    return;
+  }
+
+  // Fallback: buffer entire body
+  const buf = await fetchResponse.arrayBuffer();
+  res.end(Buffer.from(buf));
 }
 
 // ─── Proxy fetch route ────────────────────────────────────────────────────────
@@ -487,17 +579,17 @@ app.all("/proxy/fetch", async (req, res) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PROXY_CONFIG.timeout);
 
-    // Forward relevant request headers
     const reqHeaders = {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
       "Accept": req.headers["accept"] || "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
       "Accept-Language": req.headers["accept-language"] || "en-US,en;q=0.9",
+      // Don't request compressed encoding — we need to rewrite text content
       "Accept-Encoding": "identity",
       "Referer": parsedUrl.origin + "/",
       "Origin": parsedUrl.origin,
     };
 
-    // Forward Range header for video seeking
+    // CRITICAL: Forward Range header for video seeking (enables 206 Partial Content)
     if (req.headers["range"]) {
       reqHeaders["Range"] = req.headers["range"];
     }
@@ -511,8 +603,8 @@ app.all("/proxy/fetch", async (req, res) => {
       redirect: "follow",
     };
 
-    // Forward request body for POST
-    if (req.method === "POST" || req.method === "PUT" || req.method === "PATCH") {
+    // Forward request body for POST/PUT/PATCH
+    if (["POST", "PUT", "PATCH"].includes(req.method)) {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       fetchOptions.body = Buffer.concat(chunks);
@@ -523,23 +615,32 @@ app.all("/proxy/fetch", async (req, res) => {
     clearTimeout(timer);
 
     const contentType = (response.headers.get("content-type") || "").toLowerCase();
-    const contentLength = parseInt(response.headers.get("content-length") || "0");
+    const contentLength = response.headers.get("content-length");
+    const parsedLength = contentLength ? parseInt(contentLength, 10) : 0;
 
-    if (contentLength > PROXY_CONFIG.maxResponseSize)
+    if (parsedLength > PROXY_CONFIG.maxResponseSize)
       return res.status(413).json({ error: "Response too large" });
 
-    setPermissiveHeaders(res);
+    const status = response.status;
 
-    // Forward useful headers
-    const forwardHeaders = ["content-type", "cache-control", "last-modified", "etag",
-      "accept-ranges", "content-range", "expires", "vary"];
+    // Decide whether to enable SharedArrayBuffer headers (for game HTML pages)
+    // We enable it for HTML that looks like a game (has .wasm references or known game hosts)
+    const isLikelyGamePage = contentType.includes("text/html") && (
+      url.includes(".wasm") ||
+      url.match(/\/(game|play|arcade|unity|embed)\//i)
+    );
+
+    setPermissiveHeaders(res, isLikelyGamePage);
+
+    // Forward safe/useful response headers
+    const forwardHeaders = [
+      "content-type", "cache-control", "last-modified", "etag",
+      "accept-ranges", "content-range", "expires", "vary",
+    ];
     forwardHeaders.forEach((h) => {
       const val = response.headers.get(h);
       if (val) res.setHeader(h, val);
     });
-
-    // Mirror the status code (important for 206 Partial Content / video seeking)
-    const status = response.status;
 
     // ── HTML ──────────────────────────────────────────────────────────────────
     if (contentType.includes("text/html")) {
@@ -573,55 +674,50 @@ app.all("/proxy/fetch", async (req, res) => {
       return res.send(rewriteM3U8(text, url));
     }
 
-    // ── DASH manifest ─────────────────────────────────────────────────────────
+    // ── DASH manifest (.mpd) ──────────────────────────────────────────────────
     if (contentType.includes("dash+xml") || url.toLowerCase().includes(".mpd")) {
       const xml = await response.text();
       res.status(status).setHeader("Content-Type", "application/dash+xml");
       return res.send(rewriteMPD(xml, url));
     }
 
-    // ── JSON (may contain URLs) ───────────────────────────────────────────────
+    // ── JSON ──────────────────────────────────────────────────────────────────
     if (contentType.includes("application/json")) {
       const json = await response.text();
       res.status(status).setHeader("Content-Type", "application/json");
-      return res.send(json); // Pass-through; SPA routing handles URLs internally
-    }
-
-    // ── Streaming video/audio ─────────────────────────────────────────────────
-    if (STREAM_CONTENT_TYPES.some(t => contentType.startsWith(t))) {
-      res.status(status);
-      return response.body.pipe(res);
+      return res.send(json);
     }
 
     // ── WebAssembly ───────────────────────────────────────────────────────────
-    if (contentType.includes("wasm")) {
+    // MUST use correct MIME type or browser will refuse to compile it.
+    // Also needs COEP/COOP headers if used with SharedArrayBuffer (set above per-request).
+    if (
+      contentType.includes("wasm") ||
+      url.toLowerCase().endsWith(".wasm")
+    ) {
       res.status(status).setHeader("Content-Type", "application/wasm");
-      const buf = await response.arrayBuffer();
-      return res.send(Buffer.from(buf));
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      // Stream it — wasm files can be large
+      return pipeResponseBody(response, res);
     }
 
-    // ── Binary passthrough (images, fonts, etc.) ──────────────────────────────
-    if (PASSTHROUGH_CONTENT_TYPES.some(t => contentType.startsWith(t)) || contentLength > 0) {
-      // Stream large binary responses
-      if (!contentLength || contentLength > 1 * 1024 * 1024) {
-        res.status(status);
-        if (response.body && response.body.pipe) {
-          return response.body.pipe(res);
-        }
-      }
-      const buffer = await response.arrayBuffer();
-      if (buffer.byteLength > PROXY_CONFIG.maxResponseSize)
-        return res.status(413).json({ error: "Response too large" });
-      return res.status(status).send(Buffer.from(buffer));
+    // ── Streaming video/audio ─────────────────────────────────────────────────
+    // Use the robust pipe helper instead of direct .pipe() which can fail with
+    // web streams (native fetch in Node 18+).
+    if (STREAM_CONTENT_TYPES.some(t => contentType.startsWith(t))) {
+      res.status(status);
+      return pipeResponseBody(response, res);
     }
 
-    // ── Fallback: try to stream ───────────────────────────────────────────────
+    // ── Binary passthrough (images, fonts, zips, octet-stream) ───────────────
+    if (PASSTHROUGH_CONTENT_TYPES.some(t => contentType.startsWith(t))) {
+      res.status(status);
+      return pipeResponseBody(response, res);
+    }
+
+    // ── Fallback: pipe anything else ──────────────────────────────────────────
     res.status(status);
-    if (response.body && response.body.pipe) {
-      return response.body.pipe(res);
-    }
-    const buf = await response.arrayBuffer();
-    return res.send(Buffer.from(buf));
+    return pipeResponseBody(response, res);
 
   } catch (err) {
     if (err.name === "AbortError")
@@ -644,7 +740,7 @@ server.on("upgrade", (req, socket, head) => {
   if (!targetWs) return socket.destroy();
 
   try {
-    new URL(targetWs); // validate
+    new URL(targetWs);
   } catch {
     return socket.destroy();
   }
@@ -673,7 +769,7 @@ server.on("upgrade", (req, socket, head) => {
     });
 
     serverWs.on("close", (code, reason) => clientWs.close(code, reason));
-    clientWs.on("close", (code, reason) => serverWs.close());
+    clientWs.on("close", () => serverWs.close());
 
     serverWs.on("error", (err) => { console.error("[WS server error]", err); clientWs.close(1011); });
     clientWs.on("error", (err) => { console.error("[WS client error]", err); serverWs.close(); });
