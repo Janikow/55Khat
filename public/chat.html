@@ -10,190 +10,191 @@
 <body>
 
   <!-- ════════════════════════════════════════
-       LOGIN PAGE
+       TOP NAV
        ════════════════════════════════════════ -->
-  <div id="loginPage" class="login-container">
-    <div class="login-shell">
-
-      <!-- Main card -->
-      <div class="login-card panel">
-        <div class="corner-tl"></div><div class="corner-tr"></div>
-        <div class="corner-bl"></div><div class="corner-br"></div>
-
-        <div class="brand">
-          <img src="/images/55khatl.png" alt="Logo" class="brand-logo">
-          <div class="brand-title">Clever Education</div>
-          <div class="brand-sub">Secure Terminal Chat</div>
-        </div>
-
-        <!-- Error display -->
-        <div id="loginError" class="login-error hidden"></div>
-
-        <div class="field-group">
-          <label class="field-label" for="usernameInput">Username</label>
-          <input class="field-input" type="text" id="usernameInput"
-            placeholder="2–18 characters" autocomplete="off" spellcheck="false" maxlength="18">
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="passwordInput">Password</label>
-          <input class="field-input" type="password" id="passwordInput"
-            placeholder="Your password" autocomplete="current-password">
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="serverPortInput">Room Code</label>
-          <input class="field-input" type="number" id="serverPortInput"
-            placeholder="1 – 65535" min="1" max="65535">
-        </div>
-
-        <button id="loginBtn" class="btn-join" onclick="setUsername()">
-          &#x25B6; Enter Room
-        </button>
-
-        <div class="login-disclaimer">
-          Property of Oliver Lopez · 2025 · v0.5.1
-        </div>
-      </div>
-
-      <!-- Sidebar -->
-      <div class="login-sidebar">
-
-        <!-- ── Quick Links card ──────────────────────────────
-             TO ADD MORE BUTTONS: copy one <a class="nav-link"> line
-             and change the href and label text. That's it.
-             ─────────────────────────────────────────────────── -->
-        <div class="side-card panel">
-          <div class="corner-tl"></div><div class="corner-tr"></div>
-          <div class="corner-bl"></div><div class="corner-br"></div>
-          <div class="side-card-title">Quick Links</div>
-          <nav class="nav-links">
-            <a class="nav-link" href="index.html">🏠 Home</a>
-            <a class="nav-link" href="engine.html">⚙ Engine</a>
-            <a class="nav-link" href="games.html">🎮 Games</a>
-            <a class="nav-link" href="websurf.html">🌐 Web Surf</a>
-            <!-- <a class="nav-link" href="example.html">⬡ Example</a> -->
-          </nav>
-        </div>
-
-        <!-- Info card -->
-        <div class="side-card panel">
-          <div class="corner-tl"></div><div class="corner-tr"></div>
-          <div class="corner-bl"></div><div class="corner-br"></div>
-          <div class="side-card-title">Updates &amp; Info</div>
-          <ul class="updates-list">
-            <li>Public Room: <strong>1</strong></li>
-            <li>Accounts persist across sessions</li>
-            <li>Profile data resets on update</li>
-            <li>Please be respectful to others</li>
-            <li>Max message length: 600 chars</li>
-          </ul>
-        </div>
-
-        <!-- Customization card -->
-        <div class="side-card panel">
-          <div class="corner-tl"></div><div class="corner-tr"></div>
-          <div class="corner-bl"></div><div class="corner-br"></div>
-          <div class="side-card-title">Profile Customization</div>
-
-          <!-- Profile picture -->
-          <div class="pfp-upload-area">
-            <img id="previewPic" class="pfp-preview" src="" alt="Preview">
-            <button class="btn-upload" id="pfpBtn" onclick="document.getElementById('profilePicInput').click()">
-              Upload Picture
-            </button>
-            <input type="file" id="profilePicInput" accept="image/*" class="hidden">
-          </div>
-
-          <!-- Color sliders -->
-          <div class="color-picker-rows" style="margin-top:14px;">
-            <div class="slider-row">
-              <span class="slider-label">R</span>
-              <input type="range" id="rSlider" min="0" max="255" value="0">
-            </div>
-            <div class="slider-row">
-              <span class="slider-label">G</span>
-              <input type="range" id="gSlider" min="0" max="255" value="210">
-            </div>
-            <div class="slider-row">
-              <span class="slider-label">B</span>
-              <input type="range" id="bSlider" min="0" max="255" value="255">
-            </div>
-          </div>
-
-          <div class="color-preview-row">
-            <div id="colorPreview"></div>
-            <div id="usernamePreview">Username</div>
-          </div>
-        </div>
-
-      </div>
+  <nav class="top-nav">
+    <a class="nav-brand" href="index.html">
+      <img src="/images/55khatl.png" alt="Logo" class="nav-brand-logo">
+      <span class="nav-brand-text">Clever Education</span>
+    </a>
+    <div class="nav-links-row">
+      <a class="nav-item" href="index.html"><span class="nav-icon">⌂</span> Home</a>
+      <a class="nav-item active" href="chat.html"><span class="nav-icon">💬</span> Chat</a>
+      <a class="nav-item" href="engine.html"><span class="nav-icon">⚙</span> Engine</a>
+      <a class="nav-item" href="games.html"><span class="nav-icon">🎮</span> Games</a>
+      <a class="nav-item" href="websurf.html"><span class="nav-icon">🌐</span> Web Surf</a>
     </div>
-  </div>
-
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="nav-dot"></span>
+        ONLINE
+      </div>
+      <span class="nav-version">v0.5.1</span>
+    </div>
+  </nav>
 
   <!-- ════════════════════════════════════════
-       CHAT PAGE
+       CHAT LAYOUT (fills remaining screen)
        ════════════════════════════════════════ -->
-  <div id="chatPage" class="chat-container hidden">
+  <div class="page-wrap" style="padding-top: var(--nav-h); height: 100vh; display:flex; flex-direction:column; overflow:hidden;">
+    <div class="chat-layout" style="flex:1; position:relative;">
 
-    <!-- Users panel -->
-    <div class="users-panel">
-      <div class="panel-header">
-        <span class="panel-header-title">Online</span>
-        <span class="online-badge">
-          <span class="online-dot"></span>
-          <span id="userCount">0</span>
-        </span>
+      <!-- LOGIN OVERLAY -->
+      <div id="loginPage" class="login-overlay">
+        <div class="login-shell">
+
+          <!-- Main card -->
+          <div class="login-card panel">
+            <div class="corner-tl"></div><div class="corner-tr"></div>
+            <div class="corner-bl"></div><div class="corner-br"></div>
+
+            <div class="brand">
+              <img src="/images/55khatl.png" alt="Logo" class="brand-logo">
+              <div class="brand-title">Clever Education</div>
+              <div class="brand-sub">Secure Terminal Chat</div>
+            </div>
+
+            <div id="loginError" class="login-error hidden"></div>
+
+            <div class="field-group">
+              <label class="field-label" for="usernameInput">Username</label>
+              <input class="field-input" type="text" id="usernameInput"
+                placeholder="2–18 characters" autocomplete="off" spellcheck="false" maxlength="18">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="passwordInput">Password</label>
+              <input class="field-input" type="password" id="passwordInput"
+                placeholder="Your password" autocomplete="current-password">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="serverPortInput">Room Code</label>
+              <input class="field-input" type="number" id="serverPortInput"
+                placeholder="1 – 65535" min="1" max="65535">
+            </div>
+
+            <button id="loginBtn" class="btn-join" onclick="setUsername()">
+              &#x25B6; Enter Room
+            </button>
+
+            <div class="login-disclaimer">
+              Property of Oliver Lopez · 2025 · v0.5.1
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="login-sidebar">
+
+            <div class="side-card panel">
+              <div class="corner-tl"></div><div class="corner-tr"></div>
+              <div class="corner-bl"></div><div class="corner-br"></div>
+              <div class="side-card-title">Updates &amp; Info</div>
+              <ul class="updates-list">
+                <li>Public Room: <strong>1</strong></li>
+                <li>Accounts persist across sessions</li>
+                <li>Profile data resets on update</li>
+                <li>Please be respectful to others</li>
+                <li>Max message length: 600 chars</li>
+              </ul>
+            </div>
+
+            <!-- Customization card -->
+            <div class="side-card panel">
+              <div class="corner-tl"></div><div class="corner-tr"></div>
+              <div class="corner-bl"></div><div class="corner-br"></div>
+              <div class="side-card-title">Profile Customization</div>
+
+              <div class="pfp-upload-area">
+                <img id="previewPic" class="pfp-preview" src="" alt="Preview">
+                <button class="btn-upload" id="pfpBtn" onclick="document.getElementById('profilePicInput').click()">
+                  Upload Picture
+                </button>
+                <input type="file" id="profilePicInput" accept="image/*" class="hidden">
+              </div>
+
+              <div class="color-picker-rows" style="margin-top:14px;">
+                <div class="slider-row">
+                  <span class="slider-label">R</span>
+                  <input type="range" id="rSlider" min="0" max="255" value="0">
+                </div>
+                <div class="slider-row">
+                  <span class="slider-label">G</span>
+                  <input type="range" id="gSlider" min="0" max="255" value="210">
+                </div>
+                <div class="slider-row">
+                  <span class="slider-label">B</span>
+                  <input type="range" id="bSlider" min="0" max="255" value="255">
+                </div>
+              </div>
+
+              <div class="color-preview-row">
+                <div id="colorPreview"></div>
+                <div id="usernamePreview">Username</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
-      <div id="usersList"></div>
-    </div>
+      <!-- /LOGIN OVERLAY -->
 
-    <!-- Main chat -->
-    <div class="chat-main">
+      <!-- CHAT VIEW (hidden until logged in) -->
+      <div id="chatPage" class="chat-layout hidden">
 
-      <!-- Header -->
-      <div class="chat-header">
-        <div class="chat-header-title">Clever Education</div>
-        <div class="chat-header-room" id="chatRoomLabel">Room —</div>
+        <!-- Users panel -->
+        <div class="users-panel">
+          <div class="panel-header">
+            <span class="panel-header-title">Online</span>
+            <span class="online-badge">
+              <span class="online-dot"></span>
+              <span id="userCount">0</span>
+            </span>
+          </div>
+          <div id="usersList"></div>
+        </div>
+
+        <!-- Main chat -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div class="chat-header-title">Clever Education</div>
+            <div class="chat-header-room" id="chatRoomLabel">Room —</div>
+          </div>
+
+          <div id="connectionStatus" class="status-bar hidden"></div>
+
+          <div id="chatBox"></div>
+
+          <div id="typingIndicator" class="hidden"></div>
+
+          <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message…" maxlength="600" autocomplete="off">
+            <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
+            <button class="btn-image" title="Send image"
+              onclick="document.getElementById('imageInput').click()">📎</button>
+            <button class="btn-send" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
       </div>
+      <!-- /CHAT VIEW -->
 
-      <!-- Connection status -->
-      <div id="connectionStatus" class="status-bar hidden"></div>
-
-      <!-- Messages -->
-      <div id="chatBox"></div>
-
-      <!-- Typing indicator -->
-      <div id="typingIndicator" class="hidden"></div>
-
-      <!-- Input bar -->
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type a message…" maxlength="600" autocomplete="off">
-        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="sendImage(event)">
-        <button class="btn-image" title="Send image"
-          onclick="document.getElementById('imageInput').click()">📎</button>
-        <button class="btn-send" onclick="sendMessage()">Send</button>
-      </div>
     </div>
   </div>
 
-  <!-- Toast container -->
   <div id="toastContainer"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 
   <script>
-    // Live color + profile preview (inline to avoid ordering issues)
     const r = document.getElementById('rSlider');
     const g = document.getElementById('gSlider');
     const b = document.getElementById('bSlider');
-    const colorPreviewEl = document.getElementById('colorPreview');
+    const colorPreviewEl    = document.getElementById('colorPreview');
     const usernamePreviewEl = document.getElementById('usernamePreview');
-    const profilePicInput = document.getElementById('profilePicInput');
-    const previewPic = document.getElementById('previewPic');
-    const pfpBtn = document.getElementById('pfpBtn');
+    const profilePicInput   = document.getElementById('profilePicInput');
+    const previewPic        = document.getElementById('previewPic');
+    const pfpBtn            = document.getElementById('pfpBtn');
 
     function syncColor() {
       const color = `rgb(${r.value}, ${g.value}, ${b.value})`;
@@ -213,23 +214,15 @@
     profilePicInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Profile picture must be under 2MB.');
-        return;
-      }
+      if (file.size > 2 * 1024 * 1024) { alert('Profile picture must be under 2MB.'); return; }
       const reader = new FileReader();
       reader.onload = ev => {
         previewPic.src = ev.target.result;
         previewPic.classList.add('visible');
-        pfpBtn.textContent = file.name.length > 14
-          ? file.name.slice(0, 12) + '…'
-          : file.name;
+        pfpBtn.textContent = file.name.length > 14 ? file.name.slice(0, 12) + '…' : file.name;
       };
       reader.readAsDataURL(file);
     });
-
-    // Update room label when entering chat
-    const _origLoginResult = window._loginResultHook;
   </script>
 
 </body>

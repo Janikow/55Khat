@@ -10,56 +10,231 @@
 <body>
 
   <!-- ════════════════════════════════════════
-       HOME MENU PAGE
+       TOP NAV
        ════════════════════════════════════════ -->
-  <div id="loginPage" class="login-container">
-    <div class="login-shell">
+  <nav class="top-nav">
+    <a class="nav-brand" href="index.html">
+      <img src="/images/55khatl.png" alt="Logo" class="nav-brand-logo">
+      <span class="nav-brand-text">Clever Education</span>
+    </a>
+    <div class="nav-links-row">
+      <a class="nav-item active" href="index.html"><span class="nav-icon">⌂</span> Home</a>
+      <a class="nav-item" href="chat.html"><span class="nav-icon">💬</span> Chat</a>
+      <a class="nav-item" href="engine.html"><span class="nav-icon">⚙</span> Engine</a>
+      <a class="nav-item" href="games.html"><span class="nav-icon">🎮</span> Games</a>
+      <a class="nav-item" href="websurf.html"><span class="nav-icon">🌐</span> Web Surf</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="nav-dot"></span>
+        ONLINE
+      </div>
+      <span class="nav-version">v0.5.1</span>
+    </div>
+  </nav>
 
-      <!-- Main card -->
-      <div class="login-card panel">
-        <div class="corner-tl"></div><div class="corner-tr"></div>
-        <div class="corner-bl"></div><div class="corner-br"></div>
+  <!-- ════════════════════════════════════════
+       HOME PAGE
+       ════════════════════════════════════════ -->
+  <div class="page-wrap">
+    <div class="home-page">
 
-        <div class="brand">
-          <img src="/images/55khatl.png" alt="Logo" class="brand-logo">
-          <div class="brand-title">Clever Education</div>
-          <div class="brand-sub">Select a destination</div>
+      <!-- ── Hero ── -->
+      <section class="hero">
+        <div class="hero-content">
+          <div class="hero-eyebrow">Secure Terminal Environment</div>
+          <h1 class="hero-title">
+            Welcome to<br><span>Clever Education</span>
+          </h1>
+          <p class="hero-sub">
+            Your all-in-one platform for games, chat, and browsing.
+            Fast. Private. Always online.
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="games.html">▶ Play Games</a>
+            <a class="btn-secondary" href="chat.html">💬 Open Chat</a>
+            <a class="btn-secondary" href="websurf.html">🌐 Web Surf</a>
+          </div>
         </div>
+        <div class="hero-visual">
+          <div class="hero-logo-wrap">
+            <img src="/images/55khatl.png" alt="Logo" class="hero-logo">
+          </div>
+        </div>
+      </section>
 
-        <nav class="nav-links" style="margin-top: 18px;">
-          <a class="nav-link" href="chat.html">💬 Chat</a>
-          <a class="nav-link" href="engine.html">⚙ Engine</a>
-          <a class="nav-link" href="games.html">🎮 Games</a>
-          <a class="nav-link" href="websurf.html">🌐 Web Surf</a>
-        </nav>
-
-        <div class="login-disclaimer">
-          Property of Oliver Lopez · 2025 · v0.5.1
+      <!-- ── Stats bar ── -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value">150+</div>
+          <div class="stat-label">Games Available</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">Live</div>
+          <div class="stat-label">Chat Rooms</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">0ms</div>
+          <div class="stat-label">Proxy Delay</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">v0.5.1</div>
+          <div class="stat-label">Current Build</div>
         </div>
       </div>
 
-      <!-- Sidebar -->
-      <div class="login-sidebar">
+      <!-- ── Main grid ── -->
+      <div class="home-grid">
 
-        <!-- Info card -->
-        <div class="side-card panel">
-          <div class="corner-tl"></div><div class="corner-tr"></div>
-          <div class="corner-bl"></div><div class="corner-br"></div>
-          <div class="side-card-title">Updates &amp; Info</div>
-          <ul class="updates-list">
-            <li>Public Room: <strong>1</strong></li>
-            <li>Accounts persist across sessions</li>
-            <li>Profile data resets on update</li>
-            <li>Please be respectful to others</li>
-            <li>Max message length: 600 chars</li>
-          </ul>
+        <!-- Destinations -->
+        <div class="home-cell">
+          <div class="home-cell-header">
+            <div class="home-cell-icon">🗺</div>
+            <div class="home-cell-title">Destinations</div>
+          </div>
+          <p class="home-cell-desc">Jump directly to any section of the platform.</p>
+          <div class="dest-grid">
+            <a class="dest-card" href="chat.html">
+              <span class="dest-icon">💬</span>
+              <div class="dest-info">
+                <div class="dest-name">Chat</div>
+                <div class="dest-hint">Live rooms · Custom profiles</div>
+              </div>
+              <span class="dest-arrow">›</span>
+            </a>
+            <a class="dest-card" href="engine.html">
+              <span class="dest-icon">⚙</span>
+              <div class="dest-info">
+                <div class="dest-name">Engine</div>
+                <div class="dest-hint">Proxy browser</div>
+              </div>
+              <span class="dest-arrow">›</span>
+            </a>
+            <a class="dest-card" href="games.html">
+              <span class="dest-icon">🎮</span>
+              <div class="dest-info">
+                <div class="dest-name">Games</div>
+                <div class="dest-hint">150+ titles · All genres</div>
+              </div>
+              <span class="dest-arrow">›</span>
+            </a>
+            <a class="dest-card" href="websurf.html">
+              <span class="dest-icon">🌐</span>
+              <div class="dest-info">
+                <div class="dest-name">Web Surf</div>
+                <div class="dest-hint">Browse freely</div>
+              </div>
+              <span class="dest-arrow">›</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="home-cell">
+          <div class="home-cell-header">
+            <div class="home-cell-icon">📡</div>
+            <div class="home-cell-title">Activity Feed</div>
+          </div>
+          <p class="home-cell-desc">Recent platform events and announcements.</p>
+          <div class="activity-feed">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-text"><strong>v0.5.1 deployed</strong> — Profile persistence fix + UI refresh</div>
+              <div class="activity-time">now</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot teal"></div>
+              <div class="activity-text"><strong>Chat rooms</strong> are live — join room 1 for the public channel</div>
+              <div class="activity-time">1h ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot yellow"></div>
+              <div class="activity-text"><strong>12 new games</strong> added — Slope 2, Time Shooter 3 &amp; more</div>
+              <div class="activity-time">2d ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-text"><strong>Web Surf</strong> proxy updated — improved speed &amp; stability</div>
+              <div class="activity-time">3d ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot teal"></div>
+              <div class="activity-text"><strong>Max message length</strong> increased to 600 characters</div>
+              <div class="activity-time">1w ago</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal widget -->
+        <div class="home-cell">
+          <div class="home-cell-header">
+            <div class="home-cell-icon">></div>
+            <div class="home-cell-title">System Status</div>
+          </div>
+          <p class="home-cell-desc">Live environment diagnostics.</p>
+          <div class="terminal-widget">
+            <div class="terminal-bar">
+              <div class="term-dot r"></div>
+              <div class="term-dot y"></div>
+              <div class="term-dot g"></div>
+              <span class="terminal-bar-label">sys — terminal</span>
+            </div>
+            <div class="terminal-body">
+              <div class="terminal-line"><span class="term-prompt">$</span><span class="term-cmd">ping clever.edu</span></div>
+              <div class="terminal-line"><span class="term-out">PONG — latency: &lt;1ms ✓</span></div>
+              <div class="terminal-line" style="margin-top:6px;"><span class="term-prompt">$</span><span class="term-cmd">status --all</span></div>
+              <div class="terminal-line"><span class="term-out" style="color:var(--c-accent);">● games      ONLINE</span></div>
+              <div class="terminal-line"><span class="term-out" style="color:var(--c-accent);">● chat       ONLINE</span></div>
+              <div class="terminal-line"><span class="term-out" style="color:var(--c-accent);">● proxy      ONLINE</span></div>
+              <div class="terminal-line"><span class="term-out" style="color:var(--c-accent);">● websurf    ONLINE</span></div>
+              <div class="terminal-line" style="margin-top:6px;"><span class="term-prompt">$</span><span class="term-cmd">_</span><span class="term-cursor"></span></div>
+            </div>
+          </div>
         </div>
 
       </div>
+
+      <!-- ── Featured Games strip ── -->
+      <div class="home-cell featured-games" style="border-right:none; border-bottom: 1px solid var(--c-border);">
+        <div class="home-cell-header">
+          <div class="home-cell-icon">⭐</div>
+          <div class="home-cell-title">Featured Games</div>
+        </div>
+        <div class="featured-scroll">
+          <a class="featured-game-chip" href="games/slope">Slope</a>
+          <a class="featured-game-chip" href="games/run3">Run 3</a>
+          <a class="featured-game-chip" href="games/1v1lol">1v1.LOL</a>
+          <a class="featured-game-chip" href="games/cookieclicker">Cookie Clicker</a>
+          <a class="featured-game-chip" href="games/geometrydash">Geometry Dash</a>
+          <a class="featured-game-chip" href="games/retrobowl">Retro Bowl</a>
+          <a class="featured-game-chip" href="games/drifthunters">Drift Hunters</a>
+          <a class="featured-game-chip" href="games/chess">Chess</a>
+          <a class="featured-game-chip" href="games/2048">2048</a>
+          <a class="featured-game-chip" href="games/tetris">Tetris</a>
+          <a class="featured-game-chip" href="games/pacman">Pacman</a>
+          <a class="featured-game-chip" href="games/tunnelrush">Tunnel Rush</a>
+          <a class="featured-game-chip" href="games/flappybird">Flappy Bird</a>
+          <a class="featured-game-chip" href="games/subwaysurfers">Subway Surfers</a>
+          <a class="featured-game-chip" href="games/slitherio">Slither IO</a>
+          <a class="featured-game-chip" href="games/timeshooter3">Time Shooter 3</a>
+          <a class="featured-game-chip" href="games/bitlife">BitLife</a>
+          <a class="featured-game-chip" href="games/ovo">OvO</a>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <footer class="home-footer">
+        <span class="footer-text">© 2025 CLEVER EDUCATION · PROPERTY OF OLIVER LOPEZ</span>
+        <div class="footer-links">
+          <a class="footer-link" href="chat.html">CHAT</a>
+          <a class="footer-link" href="games.html">GAMES</a>
+          <a class="footer-link" href="websurf.html">SURF</a>
+        </div>
+      </footer>
+
     </div>
   </div>
 
-  <!-- Toast container -->
   <div id="toastContainer"></div>
 
 </body>
